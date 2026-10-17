@@ -1,121 +1,118 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useEffect, useState, type FormEvent } from 'react'
+import './App.css'
+import MonevEditor from './MonevEditor'
+
+
+
+
+
+
+// Komponen Halaman Utama (Home)
+function Home({ onLogin }: { onLogin: () => void }) {
+  return (
+    <div>
+      <h1>Selamat Datang</h1>
+      <p>Silakan masuk ke akun Anda.</p>
+
+      <button
+        type="button"
+        onClick={onLogin}
+      >
+        Ke Halaman Login
+      </button>
+    </div>
+  )
+}
+
+// Komponen Halaman Login
+function LoginPage({ onHome }: { onHome: () => void }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleEmailLogin = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    // Contoh sementara, belum melakukan autentikasi
+    alert(`Logging in with Email: ${email}`)
+  }
+
+  const handleGoogleLogin = () => {
+    // Contoh sementara, belum terhubung ke Google OAuth
+    alert('Google login clicked')
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <div>
+      <h2>Sign In</h2>
+
+      {/* Google Login Button */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+      >
+        Continue with Google
+      </button>
+
+      <hr />
+
+      {/* Email Login Form */}
+      <form onSubmit={handleEmailLogin}>
         <div>
-          <h1>Get started Morpheus Hahaha</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+          <label htmlFor="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div>
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <button type="submit">Sign In</button>
+      </form>
+
+      <p style={{ marginTop: '20px' }}>
+        <button type="button" onClick={onHome}>Kembali ke Beranda</button>
+      </p>
+    </div>
+  )
+}
+
+// Komponen Utama App
+function App() {
+  const [path, setPath] = useState(window.location.pathname)
+
+  useEffect(() => {
+    const handlePopState = () => setPath(window.location.pathname)
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  const navigate = (nextPath: string) => {
+    window.history.pushState({}, '', nextPath)
+    setPath(nextPath)
+  }
+
+  return (
+    path === '/login'
+      ? <LoginPage onHome={() => navigate('/')} />
+      : <Home onLogin={() => navigate('/login')} />
   )
 }
 
