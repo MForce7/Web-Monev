@@ -1,0 +1,245 @@
+{
+  "header": {
+    "namaKetua": "Dr. Nama Ketua, M.Si.",
+    "unitKerja": "Pusat Riset Teknologi",
+    "satuanKerja": "Direktorat Penelitian",
+    "judulAktivitas": "Pengembangan Sistem Monitoring dan Evaluasi Kinerja",
+    "targetOutputs": [
+      {
+        "jenis": "Purwarupa",
+        "jumlah": 1
+      },
+      {
+        "jenis": "Publikasi",
+        "jumlah": 2
+      }
+    ],
+    "progresTotal": 35,
+    "progresKeterangan": "Sesuai jadwal triwulan I",
+    "statusPelaksanaan": "Pelaksanaan / Berjalan"
+  },
+  "bulanan": [
+    {
+      "bulan": "Januari",
+      "aktivitas": {
+        "uraian": "Penyusunan rencana kerja dan pembentukan tim pelaksana.",
+        "kendala": "Penetapan SK tim terlambat.",
+        "mitigasi": "Percepatan persetujuan melalui rapat koordinasi.",
+        "dataDukung": [
+          {
+            "label": "Notulen Januari.pdf",
+            "url": "https://example.com/januari/notulen.pdf"
+          }
+        ]
+      },
+      "output": {
+        "jenis": "Rencana Kerja",
+        "judul": "Dokumen Rencana Kerja",
+        "status": "Selesai",
+        "capaian": 100,
+        "dataDukung": [
+          {
+            "label": "Dokumen Rencana Kerja.pdf",
+            "url": "https://example.com/januari/output.pdf"
+          }
+        ]
+      }
+    },
+    {
+      "bulan": "Februari",
+      "aktivitas": {
+        "uraian": "Pengumpulan data awal dan survei lokasi.",
+        "kendala": "Akses ke beberapa lokasi terbatas.",
+        "mitigasi": "Koordinasi dengan pemerintah daerah.",
+        "dataDukung": [
+          {
+            "label": "Notulen Februari.pdf",
+            "url": "https://example.com/februari/notulen.pdf"
+          }
+        ]
+      },
+      "output": {
+        "jenis": "Data",
+        "judul": "Dataset Survei Awal",
+        "status": "Selesai",
+        "capaian": 100,
+        "dataDukung": [
+          {
+            "label": "Dataset Survei Awal.pdf",
+            "url": "https://example.com/februari/output.pdf"
+          }
+        ]
+      }
+    },
+    {
+      "bulan": "Maret",
+      "aktivitas": {
+        "uraian": "Analisis data dan penyusunan draf laporan antara.",
+        "kendala": "Data dari satu unit belum lengkap.",
+        "mitigasi": "Surat permintaan data ulang.",
+        "dataDukung": [
+          {
+            "label": "Notulen Maret.pdf",
+            "url": "https://example.com/maret/notulen.pdf"
+          }
+        ]
+      },
+      "output": {
+        "jenis": "Laporan",
+        "judul": "Laporan Antara",
+        "status": "Berjalan",
+        "capaian": 60,
+        "dataDukung": [
+          {
+            "label": "Laporan Antara.pdf",
+            "url": "https://example.com/maret/output.pdf"
+          }
+        ]
+      }
+    },
+    {
+      "bulan": "April",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "Mei",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "Juni",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "Juli",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "Agustus",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "September",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "Oktober",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "November",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    },
+    {
+      "bulan": "Desember",
+      "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
+        "dataDukung": []
+      },
+      "output": {
+        "jenis": "",
+        "judul": "",
+        "status": "Belum Mulai",
+        "capaian": 0,
+        "dataDukung": []
+      }
+    }
+  ]
+}

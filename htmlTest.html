@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen & Pemantauan Aktivitas Riset</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gov: {
+                            50: '#f0f4f8',
+                            100: '#d9e2ec',
+                            500: '#334e68',
+                            600: '#243b53',
+                            700: '#102a43',
+                            800: '#0b69a3',
+                            900: '#035388',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for printing and subtle table aesthetics */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                font-size: 10pt;
+            }
+            .print-full-width {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            table {
+                page-break-inside: auto;
+            }
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+        
+        /* Custom scrollbar for large table */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans flex flex-col min-h-screen">
+
+    <!-- Header Navigation -->
+    <header class="bg-gov-700 text-white shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-lg border border-white/20">
+                    <i class="fa-solid me-1 fa-microscope text-2xl text-cyan-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold leading-tight tracking-wide">SIM-Aktivitas Riset</h1>
+                    <p class="text-xs text-slate-300">Sistem Monitoring & Evaluasi Capaian Output Riset & Inovasi</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="exportToCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition shadow-sm">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Ekspor CSV/Excel</span>
+                </button>
+                <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium rounded-lg transition shadow-sm">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak PDF</span>
+                </button>
+                <button onclick="openModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-sm">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tambah Aktivitas</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Stat Cards Summary (No-Print) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Aktivitas</p>
+                    <h3 id="statTotalAktivitas" class="text-2xl font-bold text-slate-800">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-spinner"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tahap Perencanaan</p>
+                    <h3 id="statPerencanaan" class="text-2xl font-bold text-slate-800">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-bars-progress"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sedang Berjalan</p>
+                    <h3 id="statBerjalan" class="text-2xl font-bold text-slate-800">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Selesai/Tercapai</p>
+                    <h3 id="statSelesai" class="text-2xl font-bold text-slate-800">0</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls & Filters Section -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
+            <div class="flex-1 min-w-[280px]">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama ketua tim, unit kerja, atau judul aktivitas..." 
+                           class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition outline-none">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <label for="filterStatus" class="text-xs font-semibold text-slate-600">Status:</label>
+                <select id="filterStatus" onchange="filterData()" class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Semua Status</option>
+                    <option value="Perencanaan">Perencanaan</option>
+                    <option value="Pelaksanaan">Pelaksanaan</option>
+                    <option value="Selesai">Selesai</option>
+                </select>
+
+                <button onclick="toggleExpandAll()" id="btnExpandAll" class="px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-angles-down mr-1"></i> Expand Detail Target
+                </button>
+            </div>
+        </section>
+
+        <!-- Printable Document Title -->
+        <div class="hidden print:block mb-4 text-center">
+            <h2 class="text-lg font-bold">REKAPITULASI PROGRES AKTIVITAS DAN CAPAIAN OUTPUT RISET</h2>
+            <p class="text-xs text-slate-600">Tanggal Cetak: <span id="printDate"></span></p>
+        </div>
+
+        <!-- Table Container -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden print-full-width">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse min-w-[1400px]" id="mainTable">
+                    <thead>
+                        <!-- Row 1 Header -->
+                        <tr class="bg-gov-700 text-white text-center font-semibold border-b border-gov-800">
+                            <th rowspan="2" class="p-3 border-r border-gov-600 w-12">No</th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 min-w-[160px]">Nama Ketua Tim</th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 min-w-[140px]">Unit Kerja<br><span class="text-[10px] text-slate-300 font-normal">(Pusat Riset/Direktorat)</span></th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 min-w-[160px]">Satuan Kerja<br><span class="text-[10px] text-slate-300 font-normal">(Organisasi Riset/Deputi)</span></th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 min-w-[200px]">Judul Aktivitas</th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 min-w-[120px]">Target Output Utama</th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 w-16">Jumlah Target</th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 w-16 no-print">Aksi<br><span class="text-[9px] text-slate-300 font-normal">(Target Output)</span></th>
+                            <th colspan="7" class="p-2.5 border-r border-gov-600 bg-gov-800 uppercase tracking-wider">Progres Aktivitas / Kegiatan</th>
+                            <th rowspan="2" class="p-3 border-r border-gov-600 w-24 no-print">Tindakan</th>
+                        </tr>
+                        <!-- Row 2 Header Sub-Progres -->
+                        <tr class="bg-gov-600 text-white text-center font-medium">
+                            <th class="p-2.5 border-r border-gov-500 min-w-[150px]">Progres Capaian Output Mei<br><span class="text-[9px] text-slate-300 font-normal">(Purwarupa/Publikasi/KI/Model/Naskah Kebijakan)</span></th>
+                            <th class="p-2.5 border-r border-gov-500 min-w-[110px]">Status Pelaksanaan</th>
+                            <th class="p-2.5 border-r border-gov-500 w-20">Persentase Progres</th>
+                            <th class="p-2.5 border-r border-gov-500 min-w-[200px]">Uraian Kemajuan Aktivitas</th>
+                            <th class="p-2.5 border-r border-gov-500 min-w-[150px]">Kendala Ditemui</th>
+                            <th class="p-2.5 border-r border-gov-500 min-w-[150px]">Mitigasi / Rencana Tindak Lanjut</th>
+                            <th class="p-2.5 border-r border-gov-500 min-w-[180px]">Data Dukung Progres Aktivitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-200">
+                        <!-- Dynamic content via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden p-8 text-center text-slate-500">
+                <i class="fa-solid fa-folder-open text-4xl mb-2 text-slate-300"></i>
+                <p class="text-sm font-medium">Tidak ada data aktivitas yang sesuai kriteria pencarian.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Form (Tambah / Edit Aktivitas) -->
+    <div id="activityModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto no-print">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden my-8 transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-gov-700 text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-base font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square"></i> Tambah Aktivitas Riset
+                </h3>
+                <button onclick="closeModal()" class="text-slate-300 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="activityForm" onsubmit="saveActivity(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="editIndex" value="-1">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Ketua Tim *</label>
+                        <input type="text" id="formNama" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Unit Kerja (Pusat Riset/Direktorat) *</label>
+                        <input type="text" id="formUnit" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Satuan Kerja (OR / Deputi) *</label>
+                        <input type="text" id="formSatker" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Target Output Utama *</label>
+                        <select id="formTargetUtama" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Purwarupa">Purwarupa</option>
+                            <option value="Publikasi">Publikasi</option>
+                            <option value="Kekayaan Intelektual">Kekayaan Intelektual (Paten/HKI)</option>
+                            <option value="Model">Model</option>
+                            <option value="Rekomendasi Naskah Kebijakan">Rekomendasi Naskah Kebijakan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Aktivitas *</label>
+                    <textarea id="formJudul" rows="2" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+
+                <div class="border-t border-slate-200 pt-4">
+                    <h4 class="text-xs font-bold text-gov-700 uppercase tracking-wide mb-3">Detail Progres Aktivitas</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Progres Capaian Output Mei</label>
+                            <input type="text" id="formProgresMei" placeholder="Mis: Purwarupa / HKI" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pelaksanaan</label>
+                            <select id="formStatus" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="Perencanaan">Perencanaan</option>
+                                <option value="Pelaksanaan">Pelaksanaan</option>
+                                <option value="Selesai">Selesai</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Persentase Progres (%)</label>
+                            <input type="number" id="formPersentase" min="0" max="100" value="0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Uraian Kemajuan Aktivitas</label>
+                            <textarea id="formUraian" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Kendala Ditemui</label>
+                                <textarea id="formKendala" rows="2" placeholder="Gunakan - jika tidak ada" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Mitigasi / Rencana Tindak Lanjut</label>
+                                <textarea id="formMitigasi" rows="2" placeholder="Gunakan - jika tidak ada" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Data Dukung Progres Aktivitas (Gunakan Enter untuk baris baru)</label>
+                            <textarea id="formDataDukung" rows="2" placeholder="- [foto kegiatan]&#10;- [bukti dokumen]" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div class="flex justify-end gap-2 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Sub-Output Target Breakdown -->
+    <div id="subOutputModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="bg-gov-700 text-white px-5 py-3.5 flex justify-between items-center">
+                <h3 class="text-xs font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> Tambah Breakdown Target Output
+                </h3>
+                <button onclick="closeSubModal()" class="text-slate-300 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="subOutputForm" onsubmit="saveSubOutput(event)" class="p-5 space-y-3">
+                <input type="hidden" id="subParentIndex">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Output *</label>
+                    <select id="subJenis" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="Purwarupa">Purwarupa</option>
+                        <option value="Paten">Paten</option>
+                        <option value="Hak Cipta">Hak Cipta / HKI</option>
+                        <option value="Publikasi">Publikasi (Jurnal/Konferensi)</option>
+                        <option value="Model">Model / Prototipe</option>
+                        <option value="Rekomendasi Naskah Kebijakan">Rekomendasi Naskah Kebijakan</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Output *</label>
+                    <textarea id="subJudul" rows="2" required placeholder="Judul spesifik output..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Status Output</label>
+                        <input type="text" id="subStatus" placeholder="Misal: Selesai / Draft" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Realisasi</label>
+                        <input type="number" id="subRealisasi" min="0" value="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Progres Capaian (%)</label>
+                        <input type="number" id="subProgres" min="0" max="100" value="100" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Data Dukung Capaian</label>
+                        <input type="text" id="subDataDukung" placeholder="Misal: Link Drive / Foto HKI" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="closeSubModal()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-700 hover:bg-slate-50 transition">Batal</button>
+                    <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Tambahkan Output</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Message Box -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-xl hidden items-center gap-3 z-50 text-xs transition-opacity duration-300">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toastMessage">Pesan notifikasi...</span>
+    </div>
+
+    <!-- Footer Page -->
+    <footer class="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 no-print">
+        <div class="max-w-7xl mx-auto px-4">
+            &copy; 2026 Sistem Monitoring Aktivitas Riset & Inovasi | Manajemen Integrasi Output
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Sample Initial Data based on prompt specification (Row 0 / Contoh Pengisian)
+        let researchData = [
+            {
+                id: 1,
+                no: 0,
+                namaKetua: "Periset 1 (Contoh Pengisian)",
+                unitKerja: "Pusat Riset Antariksa",
+                satuanKerja: "Organisasi Riset Penerbangan dan Antariksa",
+                judulAktivitas: "Judul aktivitas yang dilaksanakan oleh periset",
+                targetUtama: "Purwarupa",
+                checkedTarget: false,
+                progresMei: "Purwarupa / Publikasi / Kekayaan Intelektual / Model / Rekomendasi Naskah Kebijakan",
+                statusPelaksanaan: "Perencanaan",
+                persentaseProgres: 50,
+                uraianKemajuan: "Sudah menyelesaikan purwa rupa, paten sedang diajukan dan hakcipta sedang menunggu konfirmasi penerimaan",
+                kendala: "-",
+                mitigasi: "-",
+                dataDukungProgres: "- [foto kegiatan ketika melaksanakan penelitian]\n- [foto bukti pengajuan hki dan paten]",
+                expanded: true, // Default expanded for detailed target sub-rows
+                subOutputs: [
+                    {
+                        jenis: "Purwarupa",
+                        judul: "Judul Purwarupa yang sedang dikerjakan",
+                        status: "Selesai",
+                        realisasi: 1,
+                        progres: 100,
+                        dataDukung: "linkdrive / foto purwarupa"
+                    },
+                    {
+                        jenis: "Paten",
+                        judul: "judul 1 paten yang diajukan\njudul 2 paten yang diajukan",
+                        status: "keduanya selesai",
+                        realisasi: 2,
+                        progres: 100,
+                        dataDukung: "foto bukti paten dan lain sebagainya"
+                    },
+                    {
+                        jenis: "Hak Cipta",
+                        judul: "judul 1 HKI yang diajukan\njudul 2 HKI yang diajukan",
+                        status: "1 masih dalam bentuk draft dan satu sudah selesai diajukan",
+                        realisasi: 1,
+                        progres: 50,
+                        dataDukung: "sertifikat HKI"
+                    }
+                ]
+            }
+        ];
+
+        let isAllExpanded = true;
+
+        // Initialize App on DOM Load
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable();
+            updateStats();
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('id-ID', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        });
+
+        // Render Table Rows
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            tbody.innerHTML = '';
+
+            let filtered = researchData.filter(item => {
+                const matchSearch = item.namaKetua.toLowerCase().includes(searchVal) ||
+                                    item.unitKerja.toLowerCase().includes(searchVal) ||
+                                    item.judulAktivitas.toLowerCase().includes(searchVal);
+                const matchStatus = statusFilter === "" || item.statusPelaksanaan === statusFilter;
+                return matchSearch && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach((item, index) => {
+                const totalTargetJumlah = item.subOutputs.reduce((acc, curr) => acc + Number(curr.realisasi || 0), 0);
+                
+                // Main Activity Row
+                const trMain = document.createElement('tr');
+                trMain.className = "hover:bg-slate-50/80 transition-colors bg-white font-normal text-slate-800 align-top";
+                
+                // Format Multi-line data dukung
+                const formattedDataDukung = item.dataDukungProgres ? item.dataDukungProgres.split('\n').map(line => `<div class="mb-1">${escapeHtml(line)}</div>`).join('') : '-';
+
+                trMain.innerHTML = `
+                    <td class="p-3 border-r border-b border-slate-200 text-center font-bold bg-slate-50/50">${item.no}</td>
+                    <td class="p-3 border-r border-b border-slate-200 font-semibold text-slate-900">${escapeHtml(item.namaKetua)}</td>
+                    <td class="p-3 border-r border-b border-slate-200">${escapeHtml(item.unitKerja)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-slate-600">${escapeHtml(item.satuanKerja)}</td>
+                    <td class="p-3 border-r border-b border-slate-200">${escapeHtml(item.judulAktivitas)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 font-medium text-slate-700">${escapeHtml(item.targetUtama)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-center font-bold text-blue-700 bg-blue-50/30">${totalTargetJumlah}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-center no-print">
+                        <input type="checkbox" ${item.checkedTarget ? 'checked' : ''} onchange="toggleCheckbox(${index})" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" title="Centang jika target terpenuhi">
+                    </td>
+                    <td class="p-3 border-r border-b border-slate-200 text-slate-600">${escapeHtml(item.progresMei)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-center">${getStatusBadge(item.statusPelaksanaan)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-center font-semibold">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <span class="${item.persentaseProgres >= 100 ? 'text-emerald-600' : 'text-blue-600'}">${item.persentaseProgres}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-1.5 mt-1 overflow-hidden">
+                            <div class="bg-blue-600 h-1.5 rounded-full" style="width: ${Math.min(item.persentaseProgres, 100)}%"></div>
+                        </div>
+                    </td>
+                    <td class="p-3 border-r border-b border-slate-200 leading-relaxed">${escapeHtml(item.uraianKemajuan)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-slate-600">${escapeHtml(item.kendala)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-slate-600">${escapeHtml(item.mitigasi)}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-slate-600 text-[11px]">${formattedDataDukung}</td>
+                    <td class="p-3 border-r border-b border-slate-200 text-center no-print space-y-1">
+                        <button onclick="toggleExpand(${index})" class="w-full py-1 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-medium transition flex items-center justify-center gap-1">
+                            <i class="fa-solid ${item.expanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i>
+                            <span>${item.expanded ? 'Tutup' : 'Detail'}</span>
+                        </button>
+                        <button onclick="openSubModal(${index})" class="w-full py-1 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded text-[11px] font-medium transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Output
+                        </button>
+                        <button onclick="editActivity(${index})" class="w-full py-1 px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[11px] font-medium transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </button>
+                        <button onclick="deleteActivity(${index})" class="w-full py-1 px-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded text-[11px] font-medium transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-trash"></i> Hapus
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(trMain);
+
+                // Sub-Row Detail Breakdown Output (Nested Table)
+                if (item.expanded) {
+                    const trSub = document.createElement('tr');
+                    trSub.className = "bg-slate-50/90 border-b border-slate-300";
+                    
+                    let subTableRows = '';
+                    if (item.subOutputs && item.subOutputs.length > 0) {
+                        subTableRows = item.subOutputs.map((sub, sIndex) => {
+                            const judulLines = sub.judul.split('\n').map(l => `<div>• ${escapeHtml(l)}</div>`).join('');
+                            return `
+                                <tr class="hover:bg-blue-50/30 text-slate-700 transition">
+                                    <td class="p-2 border border-slate-200 font-medium text-slate-800">${escapeHtml(sub.jenis)}</td>
+                                    <td class="p-2 border border-slate-200 leading-relaxed">${judulLines}</td>
+                                    <td class="p-2 border border-slate-200">${escapeHtml(sub.status)}</td>
+                                    <td class="p-2 border border-slate-200 text-center font-bold text-slate-800">${sub.realisasi}</td>
+                                    <td class="p-2 border border-slate-200 text-center font-semibold text-emerald-600">${sub.progres}%</td>
+                                    <td class="p-2 border border-slate-200 text-slate-600 text-[11px]">${escapeHtml(sub.dataDukung)}</td>
+                                    <td class="p-2 border border-slate-200 text-center no-print">
+                                        <button onclick="deleteSubOutput(${index}, ${sIndex})" class="text-rose-600 hover:text-rose-800 p-1" title="Hapus Sub Target">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        subTableRows = `
+                            <tr>
+                                <td colspan="7" class="p-3 text-center text-slate-400 italic">Belum ada breakdown detail target output. Klik "+ Output" untuk menambahkan.</td>
+                            </tr>
+                        `;
+                    }
+
+                    trSub.innerHTML = `
+                        <td colspan="16" class="p-3 pl-8 sm:pl-12">
+                            <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-inner space-y-2">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <h4 class="font-bold text-slate-700 text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-diagram-project text-blue-600"></i>
+                                        Detail breakdown Target Output / Capaian
+                                    </h4>
+                                    <span class="text-[11px] text-slate-500">Sub-total item: ${item.subOutputs ? item.subOutputs.length : 0}</span>
+                                </div>
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                                            <th class="p-2 border border-slate-200 w-36">Jenis Output</th>
+                                            <th class="p-2 border border-slate-200">Judul Output</th>
+                                            <th class="p-2 border border-slate-200 w-48">Status</th>
+                                            <th class="p-2 border border-slate-200 w-24 text-center">Jumlah Realisasi</th>
+                                            <th class="p-2 border border-slate-200 w-24 text-center">Progres Capaian</th>
+                                            <th class="p-2 border border-slate-200">Data Dukung Capaian Output</th>
+                                            <th class="p-2 border border-slate-200 w-12 text-center no-print">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${subTableRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(trSub);
+                }
+            });
+        }
+
+        // Helper Status Badge
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'Selesai':
+                    return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200"><i class="fa-solid fa-circle-check mr-1 text-[8px]"></i> Selesai</span>`;
+                case 'Pelaksanaan':
+                    return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-200"><i class="fa-solid fa-spinner mr-1 text-[8px] animate-spin"></i> Pelaksanaan</span>`;
+                case 'Perencanaan':
+                default:
+                    return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200"><i class="fa-solid fa-clock mr-1 text-[8px]"></i> Perencanaan</span>`;
+            }
+        }
+
+        // HTML Escaping Guard
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Update Stat Cards Counter
+        function updateStats() {
+            document.getElementById('statTotalAktivitas').innerText = researchData.length;
+            document.getElementById('statPerencanaan').innerText = researchData.filter(d => d.statusPelaksanaan === 'Perencanaan').length;
+            document.getElementById('statBerjalan').innerText = researchData.filter(d => d.statusPelaksanaan === 'Pelaksanaan').length;
+            document.getElementById('statSelesai').innerText = researchData.filter(d => d.statusPelaksanaan === 'Selesai').length;
+        }
+
+        // Toggle Single Expand Row
+        function toggleExpand(index) {
+            researchData[index].expanded = !researchData[index].expanded;
+            renderTable();
+        }
+
+        // Toggle Expand All Rows
+        function toggleExpandAll() {
+            isAllExpanded = !isAllExpanded;
+            researchData.forEach(item => item.expanded = isAllExpanded);
+            document.getElementById('btnExpandAll').innerHTML = isAllExpanded 
+                ? `<i class="fa-solid fa-angles-up mr-1"></i> Collapse Detail Target`
+                : `<i class="fa-solid fa-angles-down mr-1"></i> Expand Detail Target`;
+            renderTable();
+        }
+
+        // Checkbox Toggle Target Output Check
+        function toggleCheckbox(index) {
+            researchData[index].checkedTarget = !researchData[index].checkedTarget;
+            showToast('Status check list target diperbarui', 'info');
+        }
+
+        // Filter Trigger
+        function filterData() {
+            renderTable();
+        }
+
+        // Modal Handlers (Main Activity)
+        function openModal() {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Tambah Aktivitas Riset Baru`;
+            document.getElementById('activityForm').reset();
+            document.getElementById('activityModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('activityModal').classList.add('hidden');
+        }
+
+        function editActivity(index) {
+            const item = researchData[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Data Aktivitas`;
+            
+            document.getElementById('formNama').value = item.namaKetua;
+            document.getElementById('formUnit').value = item.unitKerja;
+            document.getElementById('formSatker').value = item.satuanKerja;
+            document.getElementById('formJudul').value = item.judulAktivitas;
+            document.getElementById('formTargetUtama').value = item.targetUtama;
+            document.getElementById('formProgresMei').value = item.progresMei;
+            document.getElementById('formStatus').value = item.statusPelaksanaan;
+            document.getElementById('formPersentase').value = item.persentaseProgres;
+            document.getElementById('formUraian').value = item.uraianKemajuan;
+            document.getElementById('formKendala').value = item.kendala;
+            document.getElementById('formMitigasi').value = item.mitigasi;
+            document.getElementById('formDataDukung').value = item.dataDukungProgres;
+
+            document.getElementById('activityModal').classList.remove('hidden');
+        }
+
+        function saveActivity(event) {
+            event.preventDefault();
+            const index = parseInt(document.getElementById('editIndex').value);
+
+            const payload = {
+                id: index >= 0 ? researchData[index].id : Date.now(),
+                no: index >= 0 ? researchData[index].no : researchData.length,
+                namaKetua: document.getElementById('formNama').value,
+                unitKerja: document.getElementById('formUnit').value,
+                satuanKerja: document.getElementById('formSatker').value,
+                judulAktivitas: document.getElementById('formJudul').value,
+                targetUtama: document.getElementById('formTargetUtama').value,
+                checkedTarget: index >= 0 ? researchData[index].checkedTarget : false,
+                progresMei: document.getElementById('formProgresMei').value || '-',
+                statusPelaksanaan: document.getElementById('formStatus').value,
+                persentaseProgres: parseInt(document.getElementById('formPersentase').value || 0),
+                uraianKemajuan: document.getElementById('formUraian').value || '-',
+                kendala: document.getElementById('formKendala').value || '-',
+                mitigasi: document.getElementById('formMitigasi').value || '-',
+                dataDukungProgres: document.getElementById('formDataDukung').value || '-',
+                expanded: true,
+                subOutputs: index >= 0 ? researchData[index].subOutputs : []
+            };
+
+            if (index >= 0) {
+                researchData[index] = payload;
+                showToast('Aktivitas berhasil diperbarui!');
+            } else {
+                researchData.push(payload);
+                showToast('Aktivitas baru berhasil ditambahkan!');
+            }
+
+            closeModal();
+            renderTable();
+            updateStats();
+        }
+
+        function deleteActivity(index) {
+            if (confirm(`Apakah Anda yakin ingin menghapus aktivitas oleh "${researchData[index].namaKetua}"?`)) {
+                researchData.splice(index, 1);
+                // Re-indexing row numbers
+                researchData.forEach((item, i) => item.no = i);
+                renderTable();
+                updateStats();
+                showToast('Data berhasil dihapus', 'error');
+            }
+        }
+
+        // Sub-Output Target Breakdown Modal
+        function openSubModal(parentIndex) {
+            document.getElementById('subParentIndex').value = parentIndex;
+            document.getElementById('subOutputForm').reset();
+            document.getElementById('subOutputModal').classList.remove('hidden');
+        }
+
+        function closeSubModal() {
+            document.getElementById('subOutputModal').classList.add('hidden');
+        }
+
+        function saveSubOutput(event) {
+            event.preventDefault();
+            const parentIndex = parseInt(document.getElementById('subParentIndex').value);
+
+            const subPayload = {
+                jenis: document.getElementById('subJenis').value,
+                judul: document.getElementById('subJudul').value,
+                status: document.getElementById('subStatus').value,
+                realisasi: parseInt(document.getElementById('subRealisasi').value || 1),
+                progres: parseInt(document.getElementById('subProgres').value || 0),
+                dataDukung: document.getElementById('subDataDukung').value || '-'
+            };
+
+            if (!researchData[parentIndex].subOutputs) {
+                researchData[parentIndex].subOutputs = [];
+            }
+
+            researchData[parentIndex].subOutputs.push(subPayload);
+            researchData[parentIndex].expanded = true; // Auto expand to view added item
+
+            closeSubModal();
+            renderTable();
+            showToast('Sub-target output berhasil ditambahkan!');
+        }
+
+        function deleteSubOutput(parentIndex, subIndex) {
+            if (confirm('Hapus item breakdown output ini?')) {
+                researchData[parentIndex].subOutputs.splice(subIndex, 1);
+                renderTable();
+                showToast('Detail output dihapus', 'error');
+            }
+        }
+
+        // CSV / Excel Export Function
+        function exportToCSV() {
+            let csvRows = [];
+            // CSV Header
+            const headers = [
+                "No", "Nama Ketua Tim", "Unit Kerja", "Satuan Kerja", "Judul Aktivitas",
+                "Target Output Utama", "Jumlah Target", "Progres Capaian Output Mei", 
+                "Status Pelaksanaan", "Persentase Progres (%)", "Uraian Kemajuan Aktivitas",
+                "Kendala", "Mitigasi", "Data Dukung Progres", "Jenis Sub-Output", "Judul Sub-Output",
+                "Status Sub-Output", "Jumlah Realisasi Sub-Output", "Progres Sub-Output (%)", "Data Dukung Sub-Output"
+            ];
+            csvRows.push(headers.map(h => `"${h}"`).join(","));
+
+            researchData.forEach(item => {
+                const totalTargetJumlah = item.subOutputs.reduce((acc, curr) => acc + Number(curr.realisasi || 0), 0);
+                
+                if (item.subOutputs && item.subOutputs.length > 0) {
+                    item.subOutputs.forEach(sub => {
+                        const row = [
+                            item.no,
+                            `"${item.namaKetua.replace(/"/g, '""')}"`,
+                            `"${item.unitKerja.replace(/"/g, '""')}"`,
+                            `"${item.satuanKerja.replace(/"/g, '""')}"`,
+                            `"${item.judulAktivitas.replace(/"/g, '""')}"`,
+                            `"${item.targetUtama.replace(/"/g, '""')}"`,
+                            totalTargetJumlah,
+                            `"${item.progresMei.replace(/"/g, '""')}"`,
+                            `"${item.statusPelaksanaan.replace(/"/g, '""')}"`,
+                            item.persentaseProgres,
+                            `"${item.uraianKemajuan.replace(/\n/g, ' ').replace(/"/g, '""')}"`,
+                            `"${item.kendala.replace(/"/g, '""')}"`,
+                            `"${item.mitigasi.replace(/"/g, '""')}"`,
+                            `"${item.dataDukungProgres.replace(/\n/g, ' ').replace(/"/g, '""')}"`,
+                            `"${sub.jenis.replace(/"/g, '""')}"`,
+                            `"${sub.judul.replace(/\n/g, ' ').replace(/"/g, '""')}"`,
+                            `"${sub.status.replace(/"/g, '""')}"`,
+                            sub.realisasi,
+                            sub.progres,
+                            `"${sub.dataDukung.replace(/"/g, '""')}"`
+                        ];
+                        csvRows.push(row.join(","));
+                    });
+                } else {
+                    const row = [
+                        item.no,
+                        `"${item.namaKetua.replace(/"/g, '""')}"`,
+                        `"${item.unitKerja.replace(/"/g, '""')}"`,
+                        `"${item.satuanKerja.replace(/"/g, '""')}"`,
+                        `"${item.judulAktivitas.replace(/"/g, '""')}"`,
+                        `"${item.targetUtama.replace(/"/g, '""')}"`,
+                        totalTargetJumlah,
+                        `"${item.progresMei.replace(/"/g, '""')}"`,
+                        `"${item.statusPelaksanaan.replace(/"/g, '""')}"`,
+                        item.persentaseProgres,
+                        `"${item.uraianKemajuan.replace(/\n/g, ' ').replace(/"/g, '""')}"`,
+                        `"${item.kendala.replace(/"/g, '""')}"`,
+                        `"${item.mitigasi.replace(/"/g, '""')}"`,
+                        `"${item.dataDukungProgres.replace(/\n/g, ' ').replace(/"/g, '""')}"`,
+                        '""', '""', '""', '""', '""', '""'
+                    ];
+                    csvRows.push(row.join(","));
+                }
+            });
+
+            const csvString = "\uFEFF" + csvRows.join("\n"); // BOM for UTF-8 Excel support
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Rekap_Aktivitas_Riset_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Ekspor CSV berhasil diunduh!');
+        }
+
+        // Notification Toast Handler
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
+            } else if (type === 'info') {
+                toastIcon.className = 'fa-solid fa-circle-info text-blue-400 text-base';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-base';
+            }
+
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

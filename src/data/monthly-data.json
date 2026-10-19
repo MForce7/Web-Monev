@@ -1,0 +1,182 @@
+{
+  "Januari": {
+    "uraian": "Perancangan arsitektur awal dan studi literatur.",
+    "kendala": "Keterlambatan pengadaan komponen.",
+    "mitigasi": "Menggunakan komponen cadangan di lab.",
+    "dataDukungProgres": "Dokumen_Desain.pdf",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "Desain Skema IoT",
+        "status": "Selesai",
+        "progress": 100,
+        "dataDukung": "Foto_Skema.png"
+      }
+    ]
+  },
+  "Februari": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Maret": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "April": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Mei": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Juni": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Juli": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Agustus": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "September": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Oktober": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "November": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  },
+  "Desember": {
+    "uraian": "",
+    "kendala": "",
+    "mitigasi": "",
+    "dataDukungProgres": "",
+    "outputs": [
+      {
+        "jenis": "Purwarupa",
+        "judul": "",
+        "status": "Draft",
+        "progress": 0,
+        "dataDukung": ""
+      }
+    ]
+  }
+}

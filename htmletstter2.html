@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabel Rincian Aktivitas</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      padding: 20px;
+    }
+
+    .card-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid #e1e4e8;
+    }
+
+    .card-header {
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 16px 20px;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .detail-table tr {
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .detail-table td {
+      padding: 12px 20px;
+      vertical-align: top;
+      font-size: 0.95rem;
+    }
+
+    /* Kolom Label / Field Name */
+    .detail-table td.label-col {
+      width: 35%;
+      font-weight: 600;
+      color: #475569;
+      background-color: #f8fafc;
+      border-right: 1px solid #edf2f7;
+    }
+
+    /* Kolom Value / Nilai */
+    .detail-table td.value-col {
+      width: 65%;
+      color: #0f172a;
+    }
+
+    /* Styling tambahan untuk Aksi & Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 4px;
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .btn-action {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card-container">
+    <div class="card-header">
+      Detail Aktivitas & Progres Kegiatan
+    </div>
+    
+    <table class="detail-table">
+      <tr>
+        <td class="label-col">Nama Ketua</td>
+        <td class="value-col">morpheus</td>
+      </tr>
+      <tr>
+        <td class="label-col">Unit Kerja (Pusat Riset/Direktorat)</td>
+        <td class="value-col">Pusat Riset Antariksa</td>
+      </tr>
+      <tr>
+        <td class="label-col">Satuan Kerja (Organisasi Riset/Deputi)</td>
+        <td class="value-col">Organisasi Riset Penerbangan dan Antariksa</td>
+      </tr>
+      <tr>
+        <td class="label-col">Judul Aktivitas</td>
+        <td class="value-col">Pengembangan Sistem Otomasi Berbasis AI</td>
+      </tr>
+      <tr>
+        <td class="label-col">Target Output Utama</td>
+        <td class="value-col"><span class="badge">Purwarupa</span></td>
+      </tr>
+      <tr>
+        <td class="label-col">Jumlah Target</td>
+        <td class="value-col">1</td>
+      </tr>
+      <tr>
+        <td class="label-col">Aksi (Target Output)</td>
+        <td class="value-col">
+          <button class="btn-action">+ Tambah Target Output</button>
+        </td>
+      </tr>
+      <tr>
+        <td class="label-col">Progres Aktivitas / Kegiatan</td>
+        <td class="value-col">50% (Sudah menyelesaikan purwarupa awal)</td>
+      </tr>
+      <tr>
+        <td class="label-col">Tindakan</td>
+        <td class="value-col">
+          <button class="btn-action" style="background-color: #059669;">Edit Data</button>
+          <button class="btn-action" style="background-color: #dc2626;">Hapus</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+</body>
+</html>

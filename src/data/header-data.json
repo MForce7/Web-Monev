@@ -1,0 +1,19 @@
+{
+  "namaKetua": "morpheus",
+  "unitKerja": "Pusat Riset Antariksa",
+  "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa",
+  "judulAktivitas": "Pengembangan Sistem Otomasi Berbasis AI",
+  "targetOutputs": [
+    {
+      "jenis": "Purwarupa",
+      "jumlah": 1
+    },
+    {
+      "jenis": "KI (Kekayaan Intelektual)",
+      "jumlah": 2
+    }
+  ],
+  "progresTotal": 50,
+  "progresKeterangan": "Sudah menyelesaikan purwarupa awal",
+  "statusPelaksanaan": "Pelaksanaan / Berjalan"
+}
