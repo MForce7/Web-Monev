@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { createContext, useContext, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import {
   STATUS_PELAKSANAAN,
   clampPercent,
@@ -133,6 +133,101 @@ const PRINT_CSS = `
 
 function PrintStyles() {
   return <style>{PRINT_CSS}</style>
+}
+
+/* ═════════════════════════ Input Persentase ═════════════════════════ */
+
+/**
+ * Input angka 0–100 yang memakai teks lokal, sehingga:
+ * - kolom boleh kosong saat mengetik (angka 0 awal bisa dihapus),
+ * - angka 0 di depan otomatis dibersihkan ("080" -> "80"),
+ * - nilai dibatasi maksimum 100,
+ * - saat keluar fokus dan kosong, kembali menjadi 0.
+ * Ke parent selalu dikirim angka (kosong dianggap 0).
+ */
+function PercentInput({ value, onChange, className }: {
+  value: number
+  onChange: (next: number) => void
+  className?: string
+}) {
+  const [text, setText] = useState(String(clampPercent(value)))
+  const [prevValue, setPrevValue] = useState(value)
+
+  // Sinkron bila nilai dari luar berubah (mis. data di-reset), tanpa mengganggu ketikan user
+  if (value !== prevValue) {
+    setPrevValue(value)
+    const current = text === '' ? 0 : Number(text)
+    if (current !== value) setText(String(clampPercent(value)))
+  }
+
+  const handleChange = (raw: string) => {
+    let digits = raw.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
+    if (digits !== '' && Number(digits) > 100) digits = '100'
+    setText(digits)
+    const next = digits === '' ? 0 : Number(digits)
+    setPrevValue(next)
+    onChange(next)
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={text}
+      onChange={(e) => handleChange(e.target.value)}
+      onFocus={(e) => e.target.select()}
+      onBlur={() => {
+        if (text === '') setText('0')
+      }}
+      className={className}
+    />
+  )
+}
+
+/* ═════════════════════════ Upload File ═════════════════════════ */
+
+/** Batas ukuran per file (byte). File disimpan di data, jadi dibatasi agar tidak terlalu berat. */
+const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
+
+/** Fungsi unggah: menerima File, mengembalikan URL yang disimpan di data. */
+export type UploadFn = (file: File) => Promise<string>
+
+/** Bawaan: ubah file menjadi data URL (tersimpan langsung di dalam data, tanpa server) */
+const readAsDataUrl: UploadFn = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+
+/**
+ * Konteks unggah. Secara bawaan file disimpan sebagai data URL.
+ * Bila sudah ada server/storage, berikan prop `uploadFile` ke <MonevReport />
+ * yang mengunggah file lalu mengembalikan URL-nya.
+ */
+const UploadContext = createContext<UploadFn>(readAsDataUrl)
+
+const isDataUrl = (url: string) => url.startsWith('data:') || url.startsWith('blob:')
+const isImageUrl = (url: string) =>
+  url.startsWith('data:image/') || /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i.test(url)
+
+/** Browser memblokir navigasi langsung ke data: URL, jadi dibuka lewat blob */
+async function openDataUrl(url: string, e: MouseEvent) {
+  e.preventDefault()
+  if (url.startsWith('blob:')) {
+    window.open(url, '_blank')
+    return
+  }
+  const win = window.open('', '_blank') // dibuka dulu agar tidak diblokir popup blocker
+  try {
+    const blob = await (await fetch(url)).blob()
+    const objectUrl = URL.createObjectURL(blob)
+    if (win) win.location.href = objectUrl
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+  } catch {
+    win?.close()
+  }
 }
 
 /* ═════════════════════════ ActivityHeader ═════════════════════════ */
@@ -342,12 +437,9 @@ export function ActivityHeader({ initialData, onSave }: ActivityHeaderProps) {
               {isEditing ? (
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex items-center gap-1 shrink-0">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
+                    <PercentInput
                       value={data.progresTotal}
-                      onChange={(e) => setField('progresTotal', clampPercent(parseInt(e.target.value)))}
+                      onChange={(next) => setField('progresTotal', next)}
                       className={`w-20 text-sm text-center font-bold text-emerald-600 ${HEADER_INPUT}`}
                     />
                     <span className="font-bold text-slate-600">%</span>
@@ -486,68 +578,150 @@ function TextField({ editing, value, onChange, multiline = false }: {
   )
 }
 
+/** Daftar data dukung (mode lihat): link biasa atau file terunggah, gambar tampil sebagai thumbnail */
 function AttachmentList({ items }: { items: Attachment[] }) {
   if (!items.length) return <Dash />
   return (
     <ul className="space-y-1 min-w-0">
-      {items.map((item, i) => (
-        <li key={`${item.url}-${i}`} className="min-w-0">
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noreferrer"
-            className={`text-gov-600 hover:underline inline-flex items-start gap-1 max-w-full ${WRAP}`}
-          >
-            <i className="fa-solid fa-paperclip text-[10px] mt-0.5 shrink-0" />
-            <span className="min-w-0">{item.label}</span>
-          </a>
-        </li>
-      ))}
+      {items.map((item, i) => {
+        const isFile = isDataUrl(item.url)
+        const name = item.label || (isFile ? 'Berkas' : item.url)
+        return (
+          <li key={`${item.label}-${i}`} className="min-w-0">
+            {isImageUrl(item.url) && (
+              <img
+                src={item.url}
+                alt={name}
+                className="mb-1 max-h-16 max-w-full rounded border border-slate-200 object-cover"
+              />
+            )}
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={isFile ? (e) => openDataUrl(item.url, e) : undefined}
+              className={`text-gov-600 hover:underline inline-flex items-start gap-1 max-w-full ${WRAP}`}
+            >
+              <i className={`fa-solid ${isFile ? 'fa-file' : 'fa-paperclip'} text-[10px] mt-0.5 shrink-0`} />
+              <span className="min-w-0">{name}</span>
+            </a>
+          </li>
+        )
+      })}
     </ul>
   )
 }
 
+/** Editor data dukung: tambah link atau upload file/gambar (bisa banyak sekaligus) */
 function AttachmentEditor({ items, onChange }: { items: Attachment[]; onChange: (next: Attachment[]) => void }) {
+  const upload = useContext(UploadContext)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
   const update = (i: number, patch: Partial<Attachment>) =>
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)))
 
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setBusy(true)
+    setError('')
+
+    const added: Attachment[] = []
+    const failed: string[] = []
+
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_FILE_BYTES) {
+        failed.push(`${file.name} (melebihi ${MAX_FILE_BYTES / 1024 / 1024} MB)`)
+        continue
+      }
+      try {
+        added.push({ label: file.name, url: await upload(file) })
+      } catch {
+        failed.push(`${file.name} (gagal diunggah)`)
+      }
+    }
+
+    if (added.length) onChange([...items, ...added])
+    if (failed.length) setError(`Tidak bisa diunggah: ${failed.join(', ')}`)
+    if (fileRef.current) fileRef.current.value = '' // izinkan memilih file yang sama lagi
+    setBusy(false)
+  }
+
   return (
     <div className="space-y-2 min-w-0">
-      {items.map((item, i) => (
-        <div key={i} className="space-y-1 p-1 border border-slate-200 rounded bg-white min-w-0">
-          <input
-            type="text"
-            value={item.label}
-            onChange={(e) => update(i, { label: e.target.value })}
-            placeholder="Nama berkas"
-            className={CELL_INPUT}
-          />
-          <div className="flex items-center gap-1 min-w-0">
+      {items.map((item, i) => {
+        const isFile = isDataUrl(item.url)
+        return (
+          <div key={i} className="space-y-1 p-1 border border-slate-200 rounded bg-white min-w-0">
+            {isFile && isImageUrl(item.url) && (
+              <img
+                src={item.url}
+                alt={item.label}
+                className="max-h-16 max-w-full rounded border border-slate-200 object-cover"
+              />
+            )}
             <input
-              type="url"
-              value={item.url}
-              onChange={(e) => update(i, { url: e.target.value })}
-              placeholder="https://..."
+              type="text"
+              value={item.label}
+              onChange={(e) => update(i, { label: e.target.value })}
+              placeholder="Nama berkas"
               className={CELL_INPUT}
             />
-            <button
-              type="button"
-              onClick={() => onChange(items.filter((_, idx) => idx !== i))}
-              aria-label="Hapus data dukung"
-              className="text-rose-500 hover:text-rose-700 p-1 text-xs shrink-0"
-            >
-              <i className="fa-solid fa-trash" />
-            </button>
+            <div className="flex items-center gap-1 min-w-0">
+              {isFile ? (
+                <span className="flex-1 min-w-0 text-[10px] text-slate-500 flex items-center gap-1">
+                  <i className="fa-solid fa-file shrink-0" /> File terunggah
+                </span>
+              ) : (
+                <input
+                  type="url"
+                  value={item.url}
+                  onChange={(e) => update(i, { url: e.target.value })}
+                  placeholder="https://..."
+                  className={CELL_INPUT}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+                aria-label="Hapus data dukung"
+                className="text-rose-500 hover:text-rose-700 p-1 text-xs shrink-0"
+              >
+                <i className="fa-solid fa-trash" />
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => onChange([...items, { label: '', url: '' }])}
-        className="text-[11px] text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded font-medium transition flex items-center gap-1"
-      >
-        <i className="fa-solid fa-plus" /> Tambah
-      </button>
+        )
+      })}
+
+      <div className="flex flex-wrap gap-1">
+        <button
+          type="button"
+          onClick={() => onChange([...items, { label: '', url: '' }])}
+          className="text-[11px] text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded font-medium transition flex items-center gap-1"
+        >
+          <i className="fa-solid fa-link" /> Tambah Link
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => fileRef.current?.click()}
+          className="text-[11px] text-sky-700 bg-sky-100 hover:bg-sky-200 disabled:opacity-50 px-2 py-1 rounded font-medium transition flex items-center gap-1"
+        >
+          <i className={`fa-solid ${busy ? 'fa-spinner fa-spin' : 'fa-upload'}`} />
+          {busy ? 'Mengunggah...' : 'Upload File'}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          multiple
+          hidden
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+      </div>
+
+      {error && <p className="text-[10px] text-rose-600">{error}</p>}
     </div>
   )
 }
@@ -764,12 +938,9 @@ function MonthRow({ month, onSave, onClear }: MonthRowProps) {
             <td className={cell}>
               {isEditing ? (
                 <div className="flex items-center gap-1 min-w-0">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
+                  <PercentInput
                     value={output.capaian}
-                    onChange={(e) => setOutputAt(idx, { capaian: clampPercent(parseInt(e.target.value)) })}
+                    onChange={(capaian) => setOutputAt(idx, { capaian })}
                     className={`${CELL_INPUT} text-center font-bold text-emerald-600`}
                   />
                   <span className="font-bold text-slate-600 shrink-0">%</span>
@@ -918,6 +1089,11 @@ interface MonevReportProps {
   monthsData?: MonthData[]
   onSaveHeader?: (updatedData: HeaderData) => void
   onSaveMonths?(updatedData: MonthData[]): void
+  /**
+   * Opsional: fungsi unggah file ke server/storage, mengembalikan URL berkas.
+   * Bila tidak diisi, file disimpan langsung sebagai data URL (maks. 5 MB per file).
+   */
+  uploadFile?: UploadFn
 }
 
 /** Header aktivitas + tabel log bulanan dalam satu komponen */
@@ -926,11 +1102,14 @@ export default function MonevReport({
   monthsData = emptyMonths(),
   onSaveHeader,
   onSaveMonths,
+  uploadFile = readAsDataUrl,
 }: MonevReportProps) {
   return (
-    <div className="space-y-4 w-full max-w-full min-w-0">
-      <ActivityHeader initialData={headerData} onSave={onSaveHeader} />
-      <MonevRow initialData={monthsData} onSave={onSaveMonths} />
-    </div>
+    <UploadContext.Provider value={uploadFile}>
+      <div className="space-y-4 w-full max-w-full min-w-0">
+        <ActivityHeader initialData={headerData} onSave={onSaveHeader} />
+        <MonevRow initialData={monthsData} onSave={onSaveMonths} />
+      </div>
+    </UploadContext.Provider>
   )
 }
