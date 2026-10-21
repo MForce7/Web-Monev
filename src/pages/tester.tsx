@@ -5,9 +5,9 @@ import type { MonevData } from '../types/monev'
 
 const monev = data as MonevData
 
-export default function MonevPage() {
+export default function Tester() {
   return (
-    <div className="mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-full min-w-0 space-y-6">
       <ActivityHeader
         initialData={monev.header}
         onSave={(header) => console.log('simpan header', header)}
