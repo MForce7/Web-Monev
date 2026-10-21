@@ -1,60 +1,11 @@
-import { useState, type FormEvent } from "react";
+import React, { useState } from 'react';
 
-// Gambar diambil dari src/assets. Nama file sesuai yang ada di folder (tidak perlu rename).
-import logoBrin from "../assets/Alt_Logo_BRIN 3.png";
-import logoMonev from "../assets/bx_network-chart.png";
-import gedungBrin from "../assets/image 3.png";
-import polaSegitiga from "../assets/6173911 1.png";
+export const LoginForm: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-
-
-type LoginPageProps = {
-  onSubmit?: (data: { identifier: string; password: string; remember: boolean }) => void | Promise<void>;
-  forgotPasswordHref?: string;
-  contactAdminHref?: string;
-};
-
-const UserIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" strokeLinecap="round" />
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-    <rect x="4" y="10" width="16" height="11" rx="2" />
-    <path d="M8 10V7a4 4 0 0 1 8 0v3" strokeLinecap="round" />
-  </svg>
-);
-
-const EyeIcon = ({ off }: { off: boolean }) => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
-    <circle cx="12" cy="12" r="3" />
-    {off && <path d="M4 4l16 16" strokeLinecap="round" />}
-  </svg>
-);
-
-const HelpIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01" strokeLinecap="round" />
-  </svg>
-);
-
-export default function LoginPage({
-  onSubmit,
-  forgotPasswordHref = "/lupa-kata-sandi",
-  contactAdminHref = "/hubungi-admin",
-}: LoginPageProps) {
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  // Option 1: Let TypeScript infer the event type automatically
+  const handleEmailLogin = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
