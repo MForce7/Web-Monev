@@ -14,7 +14,19 @@ export default function App() {
 
       {/* Outlet adalah tempat halaman anak (Home, Tester, dll) disisipkan */}
       <main style={{ padding: '2rem' }} className="flex flex-col items-center justify-center ">
+
+
+
+navbar
+
         <Outlet />
+
+
+
+footer
+
+
+
       </main>
 
       {/* Footer Global */}
