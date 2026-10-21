@@ -173,7 +173,7 @@ export default function Dashboard() {
             <div className="absolute left-[486px] top-[40px] flex gap-[21px]">
               <a className={PILL} href="/dashboard">Dashboard</a>
               <a className={PILL} href="/login">Login</a>
-              <a className={PILL} href="/tester">Logbook</a>
+              <a className={PILL} href="/monevEditor">Logbook</a>
             </div>
           </nav>
 
