@@ -91,9 +91,6 @@ export default function App() {
 
 
 
-footer
-
-
 
       </main>
 
