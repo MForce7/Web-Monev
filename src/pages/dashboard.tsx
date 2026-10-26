@@ -119,18 +119,18 @@ const TRANSITION_CSS = `
 
 type Transisi = "enter" | "leave" | "idle";
 
-function PageTransition({ state }: { state: Transisi }) {
-  return (
-    <>
-      <style>{TRANSITION_CSS}</style>
-      <div className={`pt-overlay pt-${state}`} aria-hidden="true">
-        <div className="pt-logo rounded-2xl bg-white px-8 py-5 shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
-          <img src={LOGO} alt="" style={{ width: 220, height: "auto", display: "block" }} />
-        </div>
-      </div>
-    </>
-  );
-}
+// function PageTransition({ state }: { state: Transisi }) {
+//   return (
+//     <>
+//       <style>{TRANSITION_CSS}</style>
+//       <div className={`pt-overlay pt-${state}`} aria-hidden="true">
+//         <div className="pt-logo rounded-2xl bg-white px-8 py-5 shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
+//           <img src={LOGO} alt="" style={{ width: 220, height: "auto", display: "block" }} />
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
 /* ============================================================ */
 
 /* Kolom kosong: tempat visualisasi target vs realisasi dari logbook periset */
@@ -334,7 +334,7 @@ export default function Dashboard() {
   return (
     <>
       {/* Overlay transisi (di luar wrapper zoom supaya selalu menutup seluruh layar) */}
-      <PageTransition state={transisi} />
+      {/* <PageTransition state={transisi} /> */}
 
       <div
         style={{ zoom: scale, width: vw / scale }}
@@ -348,25 +348,6 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#1e1e1e_21%,rgba(33,33,33,0.8)_82%,rgba(0,0,0,0.3)_100%)]" />
 
           <div className="relative mx-auto h-full w-[1440px]">
-            <nav className="relative h-[129px]">
-              <img
-                className="absolute left-[50px] top-[38px] h-auto w-[180px]"
-                src={LOGO}
-                alt="BRIN – Badan Riset dan Inovasi Nasional"
-              />
-              <div className="absolute left-[486px] top-[40px] flex gap-[21px]">
-                <a className={PILL} href="/dashboard" onClick={goTo("/dashboard")}>
-                  Dashboard
-                </a>
-                <a className={PILL} href="/login" onClick={goTo("/login")}>
-                  Login
-                </a>
-                <a className={PILL} href="/monevEditor" onClick={goTo("/monevEditor")}>
-                  Logbook
-                </a>
-              </div>
-            </nav>
-
             <div className="absolute inset-x-0 top-[210px] text-center">
               <h1 className="m-0 bg-[linear-gradient(90deg,#fff_0%,#d9d9d9_60%)] bg-clip-text text-[44px] font-extrabold uppercase leading-[56px] tracking-[-1.5px] text-transparent [filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.45))]">
                 Organisasi Riset Penerbangan dan Antariksa
@@ -511,20 +492,7 @@ export default function Dashboard() {
         </section>
 
         {/* ===== FOOTER ===== */}
-        <footer className="relative h-[300px] overflow-hidden bg-[#8b0303] text-center text-white">
-          <FooterTexture />
-          <div className="relative pt-[47px]">
-            <h3 className="m-0 text-[40px] font-bold leading-[48px]">
-              Organisasi Riset Penerbangan dan Antariksa
-            </h3>
-            <p className="m-0 text-[40px] font-normal leading-[48px]">
-              Badan Riset dan Inovasi Nasional
-            </p>
-            <p className="m-0 mt-[36px] text-[32px] font-normal leading-[40px]">
-              © 2026 ORPA – BRIN
-            </p>
-          </div>
-        </footer>
+        
       </div>
     </>
   );
