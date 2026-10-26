@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
-import { uploadSupportFile } from '../lib/uploadSupportFile'
+// import { uploadSupportFile } from '../lib/uploadSupportFile'
 import type { SupportFile } from '../lib/uploadSupportFile'
+import { openDriveFile } from '../lib/driveApi'
+import { uploadSupportFile, deleteSupportFile } from '../lib/uploadSupportFile'
 
 export default function TestUpload() {
   const [session, setSession] = useState<Session | null>(null)
@@ -104,7 +106,17 @@ export default function TestUpload() {
       <ul>
         {files.map((f) => (
           <li key={f.id}>
-            <a href={f.url ?? '#'} target="_blank" rel="noreferrer">{f.label}</a>
+            <button onClick={() => f.storage_path && openDriveFile(f.storage_path)}>
+              {f.label}
+            </button>{' '}
+            <button
+              onClick={async () => {
+                await deleteSupportFile(f)
+                if (reportId) loadFiles(reportId)
+              }}
+            >
+              Hapus
+            </button>
           </li>
         ))}
       </ul>

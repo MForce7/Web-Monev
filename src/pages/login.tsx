@@ -63,7 +63,7 @@ export default function LoginPage({
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-col md:flex-row">
+    <main className="flex min-h-screen w-full flex-col md:flex-row z-100">
       {/* Panel kiri */}
       <section
         className="relative flex flex-1 flex-col bg-[#7a0c10] bg-cover px-8 py-8 md:basis-[52%] md:px-14 md:py-12"
