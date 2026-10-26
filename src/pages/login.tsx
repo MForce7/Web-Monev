@@ -6,8 +6,6 @@ import logoMonev from "../assets/bx_network-chart.png";
 import gedungBrin from "../assets/image 3.png";
 import polaSegitiga from "../assets/6173911 1.png";
 
-
-
 type LoginPageProps = {
   onSubmit?: (data: { identifier: string; password: string; remember: boolean }) => void | Promise<void>;
   forgotPasswordHref?: string;
