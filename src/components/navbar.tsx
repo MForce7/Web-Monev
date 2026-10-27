@@ -4,6 +4,7 @@ import userPhoto from "../assets/hero.png";
 
 const menus = [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Dashboard V2", href: "/dashboard-v2" },
   { label: "Login", href: "/login" },
   { label: "Logbook", href: "/logbook" },
 ];

@@ -112,7 +112,7 @@ const gradBg = (k: GradKey) => `linear-gradient(135deg, ${GRAD[k][0]}, ${GRAD[k]
 const cardClass = "rounded-2xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.15)]";
 
 function Card({ children, className = "p-5" }: { children: ReactNode; className?: string }) {
-  return <div className={`min-w-0 ${cardClass} ${className}`}>{children}</div>;
+  return <div className={`${cardClass} ${className}`}>{children}</div>;
 }
 
 function Legend({ items, big = false }: { items: { label: string; key: GradKey }[]; big?: boolean }) {
@@ -135,22 +135,16 @@ function Legend({ items, big = false }: { items: { label: string; key: GradKey }
   );
 }
 
-/** Kartu ringkasan: area judul dikunci tingginya supaya semua kartu sejajar */
 function StatCard({ label, color, value, target }: { label: string; color: string; value: number; target?: number }) {
   return (
-    <div className="flex min-w-0 flex-col rounded-xl bg-white px-3 py-3 text-center shadow-[0_6px_14px_rgba(0,0,0,0.15)]">
-      <p
-        className="flex min-h-[2.4rem] items-center justify-center border-b border-gray-200 pb-1 text-[11px] font-bold leading-tight"
-        style={{ color }}
-      >
+    <div className="rounded-xl bg-white px-3 py-3 text-center shadow-[0_6px_14px_rgba(0,0,0,0.15)]">
+      <p className="border-b border-gray-200 pb-1 text-[11px] font-bold leading-tight" style={{ color }}>
         {label}
       </p>
-      <div className="flex flex-1 items-center justify-center pt-2">
-        <p className="text-4xl font-extrabold leading-none" style={{ color }}>
-          {value}
-          {target !== undefined && <span className="text-xl"> / {target}</span>}
-        </p>
-      </div>
+      <p className="mt-2 text-4xl font-extrabold" style={{ color }}>
+        {value}
+        {target !== undefined && <span className="text-xl"> / {target}</span>}
+      </p>
     </div>
   );
 }
@@ -317,11 +311,9 @@ export default function Home() {
   const s = summaryData[triwulan];
 
   return (
-    // Semua lebar mengikuti induknya (w-full) dan tidak ada margin negatif,
-    // jadi halaman tidak bisa digeser ke kiri/kanan. overflow-x-clip = pengaman tambahan.
-    <div className="flex w-full max-w-full flex-col items-center gap-12 overflow-x-clip">
-      {/* Pita di atas tab. Tab menempel di tepi bawah pita. */}
-      <div className="flex h-24 w-full items-end justify-center bg-[#222]" translate="no">
+    <div className="flex w-full flex-col items-center gap-12">
+      {/* Pita di atas tab (selebar halaman). Tab menempel di tepi bawah pita. */}
+      <div className="-mx-8 -mt-8 flex h-24 w-[calc(100%+4rem)] items-end justify-center bg-[#222]" translate="no">
         <div role="tablist" aria-label="Pilih triwulan" className="flex">
           {(["III", "IV"] as Triwulan[]).map((t) => {
             const aktif = triwulan === t;
@@ -345,7 +337,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl space-y-10 px-4 md:px-8" translate="no">
+      <div className="w-full max-w-6xl space-y-10" translate="no">
         {/* Judul */}
         <h2 className="rounded-2xl bg-[#f22a3a] px-6 py-4 text-center text-xl font-bold text-white shadow-[0_8px_18px_rgba(0,0,0,0.2)] md:text-3xl">
           Capaian MONEV Triwulan {triwulan} Tahun 2026
@@ -391,7 +383,7 @@ export default function Home() {
       </div>
 
       {/* Peringkat logbook (latar merah selebar halaman) */}
-      <section className="w-full bg-[#f22a3a] px-4 py-8 md:px-8" translate="no">
+      <section className="-mx-8 -mb-8 w-[calc(100%+4rem)] bg-[#f22a3a] px-4 py-8 md:px-8" translate="no">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between">
             {/* TODO: sambungkan tombol panah ke data periode sebelum/sesudahnya */}
