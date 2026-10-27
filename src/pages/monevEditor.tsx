@@ -534,14 +534,14 @@ interface MonevRowProps {
  * kolom lain otomatis melebar mengisi halaman. */
 const COLUMN_WIDTHS = [
   6,  // Bulan
-  12, // Uraian Kemajuan Aktivitas
+  11, // Uraian Kemajuan Aktivitas
   9,  // Kendala Ditemui
   9,  // Mitigasi / Rencana Tindak Lanjut
   8,  // Data Dukung Progres
   8,  // Jenis Output
   11, // Judul Output
   10, // Status (+ keterangan)
-  8,  // Capaian (%)
+  9,  // Persentase Progres (%)
   8,  // Data Dukung Output
   11, // Tindakan
 ] as const
@@ -553,7 +553,7 @@ const AKTIVITAS_HEADERS = [
   'Data Dukung Progres',
 ] as const
 
-const OUTPUT_HEADERS = ['Jenis Output', 'Judul Output', 'Status', 'Capaian (%)', 'Data Dukung Output'] as const
+const OUTPUT_HEADERS = ['Jenis Output', 'Judul Output', 'Status', 'Persentase Progres (%)', 'Data Dukung Output'] as const
 
 const CARD = 'bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden w-full max-w-full min-w-0'
 const CELL = `p-1.5 border-r border-slate-200 align-top min-w-0 whitespace-pre-line ${WRAP}` // border-bawah diatur per baris
@@ -934,7 +934,7 @@ function MonthRow({ month, onSave, onClear }: MonthRowProps) {
               )}
             </td>
 
-            {/* Capaian */}
+            {/* Persentase Progres (field data tetap bernama `capaian`) */}
             <td className={cell}>
               {isEditing ? (
                 <div className="flex items-center gap-1 min-w-0">

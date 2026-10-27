@@ -10,6 +10,7 @@ import Data from './pages/data.tsx'
 import Visdata from './pages/visdata.tsx'
 import TestUpload from './pages/TestUpload.tsx'
 import MonevEditor from './pages/monevEditor.tsx'
+import Datapage from './pages/Datapage.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: '/tester', element: <Tester /> },
       { path: '/logbook', element: <MonevEditor /> },
       { path: '/visdata', element: <Visdata /> },
+      { path: '/Datapage', element: <Datapage /> },
     ],
   },
 ])
