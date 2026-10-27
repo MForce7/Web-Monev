@@ -3,13 +3,11 @@ import ActivityHeader from '../components/logbook/ActivityHeader.tsx'
 import MonthlyLogTable, { type MonthData } from '../components/logbook/MonthlyLogTable'
 import { UploadContext, readAsDataUrl, type UploadFn } from '../components/logbook/Attachments'
 import { JENIS_OUTPUT } from '../lib/config'
+import Safe from '../components/logbook/Safe.tsx'
 
-const NAMA_BULAN = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-]
+const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
-const emptyHeader = (): HeaderData =>
+const emptyHeader = () =>
   ({
     namaKetua: '',
     unitKerja: '',
@@ -20,8 +18,6 @@ const emptyHeader = (): HeaderData =>
     progresKeterangan: '',
     statusPelaksanaan: STATUS_PELAKSANAAN[0],
   }) as HeaderData
-
-const emptyMonths = (): MonthData[] => NAMA_BULAN.map((bulan) => emptyMonth(bulan))
 
 interface Props {
   headerData?: HeaderData
@@ -34,17 +30,19 @@ interface Props {
 
 export default function LogbookPages({
   headerData = emptyHeader(),
-  monthsData = emptyMonths(),
+  monthsData = NAMA_BULAN.map((b) => emptyMonth(b)),
   onSaveHeader,
   onSaveMonths,
   uploadFile = readAsDataUrl,
 }: Props) {
   return (
     <UploadContext.Provider value={uploadFile}>
-      {/* mt-19: turun dari navbar | px-4 md:px-8: jarak kiri-kanan (16px di HP, 32px di layar besar) */}
-      <div className="space-y-4 w-full max-w-full min-w-0 mt-19 px-4 md:px-8">
+      {/* mt-24: turun dari navbar | px-4 md:px-8: jarak kiri-kanan */}
+      <div className="space-y-4 w-full max-w-full min-w-0 mt-24 px-4 md:px-8">
         <ActivityHeader initialData={headerData} onSave={onSaveHeader} />
-        <MonthlyLogTable initialData={monthsData} onSave={onSaveMonths} />
+        <Safe name="MonthlyLogTable">
+          <MonthlyLogTable initialData={monthsData} onSave={onSaveMonths} />
+        </Safe>
       </div>
     </UploadContext.Provider>
   )

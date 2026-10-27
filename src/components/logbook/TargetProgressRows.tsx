@@ -11,6 +11,8 @@ interface Props {
 }
 
 export default function TargetProgressRows({ data, isEditing, onChange, onOutputChange, onOutputAdd, onOutputRemove }: Props) {
+  const outputs = data.targetOutputs
+
   return (
     <>
       {/* Target Output Utama */}
@@ -18,30 +20,21 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
         {isEditing ? (
           <div>
             <div className="space-y-2">
-              {data.targetOutputs.map((out, idx) => (
-                <div key={idx} className="flex items-center gap-2 min-w-0">
-                  <select
-                    value={out.jenis}
-                    onChange={(e) => onOutputChange(idx, { jenis: e.target.value })}
-                    className={`flex-1 ${HEADER_INPUT}`}
-                  >
-                    <JenisOptions current={out.jenis} />
+              {outputs.map((o, i) => (
+                <div key={i} className="flex items-center gap-2 min-w-0">
+                  <select value={o.jenis} onChange={(e) => onOutputChange(i, { jenis: e.target.value })} className={`flex-1 ${HEADER_INPUT}`}>
+                    <JenisOptions current={o.jenis} />
                   </select>
                   <input
                     type="number"
                     min={1}
-                    value={out.jumlah}
-                    onChange={(e) => onOutputChange(idx, { jumlah: parseInt(e.target.value) || 1 })}
+                    value={o.jumlah}
+                    onChange={(e) => onOutputChange(i, { jumlah: parseInt(e.target.value) || 1 })}
                     className={`w-20 shrink-0 text-center ${HEADER_INPUT}`}
                   />
                   <span className="text-xs text-slate-500 shrink-0">buah</span>
-                  {data.targetOutputs.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => onOutputRemove(idx)}
-                      aria-label="Hapus target output"
-                      className="text-rose-500 hover:text-rose-700 p-1 text-xs shrink-0"
-                    >
+                  {outputs.length > 1 && (
+                    <button type="button" onClick={() => onOutputRemove(i)} aria-label="Hapus target output" className="text-rose-500 hover:text-rose-700 p-1 text-xs shrink-0">
                       <i className="fa-solid fa-trash" />
                     </button>
                   )}
@@ -65,10 +58,10 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
               </tr>
             </thead>
             <tbody>
-              {data.targetOutputs.map((out, idx) => (
-                <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className={`p-2 font-medium text-slate-700 ${WRAP}`}>{out.jenis}</td>
-                  <td className="p-2 text-center font-semibold text-slate-800">{out.jumlah} buah</td>
+              {outputs.map((o, i) => (
+                <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className={`p-2 font-medium text-slate-700 ${WRAP}`}>{o.jenis}</td>
+                  <td className="p-2 text-center font-semibold text-slate-800">{o.jumlah} buah</td>
                 </tr>
               ))}
             </tbody>
@@ -83,7 +76,7 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
             <div className="flex items-center gap-1 shrink-0">
               <PercentInput
                 value={data.progresTotal}
-                onChange={(next) => onChange('progresTotal', next)}
+                onChange={(n) => onChange('progresTotal', n)}
                 className={`w-20 text-sm text-center font-bold text-emerald-600 ${HEADER_INPUT}`}
               />
               <span className="font-bold text-slate-600">%</span>
@@ -102,8 +95,7 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
               <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: `${clampPercent(data.progresTotal)}%` }} />
             </div>
             <span className={`min-w-0 font-semibold text-emerald-600 ${WRAP}`}>
-              {data.progresTotal}%{' '}
-              <span className="font-normal text-slate-500 text-xs">({data.progresKeterangan})</span>
+              {data.progresTotal}% <span className="font-normal text-slate-500 text-xs">({data.progresKeterangan})</span>
             </span>
           </div>
         )}
@@ -112,17 +104,11 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
       {/* Status Pelaksanaan */}
       <Row label="Status Pelaksanaan" last>
         {isEditing ? (
-          <select
-            value={data.statusPelaksanaan}
-            onChange={(e) => onChange('statusPelaksanaan', e.target.value)}
-            className={`max-w-full p-2 ${HEADER_INPUT}`}
-          >
+          <select value={data.statusPelaksanaan} onChange={(e) => onChange('statusPelaksanaan', e.target.value)} className={`max-w-full p-2 ${HEADER_INPUT}`}>
             {STATUS_PELAKSANAAN.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         ) : (
-          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-            {data.statusPelaksanaan}
-          </span>
+          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">{data.statusPelaksanaan}</span>
         )}
       </Row>
     </>

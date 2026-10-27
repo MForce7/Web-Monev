@@ -1,19 +1,11 @@
 import type { HeaderData } from '../../types/monev'
 import { HEADER_INPUT, Row } from './shared'
 
-function LockedRow({ label, value, bold = false, editing }: {
-  label: string
-  value: string
-  bold?: boolean
-  editing: boolean
-}) {
-  return (
-    <Row label={label}>
-      <span className={bold ? 'font-semibold text-slate-800' : 'text-slate-800'}>{value}</span>
-      {editing && <span className="text-[10px] text-slate-400 font-normal ml-2">(Terkunci)</span>}
-    </Row>
-  )
-}
+const LOCKED = [
+  ['Nama Ketua', 'namaKetua'],
+  ['Unit Kerja', 'unitKerja'],
+  ['Satuan Kerja', 'satuanKerja'],
+] as const
 
 interface Props {
   data: HeaderData
@@ -24,9 +16,12 @@ interface Props {
 export default function InfoRows({ data, isEditing, onChange }: Props) {
   return (
     <>
-      <LockedRow label="Nama Ketua" value={data.namaKetua} bold editing={isEditing} />
-      <LockedRow label="Unit Kerja" value={data.unitKerja} editing={isEditing} />
-      <LockedRow label="Satuan Kerja" value={data.satuanKerja} editing={isEditing} />
+      {LOCKED.map(([label, key]) => (
+        <Row key={key} label={label}>
+          <span className={key === 'namaKetua' ? 'font-semibold text-slate-800' : 'text-slate-800'}>{data[key]}</span>
+          {isEditing && <span className="text-[10px] text-slate-400 font-normal ml-2">(Terkunci)</span>}
+        </Row>
+      ))}
 
       <Row label="Judul Aktivitas">
         {isEditing ? (

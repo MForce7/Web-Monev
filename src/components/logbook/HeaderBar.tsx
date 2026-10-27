@@ -2,11 +2,7 @@ import { WRAP } from './shared'
 
 export default function HeaderBar({ isEditing, onEdit }: { isEditing: boolean; onEdit: () => void }) {
   return (
-    <div
-      className={`px-6 py-3 font-semibold text-lg flex items-center justify-between gap-3 text-white ${
-        isEditing ? 'bg-amber-600' : 'bg-gov-700'
-      }`}
-    >
+    <div className={`px-6 py-3 font-semibold text-lg flex items-center justify-between gap-3 text-white ${isEditing ? 'bg-amber-600' : 'bg-gov-700'}`}>
       <span className={`min-w-0 ${WRAP}`}>
         <i className={`fa-solid ${isEditing ? 'fa-pen-to-square' : 'fa-folder-open'} mr-2`} />
         {isEditing ? 'Edit Detail Aktivitas' : 'Detail Aktivitas & Progres Kegiatan'}
