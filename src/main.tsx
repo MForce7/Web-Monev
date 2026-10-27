@@ -33,6 +33,8 @@ const router = createBrowserRouter([
       { path: "/test-upload", element: <TestUpload /> },
       { path: "/visdata", element: <Visdata /> },
       { path: "/data", element: <Data /> },
+      { path: '/test-upload', element: <TestUpload /> },
+      { path: '/data', element: <Data /> },
       // { path: '/vis_data', element: <Visdata /> },
     ],
   },
