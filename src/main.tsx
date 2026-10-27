@@ -9,26 +9,15 @@ import Login from './pages/login.tsx'
 import Data from './pages/data.tsx'
 import Visdata from './pages/visdata.tsx'
 import TestUpload from './pages/TestUpload.tsx'
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
-
-const router = createBrowserRouter([
-  { path: "/", element: <App /> },
-  { path: "/login", element: <Login /> },
-  { path: "/tester", element: <Tester /> },
-  { path: "/test-upload", element: <TestUpload /> },
-  { path: "/visdata", element: <Visdata /> },
-   { path: "/data", element: <Data /> },
-]);
-
-
 import MonevEditor from './pages/monevEditor.tsx'
-// import Visdata from './pages/visdata.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 
 const router = createBrowserRouter([
   // Halaman TANPA navbar & footer
   { path: '/login', element: <Login /> },
+  { path: '/test-upload', element: <TestUpload /> },
+  { path: '/data', element: <Data /> }, // halaman data punya navbar sendiri
 
   // Halaman DENGAN navbar & footer
   {
@@ -38,7 +27,7 @@ const router = createBrowserRouter([
       { path: '/dashboard', element: <Dashboard /> },
       { path: '/tester', element: <Tester /> },
       { path: '/logbook', element: <MonevEditor /> },
-      // { path: '/vis_data', element: <Visdata /> },
+      { path: '/visdata', element: <Visdata /> },
     ],
   },
 ])
