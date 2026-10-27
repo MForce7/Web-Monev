@@ -1,7 +1,6 @@
 {
   "total": 5,
   "items": [
-    { "title": "Capaian", "color": "#22c55e", "target": 5, "realisasi": 2 },
     { "title": "Ketua Tim", "color": "#ffb322", "target": 56, "realisasi": 56 },
     { "title": "Publikasi", "color": "#f85a5a", "target": 66, "realisasi": 60 },
     { "title": "Purwarupa", "color": "#4195ff", "target": 33, "realisasi": 30 },
