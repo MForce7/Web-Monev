@@ -1,6 +1,5 @@
-import Tabel2 from "../data/tabel2";
+import Tabel2 from "./tabel2";
 
-// TODO: isi tabel Purwarupa
 export default function Model() {
-  return <Tabel2 />;
+  return <Tabel2 jenis="Model" />;
 }

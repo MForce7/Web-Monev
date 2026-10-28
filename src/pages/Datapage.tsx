@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Navbar from "../components/data/Navbar";
+import Navbar from "../components/navbar.tsx";
 import Sidebar from "../components/data/Sidebar";
 import InstansiBar from "../components/data/InstansiBar";
 import DropdownBulan from "../components/data/DropdownBulan";

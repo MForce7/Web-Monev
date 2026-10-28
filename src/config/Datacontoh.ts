@@ -8,6 +8,7 @@ export const navLinks = [
 ];
 
 export const sidebarMenu = ["CFC", "RIIM", "PRIS"];
+export const sidebarOutput = ["Purwarupa", "Model", "Publikasi", "KI", "Paten", "Hak Cipta"];
 
 export const bulanOpsi = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -17,8 +18,6 @@ export const pusatRisetOpsi = ["PRA", "PRTS", "PRTR", "PRTP"];
 
 export type Kolom = { key: string; label: string; className?: string };
 
-// Kosongkan `columns` dan `rows` untuk menampilkan baris kosong seperti di desain
 export const columns: Kolom[] = [];
 export const rows: Record<string, ReactNode>[] = [];
 export const JUMLAH_BARIS_KOSONG = 7;
-export const sidebarOutput = ["Purwarupa", "Model", "Publikasi", "KI", "Paten", "Hak Cipta"];
