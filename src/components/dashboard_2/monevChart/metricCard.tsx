@@ -1,5 +1,5 @@
 import React from "react";
-import type { MetricItem } from "../../types/monev.ts";
+import type { MetricItem } from "../../../types/monev.ts";
 
 interface MetricCardProps {
   data: MetricItem; // satu item dari metrics.json

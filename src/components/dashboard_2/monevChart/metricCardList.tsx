@@ -1,5 +1,5 @@
-import MetricCard from "./metricCard";
-import type { MetricsData } from "../../types/monev.ts";
+import MetricCard from "./metricCard.tsx";
+import type { MetricsData } from "../../../types/monev.ts";
 
 interface MetricCardListProps {
   data: MetricsData; // seluruh isi metrics.json
