@@ -3,19 +3,17 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import Dashboard from './pages/dashboard.tsx'
+
 import Dashboard2 from './pages/dashboard_v2.tsx'
 import Tester from './pages/tester.tsx'
 import Login from './pages/login.tsx'
-import Data from './pages/data.tsx'
-import Data2 from './pages/data2.tsx'
-import Visdata from './pages/visdata.tsx'
-import TestUpload from './pages/TestUpload.tsx'
-import LeaderboardPage from './pages/leaderboard.tsx'
-
-
-import MonevEditor from './pages/monevEditor.tsx'
+// import Data from './pages/data.tsx'
 // import Visdata from './pages/visdata.tsx'
+import TestUpload from './pages/TestUpload.tsx'
+// import MonevEditor from './pages/monevEditor.tsx'
+import Rekapitulasi from './pages/rekapitulasi.tsx'
+import LogbookPages from './pages/logbookPages.tsx'
+
 
 import MainLayout from './components/mainLayout.tsx'
 
@@ -27,19 +25,18 @@ const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
-      { path: '/', element: <Dashboard /> },
-      { path: '/dashboard', element: <Dashboard /> },
-      { path: '/dashboard-v2', element: <Dashboard2 /> },
+      { path: '/', element: <Dashboard2 /> },
+      { path: '/dashboard', element: <Dashboard2 /> },
       { path: '/tester', element: <Tester /> },
-      { path: '/logbook', element: <MonevEditor /> },
+      { path: '/rekapitulasi', element: <Rekapitulasi /> },
+      { path: '/logbook', element: <LogbookPages /> },
       { path: "/test-upload", element: <TestUpload /> },
-      { path: "/visdata", element: <Visdata /> },
-      { path: "/data", element: <Data /> },
-      { path: "/data2", element: <Data2 /> },
+      // { path: "/visdata", element: <Visdata /> },
+      // { path: "/data", element: <Data /> },
       { path: '/test-upload', element: <TestUpload /> },
-      { path: '/data', element: <Data /> },
-      { path: '/leaderboard', element: <LeaderboardPage /> },
-      // { path: '/vis_data', element: <Visdata /> },
+      // { path: '/data', element: <Data /> },
+      // { path: '/monevEditor', element: <MonevEditor /> },
+
     ],
   },
 ])

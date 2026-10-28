@@ -1,0 +1,9 @@
+export { default as CFC } from "../components/rekapitulasi/CFC";
+export { default as RIIM } from "../components/rekapitulasi/RIIM";
+export { default as PRIS } from "../components/rekapitulasi/PRIS";
+export { default as Purwarupa } from "../components/rekapitulasi/Purwarupa";
+export { default as Model } from "../components/rekapitulasi/Model";
+export { default as Publikasi } from "../components/rekapitulasi/Publikasi";
+export { default as KI } from "../components/rekapitulasi/KI";
+export { default as Paten } from "../components/rekapitulasi/Paten";
+export { default as HakCipta } from "../components/rekapitulasi/HakCipta";

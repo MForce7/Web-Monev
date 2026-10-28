@@ -1,5 +1,5 @@
-import ActivityHeader from '../components/activityHeader'
-import MonevRow from '../components/monevRow'
+import LogbookPages from './logbookPages'
+import type { MonthData } from '../components/logbook/MonthlyLogTable'
 import data from '../data/monevData.json'
 import type { MonevData } from '../types/monev'
 
@@ -7,15 +7,11 @@ const monev = data as MonevData
 
 export default function Tester() {
   return (
-    <div className="mx-auto w-full max-w-full min-w-0 space-y-6">
-      <ActivityHeader
-        initialData={monev.header}
-        onSave={(header) => console.log('simpan header', header)}
-      />
-      <MonevRow
-        initialData={monev.bulanan}
-        onSave={(bulanan) => console.log('simpan bulanan', bulanan)}
-      />
-    </div>
+    <LogbookPages
+      headerData={monev.header}
+      monthsData={monev.bulanan as MonthData[]}
+      onSaveHeader={(header) => console.log('simpan header', header)}
+      onSaveMonths={(bulanan) => console.log('simpan bulanan', bulanan)}
+    />
   )
 }
