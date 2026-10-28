@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "jenis": "Purwarupa",
+    "judul": "Purwarupa Sensor Suhu",
+    "status": "Testing",
+    "progres": 70,
+    "dataDukung": [{ "label": "Laporan uji", "url": "https://..." }]
+  },
+  {
+    "id": 2,
+    "jenis": "Purwarupa",
+    "judul": "Purwarupa Pemantau Kelembapan",
+    "status": "Design",
+    "progres": 20,
+    "dataDukung": []
+  },
+  {
+    "id": 3,
+    "jenis": "Model",
+    "judul": "Model Prediksi Cuaca",
+    "status": "Manufakturing",
+    "progres": 45,
+    "dataDukung": []
+  }
+]

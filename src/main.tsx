@@ -10,6 +10,8 @@ import Login from './pages/login.tsx'
 import Data from './pages/data.tsx'
 import Visdata from './pages/visdata.tsx'
 import TestUpload from './pages/TestUpload.tsx'
+import MonevEditor from './pages/monevEditor.tsx'
+import Datapage from './pages/Datapage.tsx'
 import LogbookPages from './pages/LogbookPages.tsx'
 // import Visdata from './pages/visdata.tsx'
 
@@ -27,6 +29,9 @@ const router = createBrowserRouter([
       { path: '/dashboard', element: <Dashboard /> },
       { path: '/dashboard-v2', element: <Dashboard2 /> },
       { path: '/tester', element: <Tester /> },
+
+      { path: '/Datapage', element: <Datapage /> },
+
       { path: '/logbook', element: <LogbookPages /> },
       { path: "/test-upload", element: <TestUpload /> },
       { path: "/visdata", element: <Visdata /> },
@@ -34,6 +39,7 @@ const router = createBrowserRouter([
       { path: '/test-upload', element: <TestUpload /> },
       { path: '/data', element: <Data /> },
       // { path: '/vis_data', element: <Visdata /> },
+
     ],
   },
 ])
