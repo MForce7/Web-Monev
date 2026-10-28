@@ -1,0 +1,16 @@
+{
+  "kategori": [
+    { "key": "publikasi", "label": "Publikasi", "from": "#f25c5c", "to": "#ffb5b5" },
+    { "key": "purwarupa", "label": "Purwarupa", "from": "#4a9dff", "to": "#b5d8ff" },
+    { "key": "ki", "label": "KI", "from": "#5b21d6", "to": "#b39cff" },
+    { "key": "model", "label": "Model", "from": "#ffb020", "to": "#ffe0a3" },
+    { "key": "paten", "label": "Paten", "from": "#6fdc8f", "to": "#d6fbe1" },
+    { "key": "hakCipta", "label": "Hak Cipta", "from": "#7d7979", "to": "#d2cfcf" }
+  ],
+  "items": [
+    { "nama": "PRA",  "nilai": { "publikasi": 7, "purwarupa": 14, "ki": 7, "model": 21, "paten": 5, "hakCipta": 9 } },
+    { "nama": "PRTR", "nilai": { "publikasi": 7, "purwarupa": 14, "ki": 7, "model": 21, "paten": 5, "hakCipta": 9 } },
+    { "nama": "PRTS", "nilai": { "publikasi": 7, "purwarupa": 14, "ki": 7, "model": 21, "paten": 5, "hakCipta": 9 } },
+    { "nama": "PRTP", "nilai": { "publikasi": 7, "purwarupa": 14, "ki": 7, "model": 21, "paten": 5, "hakCipta": 9 } }
+  ]
+}

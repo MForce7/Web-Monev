@@ -8,8 +8,10 @@ import Dashboard2 from './pages/dashboard_v2.tsx'
 import Tester from './pages/tester.tsx'
 import Login from './pages/login.tsx'
 import Data from './pages/data.tsx'
+import Data2 from './pages/data2.tsx'
 import Visdata from './pages/visdata.tsx'
 import TestUpload from './pages/TestUpload.tsx'
+import LeaderboardPage from './pages/leaderboard.tsx'
 
 
 import MonevEditor from './pages/monevEditor.tsx'
@@ -33,8 +35,10 @@ const router = createBrowserRouter([
       { path: "/test-upload", element: <TestUpload /> },
       { path: "/visdata", element: <Visdata /> },
       { path: "/data", element: <Data /> },
+      { path: "/data2", element: <Data2 /> },
       { path: '/test-upload', element: <TestUpload /> },
       { path: '/data', element: <Data /> },
+      { path: '/leaderboard', element: <LeaderboardPage /> },
       // { path: '/vis_data', element: <Visdata /> },
     ],
   },

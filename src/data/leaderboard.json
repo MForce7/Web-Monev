@@ -1,0 +1,27 @@
+
+
+
+{
+  "Status Kelengkapan Data": [
+    { "nama": "Andi Pratama", "PR": "PRTR", "persen": 10 },
+    { "nama": "Budi Santoso", "PR": "PRA", "persen": 78 },
+    { "nama": "Citra Lestari", "PR": "PRTP", "persen": 64 },
+    { "nama": "Dewi Anggraini", "PR": "PRTS", "persen": 45 },
+    { "nama": "Eka Wijaya", "PR": "PRTR", "persen": 30 },
+    { "nama": "Fajar Nugroho1", "PR": "PRA", "persen": 100 },
+    { "nama": "Fajar Nugroho2", "PR": "PRTP", "persen": 25 },
+    { "nama": "Fajar Nugroho22", "PR": "PRTS", "persen": 20 },
+    { "nama": "Fajar Nugroho222", "PR": "PRTR", "persen": 20 },
+    { "nama": "Fajar Nugroho322", "PR": "PRA", "persen": 90 },
+    { "nama": "Fajar Nugroho432", "PR": "PRTP", "persen": 80 },
+    { "nama": "Fajar Nugroho343", "PR": "PRTS", "persen": 70 },
+    { "nama": "Fajar Nugroho434", "PR": "PRTR", "persen": 50 },
+    { "nama": "Fajar Nugroho543", "PR": "PRA", "persen": 50 },
+    { "nama": "Fajar Nugroho254", "PR": "PRTP", "persen": 60 },
+    { "nama": "Fajar Nugroho425", "PR": "PRTS", "persen": 50 },
+    { "nama": "Fajar Nugroho442", "PR": "PRTR", "persen": 30 },
+    { "nama": "Fajar Nugroho44", "PR": "PRA", "persen": 40 },
+    { "nama": "Fajar Nugroho4", "PR": "PRTP", "persen": 100 }
+  ]
+}
+

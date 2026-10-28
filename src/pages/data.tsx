@@ -4,7 +4,7 @@ import logoBrin from "../assets/Alt_Logo_BRIN 4.png";
 /* ---------- Warna (perkiraan dari Figma, ganti kalau perlu) ---------- */
 const RED = "#e8202f";
 const GRAD_BAR = "linear-gradient(90deg, #f22a3a 0%, #ff5a68 100%)"; // pita "ORPA | BRIN"
-const GRAD_CARD = "linear-gradient(90deg, #f22a3a 0%, #ff8a93 100%)"; // header kartu "JUDUL"
+const GRAD_CARD ="function(linear-gradient(90deg, #f22a3a 0%, #ff8a93 100%)"; // header kartu "JUDUL"
 const GRAD_ACTIVE = "linear-gradient(90deg, #f22a3a 0%, #ff4d5b 100%)"; // menu sidebar aktif
 
 /* ---------- Data contoh (nanti ganti dengan data dari API) ---------- */
@@ -35,7 +35,7 @@ function Logo() {
   return <img src={logoBrin} alt="BRIN" width={83} height={32} className="h-8 w-auto" />;
 }
 
-function UserIcon() {
+ function UserIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-7 w-7" aria-hidden="true">
       <circle cx="12" cy="12" r="11" fill={RED} />
@@ -45,30 +45,6 @@ function UserIcon() {
   );
 }
 
-function Navbar() {
-  return (
-    <header className="relative z-20 flex h-14 items-center justify-between bg-white px-6 shadow-[0_2px_6px_rgba(0,0,0,0.08)]">
-      <Logo />
-      <nav aria-label="Navigasi utama" className="absolute left-1/2 flex -translate-x-1/2 gap-8">
-        {navLinks.map((l) => (
-          <a
-            key={l.label}
-            href={l.href}
-            aria-current={l.active ? "page" : undefined}
-            className={`text-sm font-bold transition hover:text-[#e8202f] ${
-              l.active ? "text-[#a3121c]" : "text-gray-700"
-            }`}
-          >
-            {l.label}
-          </a>
-        ))}
-      </nav>
-      <button type="button" aria-label="Akun" className="rounded-full">
-        <UserIcon />
-      </button>
-    </header>
-  );
-}
 
 function Sidebar({ active, onChange }: { active: string; onChange: (v: string) => void }) {
   return (
@@ -253,7 +229,7 @@ export default function DataPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#f4f4f4]" translate="no">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="flex flex-1">
         <Sidebar active={menu} onChange={setMenu} />
         <main className="flex-1">
@@ -266,7 +242,7 @@ export default function DataPage() {
             </div>
 
             {/* TODO: ganti judul & isi kartu sesuai menu (CFC / RIIM / PRIS), bulan, dan pusat riset yang dipilih */}
-            <DataCard title="Judul" />
+            {/* <DataCard title="Judul" /> */}
           </div>
         </main>
       </div>
