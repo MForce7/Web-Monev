@@ -1,26 +1,223 @@
-[
-  {
-    "id": 1,
-    "jenis": "Purwarupa",
-    "judul": "Purwarupa Sensor Suhu",
-    "status": "Testing",
-    "progres": 70,
-    "dataDukung": [{ "label": "Laporan uji", "url": "https://..." }]
+{
+  "_petunjuk": "Isi per baris. logbook -> menu (CFC/RIIM/PRIS) -> pusat riset -> 12 baris bulan (satu baris = satu baris tabel). Mau tambah kegiatan di bulan yang sama? Salin barisnya lalu tempel di bawahnya. Baris yang masih kosong tidak ditampilkan di website. output -> jenis -> baris. Link data dukung: [ { \"label\": \"Nama link\", \"url\": \"https://...\" } ]. Nama menu, pusat riset, dan bulan harus persis seperti di dropdown.",
+  "logbook": {
+    "CFC": {
+      "PRA": [
+        { "bulan": "Januari", "ketua": "Dr. Andi Pratama", "aktivitas": { "uraian": "Survei lapangan tahap 1 dan pengambilan data awal di lokasi penelitian", "kendala": "Cuaca buruk menghambat akuisisi data di beberapa titik", "mitigasi": "Penjadwalan ulang akuisisi pada pekan berikutnya", "dataDukung": [ { "label": "Catatan Lapangan", "url": "https://example.com/cfc-1/catatan.pdf" } ] }, "output": { "jenis": "Publikasi", "judul": "Analisis Struktur Bawah Permukaan Menggunakan Data Seismik", "status": "Berjalan", "progres": 60, "dataDukung": [ { "label": "Draft Naskah", "url": "https://example.com/cfc-1/draft.pdf" } ] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "Dr. Andi Pratama", "aktivitas": { "uraian": "Workshop kolaborasi dengan mitra riset", "kendala": "Jadwal mitra bentrok dengan agenda internal", "mitigasi": "Workshop dilaksanakan secara hibrida", "dataDukung": [ { "label": "Notulen", "url": "https://example.com/cfc-3/notulen.pdf" } ] }, "output": { "jenis": "KI", "judul": "Metode Kalibrasi Sensor Seismik", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Sertifikat", "url": "https://example.com/cfc-3/sertifikat.pdf" } ] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTS": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "Siti Rahma, M.Si.", "aktivitas": { "uraian": "Pengolahan dan validasi data survei lapangan", "kendala": "Sebagian data memiliki noise tinggi", "mitigasi": "Penerapan filtering tambahan dan pengambilan ulang data bila perlu", "dataDukung": [] }, "output": { "jenis": "Model", "judul": "Model Kecepatan Gelombang Geser Vs30", "status": "Berjalan", "progres": 45, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTR": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTP": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ]
+    },
+    "RIIM": {
+      "PRA": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTS": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTR": [
+        { "bulan": "Januari", "ketua": "Budi Santoso, M.T.", "aktivitas": { "uraian": "Kick-off proyek RIIM dan pembagian tugas tim", "kendala": "-", "mitigasi": "-", "dataDukung": [ { "label": "Daftar Hadir", "url": "https://example.com/riim-1/hadir.pdf" } ] }, "output": { "jenis": "Purwarupa", "judul": "Purwarupa Sensor Getaran Nirkabel", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Laporan Uji", "url": "https://example.com/riim-1/laporan.pdf" } ] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "Budi Santoso, M.T.", "aktivitas": { "uraian": "Pengujian prototipe skala laboratorium", "kendala": "Komponen elektronik terlambat tiba", "mitigasi": "Pengadaan dari pemasok alternatif", "dataDukung": [] }, "output": { "jenis": "Paten", "judul": "Alat Pengukur Kecepatan Gelombang Geser Portabel", "status": "Berjalan", "progres": 65, "dataDukung": [ { "label": "Bukti Permohonan", "url": "https://example.com/riim-2/permohonan.pdf" } ] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTP": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "Rina Wulandari, M.Sc.", "aktivitas": { "uraian": "Monitoring kualitas lingkungan dan analisis awal sampel", "kendala": "Keterbatasan alat laboratorium", "mitigasi": "Kerja sama penggunaan laboratorium mitra", "dataDukung": [] }, "output": { "jenis": "Purwarupa", "judul": "Purwarupa Alat Pemantau Kualitas Air", "status": "Berjalan", "progres": 55, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ]
+    },
+    "PRIS": {
+      "PRA": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "Dr. Andi Pratama", "aktivitas": { "uraian": "Integrasi data seismik stasiun ke dalam sistem", "kendala": "-", "mitigasi": "-", "dataDukung": [] }, "output": { "jenis": "Model", "judul": "Model Prediksi Konsumsi Energi", "status": "Belum Mulai", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTS": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "Dimas Nugroho, M.Kom.", "aktivitas": { "uraian": "Perancangan arsitektur dan basis data sistem informasi", "kendala": "Perubahan kebutuhan dari pemangku kepentingan", "mitigasi": "Penyusunan ulang prioritas fitur bersama tim", "dataDukung": [ { "label": "Dokumen Rancangan", "url": "https://example.com/pris-1/rancangan.pdf" } ] }, "output": { "jenis": "Hak Cipta", "judul": "Perangkat Lunak Rekap Logbook Penelitian", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Surat Pencatatan", "url": "https://example.com/pris-1/surat.pdf" } ] } },
+        { "bulan": "Maret", "ketua": "Dimas Nugroho, M.Kom.", "aktivitas": { "uraian": "Implementasi modul rekap dan visualisasi data", "kendala": "Integrasi dengan data lama belum seragam formatnya", "mitigasi": "Pembuatan skrip normalisasi data", "dataDukung": [] }, "output": { "jenis": "Publikasi", "judul": "Sistem Monitoring Capaian Output Berbasis Web", "status": "Berjalan", "progres": 70, "dataDukung": [ { "label": "Naskah", "url": "https://example.com/pris-2/naskah.pdf" } ] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTR": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ],
+      "PRTP": [
+        { "bulan": "Januari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "April", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "September", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "November", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "ketua": "", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] } }
+      ]
+    }
   },
-  {
-    "id": 2,
-    "jenis": "Purwarupa",
-    "judul": "Purwarupa Pemantau Kelembapan",
-    "status": "Design",
-    "progres": 20,
-    "dataDukung": []
-  },
-  {
-    "id": 3,
-    "jenis": "Model",
-    "judul": "Model Prediksi Cuaca",
-    "status": "Manufakturing",
-    "progres": 45,
-    "dataDukung": []
+  "output": {
+    "Purwarupa": [
+      { "ketua": "Dr. Andi Pratama", "judul": "Purwarupa Sensor Getaran Nirkabel", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Laporan Uji", "url": "https://example.com/purwarupa-1/laporan.pdf" }, { "label": "Foto Dokumentasi", "url": "https://example.com/purwarupa-1/foto" } ] },
+      { "ketua": "Rina Wulandari, M.Sc.", "judul": "Purwarupa Alat Pemantau Kualitas Air", "status": "Berjalan", "progres": 55, "dataDukung": [ { "label": "Desain Teknis", "url": "https://example.com/purwarupa-2/desain.pdf" } ] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] }
+    ],
+    "Model": [
+      { "ketua": "Siti Rahma, M.Si.", "judul": "Model Kecepatan Gelombang Geser Vs30", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Dokumen Model", "url": "https://example.com/model-1/dokumen.pdf" } ] },
+      { "ketua": "Budi Santoso, M.T.", "judul": "Model Prediksi Konsumsi Energi", "status": "Berjalan", "progres": 40, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] }
+    ],
+    "Publikasi": [
+      { "ketua": "Dr. Andi Pratama", "judul": "Analisis Struktur Bawah Permukaan Menggunakan Data Seismik", "status": "Terbit", "progres": 100, "dataDukung": [ { "label": "Tautan Artikel", "url": "https://example.com/publikasi-1/artikel" }, { "label": "Bukti Terbit", "url": "https://example.com/publikasi-1/bukti.pdf" } ] },
+      { "ketua": "Dimas Nugroho, M.Kom.", "judul": "Sistem Monitoring Capaian Output Berbasis Web", "status": "Submitted", "progres": 70, "dataDukung": [ { "label": "Naskah", "url": "https://example.com/publikasi-2/naskah.pdf" } ] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] }
+    ],
+    "KI": [
+      { "ketua": "Dr. Andi Pratama", "judul": "Metode Kalibrasi Sensor Seismik", "status": "Terdaftar", "progres": 100, "dataDukung": [ { "label": "Sertifikat", "url": "https://example.com/ki-1/sertifikat.pdf" } ] },
+      { "ketua": "Dimas Nugroho, M.Kom.", "judul": "Desain Antarmuka Sistem Monev", "status": "Proses", "progres": 50, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] }
+    ],
+    "Paten": [
+      { "ketua": "Dr. Andi Pratama", "judul": "Alat Pengukur Kecepatan Gelombang Geser Portabel", "status": "Dalam Pemeriksaan", "progres": 65, "dataDukung": [ { "label": "Bukti Permohonan", "url": "https://example.com/paten-1/permohonan.pdf" } ] },
+      { "ketua": "Rina Wulandari, M.Sc.", "judul": "Sistem Penyaring Air Hemat Energi", "status": "Granted", "progres": 100, "dataDukung": [ { "label": "Sertifikat Paten", "url": "https://example.com/paten-2/sertifikat.pdf" } ] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] }
+    ],
+    "Hak Cipta": [
+      { "ketua": "Dimas Nugroho, M.Kom.", "judul": "Perangkat Lunak Rekap Logbook Penelitian", "status": "Tercatat", "progres": 100, "dataDukung": [ { "label": "Surat Pencatatan", "url": "https://example.com/hakcipta-1/surat.pdf" } ] },
+      { "ketua": "Siti Rahma, M.Si.", "judul": "Modul Ajar Pengolahan Data Seismik", "status": "Proses", "progres": 30, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
+      { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] }
+    ]
   }
-]
+}

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+mport type { ReactNode } from "react";
 
 /* ---------- Data contoh (nanti ganti dengan data dari API) ---------- */
 export const navLinks = [
