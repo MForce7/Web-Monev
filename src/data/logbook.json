@@ -1,8 +1,8 @@
 {
   "header": {
     "namaKetua": "Hogan",
-    "unitKerja": "Organisasi Riset Penerbangan dan Antariksa",
-    "satuanKerja": "Pusat Riset Antartika",
+    "unitKerja": "Pusat Riset Antartika",
+    "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa",
     "judulAktivitas": "Judul Aktivitas",
     "targetOutputs": [
       { "jenis": "", "jumlah": 0 }
@@ -12,33 +12,6 @@
     "statusPelaksanaan": ""
   },
   "bulanan": [
-    {
-      "bulan": "Januari", "aktivitas": {
-        "uraian": "",
-        "kendala": "",
-        "mitigasi": "",
-        "dataDukung": [
-          { "label": "", "url": "" }
-        ]
-      },
-      "output": {
-        "jenis": "",
-        "judul": "",
-        "status": "",
-        "capaian": 0,
-        "dataDukung": [],
-        "keterangan": ""
-      },
-      "outputTambahan": [
-        {
-          "jenis": "",
-          "judul": "",
-          "status": "",
-          "capaian": 0,
-          "dataDukung": []
-        }
-      ]
-    },
     { "bulan": "Januari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
     { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
     { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
