@@ -1,56 +1,55 @@
 {
   "header": {
-    "namaKetua": "hogan",
-    "unitKerja": "Nama Unit Kerja",
-    "satuanKerja": "Nama Satuan Kerja",
+    "namaKetua": "Hogan",
+    "unitKerja": "Organisasi Riset Penerbangan dan Antariksa",
+    "satuanKerja": "Pusat Riset Antartika",
     "judulAktivitas": "Judul Aktivitas",
     "targetOutputs": [
-      { "jenis": "Purwarupa", "jumlah": 11 },
-      { "jenis": "Publikasi", "jumlah": 3 }
+      { "jenis": "", "jumlah": 0 }
     ],
-    "progresTotal": 25,
-    "progresKeterangan": "Keterangan progres keseluruhan",
-    "statusPelaksanaan": "Pelaksanaan / Berjalan"
+    "progresTotal": 0,
+    "progresKeterangan": "",
+    "statusPelaksanaan": ""
   },
   "bulanan": [
     {
-      "bulan": "Januari",
-      "aktivitas": {
-        "uraian": "sayid jelek.",
-        "kendala": "tidak ada kendala.",
-        "mitigasi": "Kharap waspada.",
+      "bulan": "Januari", "aktivitas": {
+        "uraian": "",
+        "kendala": "",
+        "mitigasi": "",
         "dataDukung": [
-          { "label": "Notulen rapat", "url": "https://contoh.go.id/notulen.pdf" }
+          { "label": "", "url": "" }
         ]
       },
       "output": {
-        "jenis": "Purwarupa",
-        "judul": "n129",
-        "status": "belum ulai",
-        "capaian": 30,
+        "jenis": "",
+        "judul": "",
+        "status": "",
+        "capaian": 0,
         "dataDukung": [],
-        "keterangan": "proses pembuatan"
+        "keterangan": ""
       },
       "outputTambahan": [
         {
-          "jenis": "Publikasi",
-          "judul": "cac03",
-          "status": "accepted",
+          "jenis": "",
+          "judul": "",
+          "status": "",
           "capaian": 0,
           "dataDukung": []
         }
       ]
     },
-    { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "April", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Mei", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Juni", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Juli", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Agustus", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "September", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Oktober", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "November", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
-    { "bulan": "Desember", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } }
+    { "bulan": "Januari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "April", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Mei", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Juni", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Juli", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Agustus", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "September", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Oktober", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "November", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Desember", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "", "capaian": 0, "dataDukung": [] } }
   ]
 }
