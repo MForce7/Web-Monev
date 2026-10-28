@@ -1,4 +1,4 @@
-import Tabel from "../data/tabel.tsx";
+import Tabel from "./tabel.tsx";
 
 type Props = { bulan: string | null; pusatRiset: string | null };
 

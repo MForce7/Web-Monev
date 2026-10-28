@@ -13,7 +13,7 @@ export default function DashboardV2() {
     return (
         <div className="min-h-screen w-screen flex flex-col items-center overflow-hidden"  >
             <Jumbotron />
-            <div className="flex flex-col items-center gap-6 py-8 px-4 w-full max-w-[1440px]">
+            <div className="flex flex-col items-center gap-6 py-8 px-4 w-full max-w-360">
                 <TriwulanNav value={triwulan} onChange={setTriwulan} />
                 <MetricCard data={data} />
             </div>
