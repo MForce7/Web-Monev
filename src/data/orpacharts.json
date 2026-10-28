@@ -1,0 +1,38 @@
+{
+  "kategori": [
+    { "key": "publikasi", "label": "Publikasi", "from": "#f25c5c", "to": "#ffb5b5" },
+    { "key": "purwarupa", "label": "Purwarupa", "from": "#4a9dff", "to": "#b5d8ff" },
+    { "key": "ki", "label": "KI", "from": "#5b21d6", "to": "#b39cff" }
+  ],
+  "targetVsRealisasi": {
+    "max": 30,
+    "series": ["publikasi", "purwarupa", "ki"],
+    "groups": [
+      [
+        { "target": 30, "realisasi": 21 },
+        { "target": 2, "realisasi": 0 },
+        { "target": 5, "realisasi": 5 }
+      ],
+      [
+        { "target": 24, "realisasi": 14 },
+        { "target": 7, "realisasi": 7 },
+        { "target": 12, "realisasi": 7 }
+      ],
+      [
+        { "target": 23, "realisasi": 9 },
+        { "target": 0, "realisasi": 0 },
+        { "target": 5, "realisasi": 1 }
+      ],
+      [
+        { "target": 26, "realisasi": 18 },
+        { "target": 10, "realisasi": 2 },
+        { "target": 18, "realisasi": 9 }
+      ]
+    ]
+  },
+  "komposisi": [
+    { "kategori": "purwarupa", "value": 9.7 },
+    { "kategori": "publikasi", "value": 66.7 },
+    { "kategori": "ki", "value": 23.7 }
+  ]
+}

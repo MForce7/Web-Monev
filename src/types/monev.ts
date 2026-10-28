@@ -69,3 +69,18 @@ export const emptyMonth = (bulan: string): MonevMonth => ({
 })
 
 export const clampPercent = (n: number) => Math.min(100, Math.max(0, Number.isFinite(n) ? n : 0))
+
+
+
+
+export interface MetricItem {
+  title: string;
+  color?: string; // hex, mis. "#5b21cd"; kalau kosong dipakai warna default
+  target: number;
+  realisasi: number;
+}
+
+export interface MetricsData {
+  total: number;
+  items: MetricItem[];
+}

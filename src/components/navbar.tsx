@@ -2,19 +2,12 @@ import logoBrin from "../assets/Alt_Logo_BRIN 4.png";
 import { RED } from "../config/Warna.ts";
 import { navLinks } from "../config/Datacontoh.ts";
 
-function Logo() {
-  return <img src={logoBrin} alt="BRIN" width={83} height={32} className="h-8 w-auto" />;
-}
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden="true">
-      <circle cx="12" cy="12" r="11" fill={RED} />
-      <circle cx="12" cy="9.5" r="3.6" fill="#fff" />
-      <path d="M4.8 19.2c1.4-3 4-4.4 7.2-4.4s5.8 1.4 7.2 4.4A10 10 0 0 1 12 22a10 10 0 0 1-7.2-2.8z" fill="#fff" />
-    </svg>
-  );
-}
+const menus = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Dashboard V2", href: "/dashboard-v2" },
+  { label: "Login", href: "/login" },
+  { label: "Logbook", href: "/logbook" },
+];
 
 export default function Navbar() {
   return (
