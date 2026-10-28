@@ -1,0 +1,56 @@
+{
+  "header": {
+    "namaKetua": "hogan",
+    "unitKerja": "Nama Unit Kerja",
+    "satuanKerja": "Nama Satuan Kerja",
+    "judulAktivitas": "Judul Aktivitas",
+    "targetOutputs": [
+      { "jenis": "Purwarupa", "jumlah": 11 },
+      { "jenis": "Publikasi", "jumlah": 3 }
+    ],
+    "progresTotal": 25,
+    "progresKeterangan": "Keterangan progres keseluruhan",
+    "statusPelaksanaan": "Pelaksanaan / Berjalan"
+  },
+  "bulanan": [
+    {
+      "bulan": "Januari",
+      "aktivitas": {
+        "uraian": "sayid jelek.",
+        "kendala": "tidak ada kendala.",
+        "mitigasi": "Kharap waspada.",
+        "dataDukung": [
+          { "label": "Notulen rapat", "url": "https://contoh.go.id/notulen.pdf" }
+        ]
+      },
+      "output": {
+        "jenis": "Purwarupa",
+        "judul": "n129",
+        "status": "belum ulai",
+        "capaian": 30,
+        "dataDukung": [],
+        "keterangan": "proses pembuatan"
+      },
+      "outputTambahan": [
+        {
+          "jenis": "Publikasi",
+          "judul": "cac03",
+          "status": "accepted",
+          "capaian": 0,
+          "dataDukung": []
+        }
+      ]
+    },
+    { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "April", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Mei", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Juni", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Juli", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Agustus", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "September", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Oktober", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "November", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+    { "bulan": "Desember", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } }
+  ]
+}
