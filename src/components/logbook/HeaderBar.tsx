@@ -11,8 +11,7 @@ export default function HeaderBar({ isEditing, onEdit }: { isEditing: boolean; o
       <div className="flex items-center gap-2 shrink-0 no-print">
         {isEditing ? (
           <span className="text-xs bg-amber-700 px-3 py-1 rounded-full text-amber-100">Mode Edit</span>
-        ) : (
-          <button
+        ) : (          <button
             type="button"
             onClick={onEdit}
             className="px-3 py-1 bg-gov-800 hover:bg-gov-900 border border-gov-500 rounded text-xs text-white transition flex items-center gap-1.5"
