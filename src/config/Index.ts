@@ -7,3 +7,4 @@ export { default as Publikasi } from "../components/rekapitulasi/Publikasi";
 export { default as KI } from "../components/rekapitulasi/KI";
 export { default as Paten } from "../components/rekapitulasi/Paten";
 export { default as HakCipta } from "../components/rekapitulasi/HakCipta";
+export { default as Pemantauan } from "../components/rekapitulasi/tabel3";

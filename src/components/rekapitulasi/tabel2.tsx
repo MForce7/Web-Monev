@@ -2,11 +2,24 @@ import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../config/rekapOutput.json";
-import type { BarisOutput } from "../../config/Tipe.ts";
+
+type Link = { label: string; url: string };
+type ItemJson = {
+  output: { jenis: string; judul: string; status: string; progres: number; dataDukung: Link[] };
+};
+type Baris = { id: string; jenis: string; judul: string; status: string; progres: number; dataDukung: Link[] };
+
+// { logbook: { CFC: { PRA: [item, ...], ... }, RIIM: {...}, PRIS: {...} } } -> Baris[]
+const logbookJson = (rekapOutput as unknown as { logbook: Record<string, Record<string, ItemJson[]>> }).logbook;
+
+const semua: Baris[] = Object.entries(logbookJson).flatMap(([program, perPusat]) =>
+  Object.entries(perPusat).flatMap(([pusat, items]) =>
+    items.map((it, i) => ({ id: `${program}-${pusat}-${i}`, ...it.output }))
+  )
+);
 
 const kolom = ["No", "Judul", "Status", "Presentase Progress (%)", "Data Dukung"];
 const grid = { gridTemplateColumns: "56px 1.6fr 1fr 1.2fr 1.2fr" };
-const semua = rekapOutput as BarisOutput[];
 
 function Sel({ children }: { children?: ReactNode }) {
   return (
@@ -18,7 +31,7 @@ function Sel({ children }: { children?: ReactNode }) {
 
 export default function Tabel2({ jenis }: { jenis: string }) {
   const data = semua.filter((d) => d.jenis === jenis);
-  const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG); // sisa baris tetap kosong seperti desain
+  const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG);
 
   return (
     <section className="w-full overflow-hidden rounded-2xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.18)]">
