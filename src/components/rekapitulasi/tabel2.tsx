@@ -2,11 +2,25 @@ import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../config/rekapOutput.json";
-import type { BarisOutput } from "../../config/Tipe.ts";
+
+/* Bentuk satu baris di rekapOutput.json -> "output" -> <jenis> */
+type LinkDukung = { label: string; url: string };
+type BarisOutput = {
+  ketua?: string;
+  judul?: string;
+  status?: string;
+  progres?: number;
+  dataDukung?: LinkDukung[];
+};
 
 const kolom = ["No", "Judul", "Status", "Presentase Progress (%)", "Data Dukung"];
 const grid = { gridTemplateColumns: "56px 1.6fr 1fr 1.2fr 1.2fr" };
-const semua = rekapOutput as BarisOutput[];
+
+// JSON-nya berbentuk { logbook: {...}, output: { Purwarupa: [...], Model: [...], ... } }
+const semua = (rekapOutput as unknown as { output?: Record<string, BarisOutput[]> }).output ?? {};
+
+// Baris template yang masih kosong (belum diisi) tidak ditampilkan
+const terisi = (d: BarisOutput) => [d.ketua, d.judul, d.status].some((v) => v && v.trim() !== "");
 
 function Sel({ children }: { children?: ReactNode }) {
   return (
@@ -17,7 +31,7 @@ function Sel({ children }: { children?: ReactNode }) {
 }
 
 export default function Tabel2({ jenis }: { jenis: string }) {
-  const data = semua.filter((d) => d.jenis === jenis);
+  const data = (semua[jenis] ?? []).filter(terisi);
   const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG); // sisa baris tetap kosong seperti desain
 
   return (
@@ -33,17 +47,18 @@ export default function Tabel2({ jenis }: { jenis: string }) {
       <ul>
         {Array.from({ length: jumlahBaris }).map((_, i) => {
           const d = data[i];
+          const links = d?.dataDukung ?? [];
           return (
-            <li key={d?.id ?? `kosong-${i}`} className="grid min-h-[52px] border-b border-gray-300 last:border-b-0" style={grid}>
+            <li key={`${jenis}-${i}`} className="grid min-h-[52px] border-b border-gray-300 last:border-b-0" style={grid}>
               <Sel>{d ? i + 1 : null}</Sel>
               <Sel>{d?.judul}</Sel>
               <Sel>{d?.status}</Sel>
-              <Sel>{d ? `${d.progres}%` : null}</Sel>
+              <Sel>{d ? `${d.progres ?? 0}%` : null}</Sel>
               <Sel>
                 {d &&
-                  (d.dataDukung.length ? (
+                  (links.length ? (
                     <ul className="space-y-1">
-                      {d.dataDukung.map((l, j) => (
+                      {links.map((l, j) => (
                         <li key={j}>
                           <a href={l.url} target="_blank" rel="noreferrer" className="text-[#e8202f] hover:underline">
                             {l.label}
