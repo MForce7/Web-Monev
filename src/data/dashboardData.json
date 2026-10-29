@@ -1,0 +1,160 @@
+{
+  "kategori": [
+    { "key": "publikasi", "label": "Publikasi", "from": "#f25c5c", "to": "#ffb5b5" },
+    { "key": "purwarupa", "label": "Purwarupa", "from": "#4a9dff", "to": "#b5d8ff" },
+    { "key": "ki", "label": "KI", "from": "#5b21d6", "to": "#b39cff" },
+    { "key": "model", "label": "Model", "from": "#ffb020", "to": "#ffe0a3" },
+    { "key": "paten", "label": "Paten", "from": "#6fdc8f", "to": "#d6fbe1" },
+    { "key": "hakCipta", "label": "Hak Cipta", "from": "#7d7979", "to": "#d2cfcf" }
+  ],
+
+  "triwulan": {
+    "I": {
+      "metrics": {
+        "total": 5,
+        "items": [
+          { "key": "ketuaTim", "title": "Ketua Tim", "color": "#ffb322", "target": 56, "realisasi": 56 },
+          { "key": "publikasi", "title": "Publikasi", "color": "#f85a5a", "target": 66, "realisasi": 60 },
+          { "key": "purwarupa", "title": "Purwarupa", "color": "#4195ff", "target": 33, "realisasi": 30 },
+          { "key": "ki", "title": "KI", "color": "#5b21cd", "target": 40, "realisasi": 40 }
+        ]
+      },
+      "pusatRiset": [
+        {
+          "nama": "PRA",
+          "nilai": { "publikasi": 21, "purwarupa": 8, "ki": 5, "model": 14, "paten": 3, "hakCipta": 11 },
+          "targetVsRealisasi": {
+            "publikasi": { "target": 30, "realisasi": 21 },
+            "purwarupa": { "target": 2, "realisasi": 0 },
+            "ki": { "target": 5, "realisasi": 5 }
+          }
+        },
+        {
+          "nama": "PRTR",
+          "nilai": { "publikasi": 12, "purwarupa": 17, "ki": 9, "model": 6, "paten": 8, "hakCipta": 4 },
+          "targetVsRealisasi": {
+            "publikasi": { "target": 24, "realisasi": 14 },
+            "purwarupa": { "target": 7, "realisasi": 7 },
+            "ki": { "target": 12, "realisasi": 7 }
+          }
+        },
+        {
+          "nama": "PRTS",
+          "nilai": { "publikasi": 9, "purwarupa": 5, "ki": 14, "model": 22, "paten": 2, "hakCipta": 16 },
+          "targetVsRealisasi": {
+            "publikasi": { "target": 23, "realisasi": 9 },
+            "purwarupa": { "target": 0, "realisasi": 0 },
+            "ki": { "target": 5, "realisasi": 1 }
+          }
+        },
+        {
+          "nama": "PRTP",
+          "nilai": { "publikasi": 18, "purwarupa": 11, "ki": 3, "model": 9, "paten": 13, "hakCipta": 7 },
+          "targetVsRealisasi": {
+            "publikasi": { "target": 26, "realisasi": 18 },
+            "purwarupa": { "target": 10, "realisasi": 2 },
+            "ki": { "target": 18, "realisasi": 9 }
+          }
+        }
+      ],
+      "orpa": {
+        "chartMax": 30,
+        "komposisi": [
+          { "kategori": "purwarupa", "value": 9.7 },
+          { "kategori": "publikasi", "value": 66.7 },
+          { "kategori": "ki", "value": 23.7 }
+        ]
+      }
+    },
+
+    "II": {
+      "metrics": {
+        "total": 5,
+        "items": [
+          { "key": "ketuaTim", "title": "Ketua Tim", "color": "#ffb322", "target": 56, "realisasi": 50 },
+          { "key": "publikasi", "title": "Publikasi", "color": "#f85a5a", "target": 66, "realisasi": 45 },
+          { "key": "purwarupa", "title": "Purwarupa", "color": "#4195ff", "target": 33, "realisasi": 20 },
+          { "key": "ki", "title": "KI", "color": "#5b21cd", "target": 40, "realisasi": 25 }
+        ]
+      },
+      "pusatRiset": [
+        { "nama": "PRA",  "nilai": { "publikasi": 15, "purwarupa": 4, "ki": 6, "model": 19, "paten": 7, "hakCipta": 10 },
+          "targetVsRealisasi": { "publikasi": { "target": 30, "realisasi": 15 }, "purwarupa": { "target": 2, "realisasi": 1 }, "ki": { "target": 5, "realisasi": 3 } } },
+        { "nama": "PRTR", "nilai": { "publikasi": 10, "purwarupa": 13, "ki": 12, "model": 8, "paten": 3, "hakCipta": 15 },
+          "targetVsRealisasi": { "publikasi": { "target": 24, "realisasi": 10 }, "purwarupa": { "target": 7, "realisasi": 4 }, "ki": { "target": 12, "realisasi": 5 } } },
+        { "nama": "PRTS", "nilai": { "publikasi": 6, "purwarupa": 9, "ki": 5, "model": 17, "paten": 11, "hakCipta": 2 },
+          "targetVsRealisasi": { "publikasi": { "target": 23, "realisasi": 6 }, "purwarupa": { "target": 0, "realisasi": 0 }, "ki": { "target": 5, "realisasi": 1 } } },
+        { "nama": "PRTP", "nilai": { "publikasi": 12, "purwarupa": 7, "ki": 15, "model": 5, "paten": 9, "hakCipta": 18 },
+          "targetVsRealisasi": { "publikasi": { "target": 26, "realisasi": 12 }, "purwarupa": { "target": 10, "realisasi": 1 }, "ki": { "target": 18, "realisasi": 6 } } }
+      ],
+      "orpa": {
+        "chartMax": 30,
+        "komposisi": [
+          { "kategori": "purwarupa", "value": 12.0 },
+          { "kategori": "publikasi", "value": 60.0 },
+          { "kategori": "ki", "value": 28.0 }
+        ]
+      }
+    },
+
+    "III": {
+      "metrics": {
+        "total": 5,
+        "items": [
+          { "key": "ketuaTim", "title": "Ketua Tim", "color": "#ffb322", "target": 56, "realisasi": 54 },
+          { "key": "publikasi", "title": "Publikasi", "color": "#f85a5a", "target": 66, "realisasi": 52 },
+          { "key": "purwarupa", "title": "Purwarupa", "color": "#4195ff", "target": 33, "realisasi": 26 },
+          { "key": "ki", "title": "KI", "color": "#5b21cd", "target": 40, "realisasi": 33 }
+        ]
+      },
+      "pusatRiset": [
+        { "nama": "PRA",  "nilai": { "publikasi": 18, "purwarupa": 6, "ki": 9, "model": 11, "paten": 4, "hakCipta": 14 },
+          "targetVsRealisasi": { "publikasi": { "target": 30, "realisasi": 18 }, "purwarupa": { "target": 2, "realisasi": 1 }, "ki": { "target": 5, "realisasi": 4 } } },
+        { "nama": "PRTR", "nilai": { "publikasi": 12, "purwarupa": 20, "ki": 5, "model": 15, "paten": 10, "hakCipta": 3 },
+          "targetVsRealisasi": { "publikasi": { "target": 24, "realisasi": 12 }, "purwarupa": { "target": 7, "realisasi": 6 }, "ki": { "target": 12, "realisasi": 6 } } },
+        { "nama": "PRTS", "nilai": { "publikasi": 8, "purwarupa": 3, "ki": 13, "model": 24, "paten": 6, "hakCipta": 9 },
+          "targetVsRealisasi": { "publikasi": { "target": 23, "realisasi": 8 }, "purwarupa": { "target": 0, "realisasi": 0 }, "ki": { "target": 5, "realisasi": 1 } } },
+        { "nama": "PRTP", "nilai": { "publikasi": 15, "purwarupa": 14, "ki": 7, "model": 7, "paten": 16, "hakCipta": 12 },
+          "targetVsRealisasi": { "publikasi": { "target": 26, "realisasi": 15 }, "purwarupa": { "target": 10, "realisasi": 2 }, "ki": { "target": 18, "realisasi": 8 } } }
+      ],
+      "orpa": {
+        "chartMax": 30,
+        "komposisi": [
+          { "kategori": "purwarupa", "value": 10.5 },
+          { "kategori": "publikasi", "value": 64.0 },
+          { "kategori": "ki", "value": 25.5 }
+        ]
+      }
+    },
+
+    "IV": {
+      "metrics": {
+        "total": 5,
+        "items": [
+          { "key": "ketuaTim", "title": "Ketua Tim", "color": "#ffb322", "target": 56, "realisasi": 56 },
+          { "key": "publikasi", "title": "Publikasi", "color": "#f85a5a", "target": 66, "realisasi": 64 },
+          { "key": "purwarupa", "title": "Purwarupa", "color": "#4195ff", "target": 33, "realisasi": 32 },
+          { "key": "ki", "title": "KI", "color": "#5b21cd", "target": 40, "realisasi": 40 }
+        ]
+      },
+      "pusatRiset": [
+        { "nama": "PRA",  "nilai": { "publikasi": 29, "purwarupa": 10, "ki": 12, "model": 8, "paten": 14, "hakCipta": 5 },
+          "targetVsRealisasi": { "publikasi": { "target": 30, "realisasi": 29 }, "purwarupa": { "target": 2, "realisasi": 2 }, "ki": { "target": 5, "realisasi": 5 } } },
+        { "nama": "PRTR", "nilai": { "publikasi": 23, "purwarupa": 19, "ki": 8, "model": 21, "paten": 4, "hakCipta": 17 },
+          "targetVsRealisasi": { "publikasi": { "target": 24, "realisasi": 23 }, "purwarupa": { "target": 7, "realisasi": 7 }, "ki": { "target": 12, "realisasi": 12 } } },
+        { "nama": "PRTS", "nilai": { "publikasi": 21, "purwarupa": 6, "ki": 18, "model": 12, "paten": 9, "hakCipta": 25 },
+          "targetVsRealisasi": { "publikasi": { "target": 23, "realisasi": 21 }, "purwarupa": { "target": 0, "realisasi": 0 }, "ki": { "target": 5, "realisasi": 5 } } },
+        { "nama": "PRTP", "nilai": { "publikasi": 25, "purwarupa": 16, "ki": 10, "model": 27, "paten": 20, "hakCipta": 8 },
+          "targetVsRealisasi": { "publikasi": { "target": 26, "realisasi": 25 }, "purwarupa": { "target": 10, "realisasi": 9 }, "ki": { "target": 18, "realisasi": 18 } } }
+      ],
+      "orpa": {
+        "chartMax": 30,
+        "komposisi": [
+          { "kategori": "purwarupa", "value": 9.0 },
+          { "kategori": "publikasi", "value": 67.0 },
+          { "kategori": "ki", "value": 24.0 }
+        ]
+      }
+    }
+  }
+}
