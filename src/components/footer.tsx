@@ -29,10 +29,10 @@ export default function Footer() {
       {/* <div className="relative pt-[47px]"> */}
       <div className="flex h-auto flex-col items-center justify-center gap-[36px] pt-[47px]">
         <div>
-          <h3 className="m-0 text-[36px] font-bold leading-[48px]">
+          <h3 className="m-0 text-[32px] font-bold leading-[48px]">
             Organisasi Riset Penerbangan dan Antariksa
           </h3>
-          <p className="m-0 text-[24px] font-normal leading-[48px]">
+          <p className="m-0 text-[20px] font-normal leading-[48px]">
             Badan Riset dan Inovasi Nasional
           </p>
         </div>

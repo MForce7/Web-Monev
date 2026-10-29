@@ -6,11 +6,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import Dashboard2 from './pages/dashboard_v2.tsx'
 import Tester from './pages/tester.tsx'
-import Login from './pages/login.tsx'
-// import Data from './pages/data.tsx'
-// import Visdata from './pages/visdata.tsx'
+import LoginPage from './pages/loginPage.tsx'
+// import LoginPage from './pages/login_v2.tsx'
 import TestUpload from './pages/TestUpload.tsx'
-// import MonevEditor from './pages/monevEditor.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
 import LogbookPages from './pages/logbookPages.tsx'
 
@@ -19,7 +17,8 @@ import MainLayout from './components/mainLayout.tsx'
 
 const router = createBrowserRouter([
   // Halaman TANPA navbar & footer
-  { path: '/login', element: <Login /> },
+  // { path: '/login', element: <Login /> },
+  { path: '/login', element: <LoginPage /> },
 
   // Halaman DENGAN navbar & footer
   {
@@ -31,11 +30,8 @@ const router = createBrowserRouter([
       { path: '/rekapitulasi', element: <Rekapitulasi /> },
       { path: '/logbook', element: <LogbookPages /> },
       { path: "/test-upload", element: <TestUpload /> },
-      // { path: "/visdata", element: <Visdata /> },
-      // { path: "/data", element: <Data /> },
       { path: '/test-upload', element: <TestUpload /> },
-      // { path: '/data', element: <Data /> },
-      // { path: '/monevEditor', element: <MonevEditor /> },
+
 
     ],
   },

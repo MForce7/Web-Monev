@@ -11,7 +11,25 @@
   --color-gov-900: #035388;
 }
 
+@keyframes triwulan-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--dx, 0px), 28px) scale(0.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+    filter: blur(0);
+  }
+}
 
+@media (prefers-reduced-motion: no-preference) {
+  .animate-triwulan-in {
+    animation: triwulan-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 100ms);
+  }
+}
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
     height: 8px;
@@ -43,4 +61,60 @@
         padding: 0 !important;
         box-shadow: none !important;
     }
+}
+
+
+
+/* login anima */
+@keyframes login-card-in {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes login-from-left {
+  from { opacity: 0; transform: translateX(-40px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+@keyframes login-panel-in {
+  from { opacity: 0; transform: translateX(80px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes login-item-in {
+  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+@keyframes login-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(30px, -40px) scale(1.15); }
+}
+
+@keyframes login-watermark-in {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 0.2; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-card {
+    animation: login-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .login-left {
+    animation: login-from-left 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--d, 0ms) + var(--i, 0) * 120ms);
+  }
+  .login-panel {
+    animation: login-panel-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  }
+  .login-item {
+    animation: login-item-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--d, 0ms) + var(--i, 0) * 90ms);
+  }
+  .login-float {
+    animation: login-float 12s ease-in-out infinite;
+  }
+  .login-watermark {
+    animation: login-watermark-in 1.4s ease-out 0.6s both;
+  }
 }
