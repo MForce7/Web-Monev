@@ -14,5 +14,5 @@ export default function DropdownBulan({
   value: string | null;
   onChange: (v: string) => void;
 }) {
-  return <Dropdown label="Pilih Bulan" options={opsi} value={value} onChange={onChange} />;
+  return <Dropdown label="Pilih Rentang Waktu" options={opsi} value={value} onChange={onChange} />;
 }
