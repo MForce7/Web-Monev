@@ -3,24 +3,41 @@ import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../config/rekapOutput.json";
 
-/* Bentuk satu baris di rekapOutput.json -> "output" -> <jenis> */
+/* Bentuk satu baris output */
 type LinkDukung = { label: string; url: string };
 type BarisOutput = {
+  jenis?: string;
   ketua?: string;
   judul?: string;
   status?: string;
   progres?: number;
   dataDukung?: LinkDukung[];
 };
+type ItemLogbook = { output: BarisOutput };
+type RekapJson = {
+  logbook?: Record<string, Record<string, ItemLogbook[]>>; // { CFC: { PRA: [item, ...] } }
+  output?: Record<string, BarisOutput[]>; // { Purwarupa: [...], Model: [...] }
+};
+
+const json = rekapOutput as unknown as RekapJson;
 
 const kolom = ["No", "Judul", "Status", "Presentase Progress (%)", "Data Dukung"];
 const grid = { gridTemplateColumns: "56px 1.6fr 1fr 1.2fr 1.2fr" };
 
-// JSON-nya berbentuk { logbook: {...}, output: { Purwarupa: [...], Model: [...], ... } }
-const semua = (rekapOutput as unknown as { output?: Record<string, BarisOutput[]> }).output ?? {};
-
 // Baris template yang masih kosong (belum diisi) tidak ditampilkan
 const terisi = (d: BarisOutput) => [d.ketua, d.judul, d.status].some((v) => v && v.trim() !== "");
+
+function ambilData(jenis: string): BarisOutput[] {
+  // Struktur baru: { output: { <jenis>: [...] } }
+  if (json.output) return (json.output[jenis] ?? []).filter(terisi);
+
+  // Struktur lama: output ada di dalam tiap item logbook, dibedakan lewat field `jenis`
+  return Object.values(json.logbook ?? {}).flatMap((perPusat) =>
+    Object.values(perPusat).flatMap((items) =>
+      items.map((it) => it.output).filter((o) => o.jenis === jenis)
+    )
+  );
+}
 
 function Sel({ children }: { children?: ReactNode }) {
   return (
@@ -31,7 +48,7 @@ function Sel({ children }: { children?: ReactNode }) {
 }
 
 export default function Tabel2({ jenis }: { jenis: string }) {
-  const data = (semua[jenis] ?? []).filter(terisi);
+  const data = ambilData(jenis);
   const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG); // sisa baris tetap kosong seperti desain
 
   return (

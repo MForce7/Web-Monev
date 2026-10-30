@@ -9,7 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-import { sidebarMenu, sidebarOutput } from "../../config/Datacontoh.ts";
+import { sidebarMenu, sidebarOutput, sidebarPemantauan } from "../../config/Datacontoh.ts";
 
 /* ---------- Warna: tiap grup punya aksen sendiri, satu keluarga hangat (merah -> koral) ---------- */
 export type Warna = {
@@ -62,11 +62,16 @@ export const PALET_BAWAAN: PaletSidebar = {
 };
 
 /* ---------- Menu: daftar diambil dari config yang sudah ada ---------- */
-type Grup = { id: "logbook" | "output"; judul: string; items: readonly string[] };
+type Grup = {
+  id: "logbook" | "output" | "pemantauan";
+  judul: string;
+  items: readonly string[];
+};
 
 const GRUP_MENU: Grup[] = [
   { id: "logbook", judul: "Rekap Logbook", items: sidebarMenu },
   { id: "output", judul: "Rekap Output", items: sidebarOutput },
+  { id: "pemantauan", judul: "Pemantauan", items: sidebarPemantauan },
 ];
 
 /* ---------- Animasi ---------- */
@@ -131,7 +136,7 @@ function GrupDropdown({
   const [tinggiIsi, setTinggiIsi] = useState(0);
 
   const adaAktif = (grup.items as readonly string[]).includes(active);
-  // Grup yang berisi menu aktif selalu terbuka (dan diberi cincin biru) supaya kelihatan posisi kita.
+  // Grup yang berisi menu aktif selalu terbuka (dan diberi cincin) supaya kelihatan posisi kita.
   // Grup lain terbuka sementara saat di-hover. Keduanya menggeser menu di bawahnya.
   const tersemat = adaAktif;
   const tampil = open || tersemat;
@@ -274,21 +279,11 @@ type SidebarProps = {
   active: string;
   /** Dipanggil dengan nama item yang diklik, mis. "Purwarupa" (sama seperti sidebar lama) */
   onChange: (value: string) => void;
-  /** Dipanggil saat tombol Pemantauan diklik (mis. pindah halaman). Tidak menyentuh onChange. */
-  onPemantauan?: () => void;
-  /** Beri true kalau halaman Pemantauan sedang dibuka, supaya tombolnya ditandai aktif */
-  pemantauanAktif?: boolean;
   /** Warna sidebar (opsional). Kalau tidak diisi, pakai PALET_BAWAAN. */
   warna?: PaletSidebar;
 };
 
-export default function Sidebar({
-  active,
-  onChange,
-  onPemantauan,
-  pemantauanAktif = false,
-  warna = PALET_BAWAAN,
-}: SidebarProps) {
+export default function Sidebar({ active, onChange, warna = PALET_BAWAAN }: SidebarProps) {
   const [bukaId, setBukaId] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
 
@@ -328,22 +323,6 @@ export default function Sidebar({
               }}
             />
           ))}
-
-          {/* Pemantauan: tanpa dropdown, langsung klik */}
-          <li
-            className={`rounded-2xl ${pemantauanAktif ? cincinAktif : ""}`}
-            style={pemantauanAktif ? warnaCincin(warna.pemantauan) : undefined}
-          >
-            <button
-              type="button"
-              aria-current={pemantauanAktif ? "page" : undefined}
-              onClick={() => onPemantauan?.()}
-              className={`flex h-9 w-full items-center justify-center px-3 text-sm font-bold text-white transition hover:brightness-110 ${kotakClass}`}
-              style={{ background: warna.pemantauan.grad }}
-            >
-              Pemantauan
-            </button>
-          </li>
         </ul>
       </nav>
     </aside>
