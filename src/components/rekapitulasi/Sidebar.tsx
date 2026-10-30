@@ -1,5 +1,5 @@
 import { GRAD_ACTIVE } from "../../config/Warna.ts";
-import { sidebarMenu, sidebarOutput } from "../../config/Datacontoh.ts";
+import { sidebarMenu, sidebarOutput, sidebarPemantauan } from "../../config/Datacontoh.ts";
 
 function Grup({ judul, menu, active, onChange }: {
   judul: string;
@@ -39,6 +39,7 @@ export default function Sidebar({ active, onChange }: { active: string; onChange
     <aside className="relative z-10 w-36 shrink-0 bg-white px-3 py-5 shadow-[4px_0_10px_rgba(0,0,0,0.12)] md:w-40">
       <Grup judul="Rekap Logbook" menu={sidebarMenu} active={active} onChange={onChange} />
       <Grup judul="Rekap Output" menu={sidebarOutput} active={active} onChange={onChange} />
+      <Grup judul="Pemantauan" menu={sidebarPemantauan} active={active} onChange={onChange} />
     </aside>
   );
 }
