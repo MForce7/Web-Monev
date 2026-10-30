@@ -178,7 +178,7 @@
   },
   "output": {
     "Purwarupa": [
-      { "ketua": "Dr. Andi Pratama", "judul": "Purwarupa Sensor Getaran Nirkabel", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Laporan Uji", "url": "https://example.com/purwarupa-1/laporan.pdf" }, { "label": "Foto Dokumentasi", "url": "https://example.com/purwarupa-1/foto" } ] },
+      { "ketua": "Dr. Andi Pratama", "judul": "dini", "status": "Selesai", "progres": 100, "dataDukung": [ { "label": "Laporan Uji", "url": "https://example.com/purwarupa-1/laporan.pdf" }, { "label": "Foto Dokumentasi", "url": "https://example.com/purwarupa-1/foto" } ] },
       { "ketua": "Rina Wulandari, M.Sc.", "judul": "Purwarupa Alat Pemantau Kualitas Air", "status": "Berjalan", "progres": 55, "dataDukung": [ { "label": "Desain Teknis", "url": "https://example.com/purwarupa-2/desain.pdf" } ] },
       { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
       { "ketua": "", "judul": "", "status": "", "progres": 0, "dataDukung": [] },
