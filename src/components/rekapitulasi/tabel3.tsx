@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
+import rekapOutput from "../../config/rekapOutput.json";
 
 const BULAN = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -44,36 +45,10 @@ export function periksaIsi(isi?: Partial<Record<string, string | number | null>>
   return { status: "Lengkap", belumSesuai: [] };
 }
 
-/* ---------- Data ---------- */
-// Contoh sementara supaya tombol Cetak bisa dicoba. Ubah ke false setelah terhubung ke logbook.
-const PAKAI_CONTOH = true;
-
-const CONTOH: BarisPantau[] = [
-  {
-    id: 1,
-    nama: "Mulya Diana Murti, S.Si., M.Si.",
-    pusatRiset: "Pusat Riset Antariksa",
-    bulan: {
-      Januari: { status: "Lengkap" },
-      Februari: { status: "Lengkap" },
-      Maret: { status: "Lengkap" },
-      April: { status: "Kosong", belumSesuai: ["Semua kolom kosong"] },
-      Mei: { status: "Belum Lengkap", belumSesuai: ["Data Dukung Progres", "Output Data Dukung"] },
-    },
-  },
-  {
-    id: 2,
-    nama: "Prof. Dr. Thomas Djamaluddin",
-    pusatRiset: "Pusat Riset Antariksa",
-    bulan: {
-      Januari: { status: "Belum Lengkap", belumSesuai: ["Data Dukung Progres", "Judul Output", "Output Data Dukung"] },
-      Februari: { status: "Belum Lengkap", belumSesuai: ["Jenis Output", "Judul Output"] },
-      Maret: { status: "Lengkap" },
-    },
-  },
-];
-
-const semua: BarisPantau[] = PAKAI_CONTOH ? CONTOH : [];
+/* ---------- Data ----------
+   Diambil dari rekapOutput.json -> "pemantauan". Edit datanya di file JSON itu. */
+const semua: BarisPantau[] =
+  (rekapOutput as unknown as { pemantauan?: BarisPantau[] }).pemantauan ?? [];
 
 /* ---------- Tampilan status ---------- */
 const WARNA_STATUS: Record<StatusPantau, string> = {
@@ -240,7 +215,11 @@ const LEBAR_STICKY = 256; // 56px (No) + 200px (Nama Ketua Tim), dipakai untuk p
 type Props = { bulan?: string | null; pusatRiset: string | null };
 
 export default function Tabel3({ pusatRiset }: Props) {
-  const data = pusatRiset ? semua.filter((d) => d.pusatRiset === pusatRiset) : semua;
+  // "Semua Pusat Riset" (atau belum memilih) = tampilkan semua ketua tim
+  const data =
+    pusatRiset && pusatRiset !== "Semua Pusat Riset"
+      ? semua.filter((d) => d.pusatRiset === pusatRiset)
+      : semua;
   const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG);
 
   const ref = useRef<HTMLDivElement>(null);
