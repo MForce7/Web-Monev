@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 
-/** Panah bulat merah di ujung kanan tombol dropdown */
+/** Panah bulat biru kobalt di ujung kanan tombol dropdown */
 function Chevron({ open }: { open: boolean }) {
   return (
-    <span className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-[#f25c6a]">
+    <span className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-[#2a5aa8]">
       <svg
         viewBox="0 0 12 12"
         className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
@@ -56,14 +56,14 @@ export default function Dropdown({
   return (
     // Wrapper menjaga tinggi tetap 36px, panel melebar ke bawah tanpa menggeser isi halaman
     <div ref={ref} className="relative h-9">
-      <div className="absolute inset-x-0 top-0 z-30 overflow-hidden rounded-[1.1rem] bg-white shadow-[0_4px_10px_rgba(0,0,0,0.18)]">
+      <div className="absolute inset-x-0 top-0 z-30 overflow-hidden rounded-[1.1rem] border border-[#dbe6f7] bg-white shadow-[0_4px_12px_rgba(27,63,120,0.14)]">
         <button
           type="button"
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={listId}
           onClick={() => setOpen((o) => !o)}
-          className="relative flex h-9 w-full items-center justify-center px-10 text-sm font-bold text-[#e8202f]"
+          className="relative flex h-9 w-full items-center justify-center px-10 text-sm font-bold text-[#1b3560] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a5aa8]/30"
         >
           {value ?? label}
           <Chevron open={open} />
@@ -81,8 +81,8 @@ export default function Dropdown({
                       onChange(opt);
                       setOpen(false);
                     }}
-                    className={`w-full border-t border-gray-200 py-1.5 text-center text-xs font-bold text-[#e8202f] transition hover:bg-red-50 ${
-                      dipilih ? "bg-red-50" : ""
+                    className={`w-full border-t border-[#dbe6f7] py-1.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] ${
+                      dipilih ? "bg-[#dbe6f7]" : ""
                     }`}
                   >
                     {opt}
