@@ -14,7 +14,7 @@ export const bulanOpsi = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
-export const pusatRisetOpsi = ["PRA", "PRTS", "PRTR", "PRTP"];
+export const pusatRisetOpsi = ["PRA", "PRTS", "PRTR", "PRTP", "Semua Pusat Riset"];
 
 export type Kolom = { key: string; label: string; className?: string };
 
