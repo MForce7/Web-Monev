@@ -12,10 +12,13 @@ export interface LoginValues {
 }
 
 interface LoginFormProps {
-  onSubmit: (values: LoginValues) => void;
+  onSubmit: (values: LoginValues) => void | Promise<void>;
+  busy?: boolean;
+  error?: string;
 }
 
-export default function LoginForm({ onSubmit }: LoginFormProps) {
+export default function LoginForm({ onSubmit, busy = false, error = "" }: LoginFormProps) {
+// export default function LoginForm({ onSubmit }: LoginFormProps) {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
@@ -25,6 +28,7 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (busy) return;
     onSubmit({ username, password, rememberMe });
   };
 
@@ -54,11 +58,12 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
         <Item index={2} delay={FORM_DELAY}>
           <Field
             id="username"
-            label="Email/Username"
-            placeholder="Masukkan Email/Username"
+            label="Email"
+            type="email"
+            placeholder="Masukkan email aktif"
             value={username}
             onChange={setUsername}
-            autoComplete="username"
+            autoComplete="email"
             icon={<UserIcon />}
           />
         </Item>
@@ -102,18 +107,22 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
             </a>
           </div>
         </Item>
-
+          {error && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
+            >
+              {error}
+            </div>
+          )}
         <Item index={5} delay={FORM_DELAY}>
           <button
             type="submit"
-            className="group relative w-full overflow-hidden rounded-full bg-blue-500 px-6 py-3 text-lg font-semibold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl active:translate-y-0 active:scale-95"
+            disabled={busy}
+            className="group relative w-full overflow-hidden rounded-full bg-blue-500 px-6 py-3 text-lg font-semibold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl active:translate-y-0 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
-            {/* kilau yang menyapu tombol saat hover */}
-            <span
-              aria-hidden
-              className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full"
-            />
-            <span className="relative">Masuk</span>
+            <span aria-hidden className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <span className="relative">{busy ? "Memproses..." : "Masuk"}</span>
           </button>
         </Item>
       </form>

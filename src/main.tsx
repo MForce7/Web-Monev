@@ -11,28 +11,33 @@ import LoginPage from './pages/loginPage.tsx'
 import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
 import LogbookPages from './pages/logbookPages.tsx'
+import Profile from './pages/profile.tsx'
 
 
 import MainLayout from './components/mainLayout.tsx'
+import ProtectedRoute from './components/protectedRoute.tsx'
 
 const router = createBrowserRouter([
-  // Halaman TANPA navbar & footer
-  // { path: '/login', element: <Login /> },
   { path: '/login', element: <LoginPage /> },
 
-  // Halaman DENGAN navbar & footer
   {
     element: <MainLayout />,
     children: [
+      // Publik
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
-      { path: '/tester', element: <Tester /> },
-      { path: '/rekapitulasi', element: <Rekapitulasi /> },
-      { path: '/logbook', element: <LogbookPages /> },
-      { path: "/test-upload", element: <TestUpload /> },
-      { path: '/test-upload', element: <TestUpload /> },
 
-
+      // Wajib login
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: '/logbook', element: <LogbookPages /> },
+          { path: '/rekapitulasi', element: <Rekapitulasi /> },
+          { path: '/profile', element: <Profile /> },
+          { path: '/tester', element: <Tester /> },
+          { path: '/test-upload', element: <TestUpload /> },
+        ],
+      },
     ],
   },
 ])
