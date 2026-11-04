@@ -81,6 +81,7 @@ const menus = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Logbook", href: "/logbook" },
   { label: "Rekapitulasi", href: "/rekapitulasi" },
+  { label: "Kelompok Riset", href: "/kelompokriset" },
 ];
 
 function getInitials(name: string): string {

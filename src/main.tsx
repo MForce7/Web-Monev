@@ -12,6 +12,7 @@ import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
 import LogbookPages from './pages/logbookPages.tsx'
 import Profile from './pages/profile.tsx'
+import KelompokRiset from './pages/kelompokriset.tsx'
 
 
 import MainLayout from './components/mainLayout.tsx'
@@ -26,7 +27,7 @@ const router = createBrowserRouter([
       // Publik
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
-
+ { path: '/kelompokriset', element: <KelompokRiset /> },
       // Wajib login
       {
         element: <ProtectedRoute />,
