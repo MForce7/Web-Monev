@@ -222,9 +222,9 @@
   },
   "pemantauan": [
     {"id": 1, "nama": "Dr. Nisrina, S.Si, M.Si", "pusatRiset": "PRA", "bulan": {"Januari": {"status": "Lengkap", "belumSesuai": []}, "Februari": {"status": "Kosong", "belumSesuai": ["Semua kolom kosong"]}, "Maret": {"status": "Lengkap", "belumSesuai": []}, "April": {"status": "Kosong", "belumSesuai": ["Semua kolom kosong"]}, "Mei": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres", "Output Data Dukung"]}}},
-    {"id": 2, "nama": "lucinta luna, M.Si.", "pusatRiset": "PRTS", "bulan": {"Januari": {"status": "Kosong", "belumSesuai": ["Semua kolom kosong"]}, "Februari": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres", "Output Data Dukung"]}, "Maret": {"status": "Kosong", "belumSesuai": ["Semua kolom kosong"]}}},
-    {"id": 3, "nama": "Raffi Ahmad, M.Kom.", "pusatRiset": "PRTS", "bulan": {"Februari": {"status": "Lengkap", "belumSesuai": []}, "Maret": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres"]}}},
+    {"id": 2, "nama": "Ziva Magnolya, M.Si.", "pusatRiset": "PRTS", "bulan": {"Januari": {"status": "Kosong", "belumSesuai": ["Semua kolom kosong"]}, "Februari": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres", "Output Data Dukung"]}, "Maret": {"status": "Kosong", "belumSesuai": ["Semua kolom kosong"]}}},
+    {"id": 3, "nama": "Jerome Poline, M.Kom.", "pusatRiset": "PRTS", "bulan": {"Februari": {"status": "Lengkap", "belumSesuai": []}, "Maret": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres"]}}},
     {"id": 4, "nama": "Biru Laut, M.T.", "pusatRiset": "PRTR", "bulan": {"Januari": {"status": "Belum Lengkap", "belumSesuai": ["Kendala Ditemui", "Mitigasi / Rencana Tindak Lanjut"]}, "April": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres"]}}},
-    {"id": 5, "nama": "Teazzi enaq, M.Sc.", "pusatRiset": "PRTP", "bulan": {"Mei": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres", "Output Data Dukung"]}}}
+    {"id": 5, "nama": "Dini Dwirahayu, M.Sc.", "pusatRiset": "PRTP", "bulan": {"Mei": {"status": "Belum Lengkap", "belumSesuai": ["Data Dukung Progres", "Output Data Dukung"]}}}
   ]
 }
