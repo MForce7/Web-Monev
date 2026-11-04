@@ -12,8 +12,7 @@ import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
 import LogbookPages from './pages/logbookPages.tsx'
 import Profile from './pages/profile.tsx'
-
-
+import Calendar from './pages/calendar.tsx'
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
 
@@ -26,6 +25,7 @@ const router = createBrowserRouter([
       // Publik
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
+      { path: '/calendar', element: <Calendar /> },
 
       // Wajib login
       {
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
           { path: '/profile', element: <Profile /> },
           { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
-        ],
+                  ],
       },
     ],
   },
