@@ -5,7 +5,7 @@ import CalendarDesc from "../components/dashboard_2/calendardesc";
 import TriwulanStat from "../components/dashboard_2/triwulanStat";
 import Leaderboard, { type LeaderboardData } from "../components/dashboard_2/leaderboard";
 import dashboardData from "../data/dashboardData.json";
-import calendarData from "../data/calendar.json";
+import calendarData from "../data/dashboard/calendar.json";
 import type { DashboardData } from "../types/dashboard";
 import data from "../data/leaderboard.json";
 
