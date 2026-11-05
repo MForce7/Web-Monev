@@ -5,57 +5,9 @@ import CalendarDesc from "../components/dashboard_2/calendardesc";
 import TriwulanStat from "../components/dashboard_2/triwulanStat";
 import Leaderboard, { type LeaderboardData } from "../components/dashboard_2/leaderboard";
 import dashboardData from "../data/dashboardData.json";
+import calendarData from "../data/calendar.json";
 import type { DashboardData } from "../types/dashboard";
 import data from "../data/leaderboard.json";
-
-// Data awal (contoh) – ganti dengan data dari API / database
-const INITIAL_AGENDAS: Agenda[] = [
-  {
-    id: "a1",
-    date: "2026-11-03",
-    time: "09:30",
-    name: "Rapat Internal ORPA",
-    place: "Ruang Rapat Lt. 2",
-    zoomLink: "https://zoom.us/j/1234567890",
-    description: "Pembahasan progres kegiatan ORPA bulan November.",
-  },
-  {
-    id: "a2",
-    date: "2026-11-03",
-    time: "14:30",
-    name: "Sosialisasi Pusat Data",
-    place: "Ruang Rapat Lt. 3",
-    zoomLink: "https://zoom.us/j/1234567891",
-    description: "Sosialisasi layanan dan tata kelola Pusat Data.",
-  },
-  {
-    id: "a3",
-    date: "2026-11-20",
-    time: "09:30",
-    name: "Zoom Meeting ORPA",
-    place: "Online",
-    zoomLink: "https://zoom.us/j/1234567892",
-    description: "",
-  },
-  {
-    id: "a4",
-    date: "2026-11-20",
-    time: "14:30",
-    name: "Presentasi Progres",
-    place: "Online",
-    zoomLink: "https://zoom.us/j/1234567893",
-    description: "",
-  },
-  {
-    id: "a5",
-    date: "2026-11-26",
-    time: "09:30",
-    name: "Zoom Meeting ORPA",
-    place: "Online",
-    zoomLink: "https://zoom.us/j/1234567894",
-    description: "",
-  },
-];
 
 export default function DashboardV2() {
   /* ---------- state kalender (dipakai CalendarBox & CalendarDesc) ---------- */
@@ -65,7 +17,7 @@ export default function DashboardV2() {
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(todayKey);
-  const [agendas, setAgendas] = useState<Agenda[]>(INITIAL_AGENDAS);
+  const [agendas, setAgendas] = useState<Agenda[]>(calendarData as Agenda[]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const byDate = useMemo(() => {
