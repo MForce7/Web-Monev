@@ -1,8 +1,11 @@
 export const JENIS_OUTPUT = ['Purwarupa', 'Model', 'Publikasi', 'KI', 'Paten', 'Hak Cipta'] as const
 
-const PRODUK = ['Design', 'Manufakturing', 'Testing', 'FINISHED']
-const PUBLIKASI = ['Design', 'Manufakturing', 'Testing', 'Drafting', 'Submitting', 'In-Review', 'Accepted', 'Published']
-const KI = ['Pengembangan', 'Submitting', 'In-Review', 'Registered']
+// Indikator output Purwarupa & Model
+const PRODUK = ['Desain', 'Manufaktur', 'Pengujian/Selesai Uji']
+// Indikator output Publikasi
+const PUBLIKASI = ['Draf', 'Submitted', 'Under Review', 'Accepted', 'Published']
+// Indikator output Kekayaan Intelektual (KI, Paten, Hak Cipta)
+const KI = ['Draf', 'Submit Intipdaqu', 'Terdaftar DJKI', 'Granted/Diberi']
 
 const STATUS_BY_JENIS: Record<string, string[]> = {
   Purwarupa: PRODUK, Model: PRODUK, Publikasi: PUBLIKASI, KI, Paten: KI, 'Hak Cipta': KI,
@@ -32,10 +35,18 @@ const TONE = {
 }
 const tone = (cls: string, names: string[]) => Object.fromEntries(names.map((n) => [n, cls]))
 
+// Status TERAKHIR tiap jenis output = sudah 100% -> selalu hijau.
+// Otomatis mengikuti daftar status di atas, jadi kalau daftarnya diubah, warna hijaunya ikut pindah.
+const STATUS_TERAKHIR = Object.values(STATUS_BY_JENIS).map((list) => list[list.length - 1])
+
+// Nama status lama tetap didaftarkan supaya data lama tetap berwarna
 const STATUS_TONE: Record<string, string> = {
-  ...tone(TONE.awal, ['Belum Mulai', 'Design', 'Pengembangan', 'Drafting']),
-  ...tone(TONE.proses, ['Manufakturing', 'Testing', 'Submitting', 'In-Review', 'Berjalan']),
-  ...tone(TONE.selesai, ['FINISHED', 'Accepted', 'Published', 'Registered', 'Selesai']),
+  ...tone(TONE.awal, ['Belum Mulai', 'Design', 'Desain', 'Pengembangan', 'Drafting', 'Draf']),
+  ...tone(TONE.proses, [
+    'Manufakturing', 'Manufaktur', 'Testing', 'Submitting', 'Submitted',
+    'In-Review', 'Under Review', 'Accepted', 'Submit Intipdaqu', 'Terdaftar DJKI', 'Berjalan',
+  ]),
+  ...tone(TONE.selesai, ['FINISHED', 'Registered', 'Selesai', ...STATUS_TERAKHIR]),
   Terlambat: TONE.telat,
 }
 
