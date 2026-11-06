@@ -14,7 +14,7 @@ import LogbookPages from './pages/logbookPages.tsx'
 import Profile from './pages/profile.tsx'
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
-import Importexcel from './pages/importexcel.tsx'
+import Importjson from './pages/importjson.tsx'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -25,8 +25,8 @@ const router = createBrowserRouter([
       // Publik
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
-      { path: '/importexcel', element: <Importexcel /> },
-
+      { path: '/importjson', element: <Importjson /> },
+  
       // Wajib login
       {
         element: <ProtectedRoute />,

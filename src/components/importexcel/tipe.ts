@@ -24,7 +24,12 @@ export type Isian = {
   belumSesuai: string[];
 };
 
-export type HasilBaca = { sheet: string; bulan: string | null; rows: Isian[] };
+export type HasilBaca = {
+  sheet: string; // sheet bulan yang sedang aktif
+  bulanDefault: string; // bulan terakhir yang sudah ada isiannya
+  bulanAda: string[]; // bulan yang terdeteksi di file
+  perBulan: Record<string, Isian[]>;
+};
 
 export type Kolom =
   | "no" | "ketua" | "judulAktivitas" | "target" | "statusPelaksanaan" | "persenPelaksanaan"
