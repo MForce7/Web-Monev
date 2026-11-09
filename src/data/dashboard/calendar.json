@@ -1,0 +1,7 @@
+[
+  { "id": "a1", "date": "2026-11-03", "time": "10:30", "name": "Rapat Internal ORPA", "place": "Ruang Rapat Lt. 2", "zoomLink": "https://zoom.us/j/1234567890", "description": "Pembahasan progres kegiatan ORPA bulan November." },
+  { "id": "a2", "date": "2026-11-03", "time": "14:30", "name": "Sosialisasi Pusat Data", "place": "Ruang Rapat Lt. 3", "zoomLink": "https://zoom.us/j/1234567891", "description": "Sosialisasi layanan dan tata kelola Pusat Data." },
+  { "id": "a3", "date": "2026-11-20", "time": "09:30", "name": "Zoom Meeting ORPA", "place": "Online", "zoomLink": "https://zoom.us/j/1234567892", "description": "" },
+  { "id": "a4", "date": "2026-11-20", "time": "14:30", "name": "Presentasi Progres", "place": "Online", "zoomLink": "https://zoom.us/j/1234567893", "description": "" },
+  { "id": "a5", "date": "2026-11-26", "time": "09:30", "name": "Zoom Meeting ORPA", "place": "Online", "zoomLink": "https://zoom.us/j/1234567894", "description": "" }
+]

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
-import rekapOutput from "../../config/rekapOutput.json";
+import rekapOutput from "../../data/rekapOutput.json";
 
 const BULAN = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",

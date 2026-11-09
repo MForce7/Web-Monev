@@ -18,16 +18,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     <div className="w-56 p-4 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center font-sans">
       {/* Bagian Judul Header */}
       <div className="text-center w-full pb-2 border-b border-gray-200">
-        <div
-          className="font-bold text-sm tracking-wide underline decoration-1 underline-offset-2"
-          style={{ color, textDecorationColor: color }}
-        >
+        <div className="font-bold text-sm tracking-wide" style={{ color }}>
           {title}
         </div>
-        <div
-          className="font-bold text-xs underline decoration-1 underline-offset-2 mt-0.5"
-          style={{ color, textDecorationColor: color }}
-        >
+        <div className="font-bold text-xs mt-0.5" style={{ color }}>
           {subtitle}
         </div>
       </div>

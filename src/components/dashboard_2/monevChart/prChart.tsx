@@ -30,6 +30,13 @@ export default function PrChart({ data }: PrChartProps) {
     return <p className="text-center text-sm text-gray-500">Belum ada data.</p>;
   }
 
+  // Gradasi dibalik: warna gelap berada di sisi yang mendekati 0
+  const kategoriBalik: Kategori[] = kategori.map((k) => ({
+    ...k,
+    from: k.to,
+    to: k.from,
+  }));
+
   return (
     <div className="mt-8 grid gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
       {items.map((p) => (
@@ -37,8 +44,8 @@ export default function PrChart({ data }: PrChartProps) {
           <h4 className="mb-2 text-center text-xs font-bold text-gray-800">
             Realisasi Capaian {p.nama}
           </h4>
-          <PusatRisetChart nilai={p.nilai} kategori={kategori} />
-          <Legend items={kategori} size="sm" />
+          <PusatRisetChart nilai={p.nilai} kategori={kategoriBalik} />
+          <Legend items={kategoriBalik} size="sm" />
         </Card>
       ))}
     </div>

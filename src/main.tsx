@@ -17,6 +17,7 @@ import KelompokRiset from './pages/kelompokriset.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
+import Importjson from './pages/importjson.tsx'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -28,6 +29,8 @@ const router = createBrowserRouter([
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
  { path: '/kelompokriset', element: <KelompokRiset /> },
+      { path: '/importjson', element: <Importjson /> },
+  
       // Wajib login
       {
         element: <ProtectedRoute />,
@@ -37,7 +40,7 @@ const router = createBrowserRouter([
           { path: '/profile', element: <Profile /> },
           { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
-        ],
+                  ],
       },
     ],
   },
