@@ -4,7 +4,7 @@ import Langkah from "../components/importexcel/Langkah";
 import TombolGradasi from "../components/importexcel/TombolGradasi";
 import { GRAD } from "../components/importexcel/konstanta";
 import MonthlyLogTable from "../components/logbook/MonthlyLogTable";
-import { buatPrompt, gabungEntri, parseBerkas, type EntriLogbook, type HasilEntri } from "../lib/validasiLogbook";
+import { buatPrompt, bulanAdaIsi, gabungEntri, parseBerkas, type EntriLogbook, type HasilEntri } from "../lib/validasiLogbook";
 import { BULAN } from "../lib/LogbookData";
 import { ambilLogbookAktif, daftarLogbook, hapusLogbook, simpanLogbook } from "../lib/logbookStore";
 
@@ -12,11 +12,9 @@ const WARNA_GALAT = "bg-[#fee2e2] text-[#991b1b]";
 const th = "border-r border-white/25 px-3 py-2 text-center text-xs font-bold text-white last:border-r-0";
 const td = "border-b border-r border-[#dbe6f7] px-3 py-2 align-top text-sm text-[#1b3560] last:border-r-0";
 const teks = "whitespace-pre-line [overflow-wrap:anywhere]";
-const inputAngka = "w-16 disabled:opacity-40 rounded-lg border border-[#9db8e0] bg-white px-2 py-1 text-center text-sm font-bold text-[#1b3560] focus:outline-none focus:ring-2 focus:ring-[#2a5aa8]";
 
 const jml = (h: HasilEntri, level: "galat" | "peringatan") => h.masalah.filter((x) => x.level === level).length;
-const bulanTerisi = (h: HasilEntri) =>
-  h.entri.bulanan.filter((b) => b.aktivitas.uraian || b.aktivitas.kendala || b.aktivitas.mitigasi || b.output.judul || b.output.jenis).length;
+const bulanTerisi = (h: HasilEntri) => h.entri.bulanan.filter(bulanAdaIsi).length;
 
 /** Gabung hasil baru ke daftar lama; ketua yang sama digabung per bulan (posisi tetap) */
 function gabungHasil(lama: HasilEntri[], baru: HasilEntri[]) {
@@ -82,11 +80,8 @@ export default function ImportJson() {
   const [info, setInfo] = useState("");
   const [tersimpan, setTersimpan] = useState<number | null>(null);
   const [versi, setVersi] = useState(0); // memicu hitung ulang jumlah data tersimpan
-  const [dari, setDari] = useState(1);
-  const [sampai, setSampai] = useState(5);
   const [gabung, setGabung] = useState(true);
-  const [bulanPilih, setBulanPilih] = useState(""); // "" = 12 bulan sekaligus
-  const [semuaKetua, setSemuaKetua] = useState(false); // true = tanpa batas rentang ketua
+  const [bulanPilih, setBulanPilih] = useState<string>(BULAN[new Date().getMonth()]); // bulan yang dikonversi di prompt AI
 
   const reset = () => {
     setFiles([]);
@@ -192,19 +187,12 @@ export default function ImportJson() {
 
   const salinPrompt = async () => {
     try {
-      await navigator.clipboard.writeText(buatPrompt(semuaKetua ? 0 : dari, semuaKetua ? 0 : sampai, bulanPilih));
-      setInfo(
-        `Prompt untuk ${bulanPilih ? `bulan ${bulanPilih}, ` : ""}${semuaKetua ? "semua ketua" : `ketua ke-${dari} sampai ke-${sampai}`} sudah disalin. Tempel ke AI bersama file Excel, lalu unggah JSON hasilnya di sini.`,
-      );
+      // 0, 0 = tanpa batas rentang: selalu semua ketua
+      await navigator.clipboard.writeText(buatPrompt(0, 0, bulanPilih));
+      setInfo(`Prompt untuk bulan ${bulanPilih}, semua ketua, sudah disalin. Tempel ke AI bersama file Excel, lalu unggah JSON hasilnya di sini.`);
     } catch {
       setError("Prompt tidak bisa disalin otomatis. Izinkan akses clipboard di browser.");
     }
-  };
-
-  const batchBerikutnya = () => {
-    const ukuranBatch = Math.max(1, sampai - dari + 1);
-    setDari(sampai + 1);
-    setSampai(sampai + ukuranBatch);
   };
 
   const hapusTersimpan = () => {
@@ -232,7 +220,7 @@ export default function ImportJson() {
               <div>
                 <h2 className="text-xl font-extrabold">Import logbook dari JSON</h2>
                 <p className="text-[13px] text-slate-500">
-                  Excel besar dikonversi AI per batch (per ketua atau per bulan). Unggah semua file JSON-nya (boleh banyak sekaligus), periksa laporan, lalu simpan
+                  Excel dikonversi AI menjadi JSON (semua ketua tim, satu bulan per prompt). Unggah file JSON-nya (boleh banyak sekaligus), periksa laporan, lalu simpan
                 </p>
               </div>
               <TombolGradasi onClick={unduhTemplateJson}>
@@ -243,49 +231,21 @@ export default function ImportJson() {
               </TombolGradasi>
             </div>
 
-            {/* Prompt AI per batch */}
+            {/* Prompt AI */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-6 py-3 text-[13px]">
-              <span className="font-bold">Prompt AI untuk</span>
+              <span className="font-bold">Prompt AI untuk semua ketua, bulan</span>
               <select
                 value={bulanPilih}
                 aria-label="Bulan yang dikonversi"
-                onChange={(e) => {
-                  setBulanPilih(e.target.value);
-                  setSemuaKetua(!!e.target.value); // satu bulan penuh = semua ketua sekali jalan
-                }}
+                onChange={(e) => setBulanPilih(e.target.value)}
                 className="rounded-lg border border-[#9db8e0] bg-white px-2 py-1 text-sm font-bold text-[#1b3560] focus:outline-none focus:ring-2 focus:ring-[#2a5aa8]"
               >
-                <option value="">12 bulan sekaligus</option>
                 {BULAN.map((b) => (
                   <option key={b} value={b}>
-                    Bulan {b} saja
+                    {b}
                   </option>
                 ))}
               </select>
-              <span className="font-bold">ketua urutan ke</span>
-              <input
-                type="number"
-                min={1}
-                value={dari}
-                aria-label="Dari ketua ke"
-                disabled={semuaKetua}
-                onChange={(e) => setDari(Math.max(1, parseInt(e.target.value) || 1))}
-                className={inputAngka}
-              />
-              <span className="font-bold">sampai</span>
-              <input
-                type="number"
-                min={dari}
-                value={sampai}
-                aria-label="Sampai ketua ke"
-                disabled={semuaKetua}
-                onChange={(e) => setSampai(Math.max(dari, parseInt(e.target.value) || dari))}
-                className={inputAngka}
-              />
-              <label className="flex cursor-pointer items-center gap-1.5 font-bold">
-                <input type="checkbox" checked={semuaKetua} onChange={(e) => setSemuaKetua(e.target.checked)} className="h-4 w-4 accent-[#1f4e8c]" />
-                Semua ketua
-              </label>
               <TombolGradasi onClick={() => void salinPrompt()}>
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect x="9" y="9" width="11" height="11" rx="2" />
@@ -293,15 +253,8 @@ export default function ImportJson() {
                 </svg>
                 Salin Prompt AI
               </TombolGradasi>
-              <button type="button" onClick={batchBerikutnya} disabled={semuaKetua} className="rounded-full px-3 py-1.5 text-xs font-bold text-[#1f4e8c] hover:bg-[#eaf0fa] disabled:opacity-40">
-                Batch berikutnya
-              </button>
               <span className="text-xs text-slate-500">
-                {semuaKetua
-                  ? "Satu sheet bulan penuh (semua ketua, semua pusat riset) sekitar 15 ribu token. Bila jawaban AI terpotong, matikan 'Semua ketua' dan pakai rentang, mis. 1 sampai 25"
-                  : bulanPilih
-                    ? "Satu bulan memuat data lebih sedikit per ketua, jadi rentangnya bisa lebar (mis. 1 sampai 25)"
-                    : "12 bulan sekaligus: disarankan 4–6 ketua per batch supaya jawaban AI tidak terpotong"}
+                Satu sheet bulan penuh (semua ketua, semua pusat riset) sekitar 15 ribu token. Bila jawaban AI terpotong, minta AI melanjutkan lalu unggah semua file JSON-nya
               </span>
             </div>
 
@@ -330,7 +283,7 @@ export default function ImportJson() {
               <div className="text-center sm:text-left">
                 <p className="text-base font-extrabold">Tarik dan lepas satu atau beberapa file JSON di sini</p>
                 <p className="text-[13px] text-slate-500">
-                  Hasil tiap batch digabung otomatis. Ketua yang sama digabung per bulan, bulan yang terisi di file terbaru menggantikan bulan yang sama
+                  Hasil tiap file digabung otomatis. Ketua yang sama digabung per bulan, bulan yang terisi di file terbaru menggantikan bulan yang sama
                 </p>
               </div>
               <TombolGradasi besar onClick={() => inputRef.current?.click()} disabled={memuat}>
