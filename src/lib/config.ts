@@ -51,3 +51,21 @@ const STATUS_TONE: Record<string, string> = {
 }
 
 export const statusTone = (status: string) => STATUS_TONE[status] ?? TONE.awal
+
+
+
+
+
+
+
+export const KATEGORI_PENDANAAN = [
+  { value: 'RM', label: 'Rupiah Murni (RM)' },
+  { value: 'PNBP', label: 'PNBP' },
+] as const
+
+export const SKEMA_MITRA_PROGRAM = [
+  { value: 'ORPA', label: 'ORPA (Organisasi Riset Penerbangan dan Antariksa)' },
+  { value: 'DFRI', label: 'DFRI (Deputi Bidang Fasilitasi Riset dan Inovasi)' },
+  { value: 'RIIM', label: 'RIIM (Riset dan Inovasi untuk Indonesia Maju)' },
+  { value: 'PRIS', label: 'PRIS (Program Riset Inovasi Substantif / Strategis)' },
+] as const

@@ -1,0 +1,43 @@
+{
+  "periset": {
+    "id": "periset-002",
+    "nama": "Sari Wulandari",
+    "unitKerja": "Pusat Riset Bioteknologi",
+    "satuanKerja": "Organisasi Riset Hayati dan Lingkungan"
+  },
+  "activities": [
+    {
+      "id": "activity-003",
+      "header": {
+        "judulAktivitas": "Pengembangan Bibit Unggul Tahan Kekeringan",
+        "targetOutputs": [
+          { "jenis": "Model", "jumlah": 1 }
+        ],
+        "progresTotal": 0,
+        "progresKeterangan": "",
+        "statusPelaksanaan": "",
+        "kategoriPendanaan": "Rupiah Murni",
+        "skemaMitraProgram": "",
+        "judulKontrak": "",
+        "targetPenerimaan": 0,
+        "targetPenggunaan": 0,
+        "banyakTermin": 0,
+        "statusKontrak": ""
+      },
+      "bulanan": [
+        { "bulan": "Januari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "April", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "September", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "November", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } }
+      ]
+    }
+  ]
+}

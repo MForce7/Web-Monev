@@ -1,5 +1,7 @@
 import { STATUS_PELAKSANAAN, clampPercent, type HeaderData, type TargetOutput } from '../../types/monev'
-import { HEADER_INPUT, JenisOptions, PercentInput, Row, WRAP } from './shared'
+import { JENIS_OUTPUT } from '../../lib/config'
+import { HEADER_INPUT, PercentInput, Row, WRAP } from './shared'
+import { availableJenis, nextFreeJenis } from '../../lib/outputOptions'
 
 interface Props {
   data: HeaderData
@@ -12,6 +14,7 @@ interface Props {
 
 export default function TargetProgressRows({ data, isEditing, onChange, onOutputChange, onOutputAdd, onOutputRemove }: Props) {
   const outputs = data.targetOutputs
+  const canAdd = nextFreeJenis(JENIS_OUTPUT, outputs) !== null // masih ada jenis yang belum dipilih
 
   return (
     <>
@@ -23,7 +26,10 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
               {outputs.map((o, i) => (
                 <div key={i} className="flex items-center gap-2 min-w-0">
                   <select value={o.jenis} onChange={(e) => onOutputChange(i, { jenis: e.target.value })} className={`flex-1 ${HEADER_INPUT}`}>
-                    <JenisOptions current={o.jenis} />
+                    {/* hanya jenis yang belum dipilih di baris lain (jenis baris ini sendiri tetap ada) */}
+                    {availableJenis(JENIS_OUTPUT, outputs, i).map((j) => (
+                      <option key={j} value={j}>{j}</option>
+                    ))}
                   </select>
                   <input
                     type="number"
@@ -41,13 +47,18 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={onOutputAdd}
-              className="mt-2 text-xs text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded font-medium transition flex items-center gap-1"
-            >
-              <i className="fa-solid fa-plus" /> Tambah Target Output
-            </button>
+
+            {canAdd ? (
+              <button
+                type="button"
+                onClick={onOutputAdd}
+                className="mt-2 text-xs text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded font-medium transition flex items-center gap-1"
+              >
+                <i className="fa-solid fa-plus" /> Tambah Target Output
+              </button>
+            ) : (
+              <p className="mt-2 text-xs text-slate-400">Semua jenis output sudah dipilih.</p>
+            )}
           </div>
         ) : (
           <table className="w-full max-w-lg table-fixed text-xs border border-slate-200 rounded-md overflow-hidden">
@@ -101,10 +112,10 @@ export default function TargetProgressRows({ data, isEditing, onChange, onOutput
         )}
       </Row>
 
-      {/* Status Pelaksanaan */}
-      <Row label="Status Pelaksanaan" last>
+      {/* Status */}
+      <Row label="Status" last>
         {isEditing ? (
-          <select value={data.statusPelaksanaan} onChange={(e) => onChange('statusPelaksanaan', e.target.value)} className={`max-w-full p-2 ${HEADER_INPUT}`}>
+          <select aria-label="Status" value={data.statusPelaksanaan} onChange={(e) => onChange('statusPelaksanaan', e.target.value)} className={`max-w-full p-2 ${HEADER_INPUT}`}>
             {STATUS_PELAKSANAAN.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         ) : (
