@@ -1,5 +1,5 @@
 import LogbookPages from './logbookPages'
-import type { MonthData } from '../components/logbook/MonthlyLogTable'
+import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
 import data from '../data/monevData.json'
 import type { MonevData } from '../types/monev'
 

@@ -1,67 +1,156 @@
-import { useState } from 'react'
-import { loadLogbook } from '../lib/LogbookData'
-import { ambilLogbookAktif, daftarLogbook, pilihAktif } from '../lib/logbookStore'
-import { FLAGS } from '../lib/flags'
+// import { useEffect, useState } from 'react'
+// import type { ActivityEntry } from '../types/monev'
+// import { getActivitiesForPeriset } from '../lib/monevData'
+// import ActivityHeader from '../components/logbook/ActivityHeader'
+// import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
+
+// interface Props {
+//   /** Didapat dari sesi login / auth context — SATU periset yang sedang login */
+//   perisetId: string
+// }
+
+// export default function LogbookPage({ perisetId }: Props) {
+//   const [activities, setActivities] = useState<ActivityEntry[]>([])
+//   const [loading, setLoading] = useState(true)
+//   const [error, setError] = useState<string | null>(null)
+
+//   useEffect(() => {
+//     setLoading(true)
+//     setError(null)
+
+//     getActivitiesForPeriset(perisetId)
+//       .then(setActivities)
+//       .catch((err: Error) => setError(err.message))
+//       .finally(() => setLoading(false))
+//   }, [perisetId])
+
+//   const updateHeader = (activityId: string) => (updatedHeader: ActivityEntry['header']) => {
+//     setActivities((prev) =>
+//       prev.map((a) => (a.id === activityId ? { ...a, header: updatedHeader } : a))
+//     )
+//     // TODO: kirim ke API, mis. saveActivityHeader(perisetId, activityId, updatedHeader)
+//   }
+
+//   const updateMonthly = (activityId: string) => (updatedMonthly: MonthData[]) => {
+//     setActivities((prev) =>
+//       prev.map((a) => (a.id === activityId ? { ...a, bulanan: updatedMonthly } : a))
+//     )
+//     // TODO: kirim ke API, mis. saveActivityMonthly(perisetId, activityId, updatedMonthly)
+//   }
+
+//   if (loading) {
+//     return <div className="p-6 text-slate-500">Memuat data logbook...</div>
+//   }
+
+//   if (error) {
+//     return <div className="p-6 text-red-600">Gagal memuat data: {error}</div>
+//   }
+
+//   if (activities.length === 0) {
+//     return <div className="p-6 text-slate-500">Belum ada aktivitas.</div>
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 space-y-8 max-w-5xl mx-auto">
+//       <h1 className="text-xl font-bold text-slate-800">
+//         Logbook Aktivitas — {activities.length} aktivitas
+//       </h1>
+
+//       {activities.map((activity) => (
+//         <ActivityHeader
+//           key={activity.id}
+//           initialData={activity.header}
+//           onSave={updateHeader(activity.id)}
+//           initialMonthlyData={activity.bulanan}
+//           onMonthlySave={updateMonthly(activity.id)}
+//         />
+//       ))}
+//     </div>
+//   )
+// }
+
+
+
+
+
+
+import { useEffect, useState } from 'react'
+import { useAuth } from '../lib/AuthContext'
+import type { ActivityEntry } from '../types/monev'
+import { getActivitiesForPeriset } from '../lib/monevData'
 import ActivityHeader from '../components/logbook/ActivityHeader'
-import MonthlyLogTable from '../components/logbook/MonthlyLogTable'
+import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
+import ProfileCard from '../components/logbook/userIdentity'
 
-export default function Logbook() {
-  const semua = daftarLogbook()
-  const [aktif, setAktif] = useState(() => ambilLogbookAktif()?.header.namaKetua ?? '')
 
-  // Prioritas: hasil import JSON; cadangan: logbook.json
-  const entri = semua.find((e) => e.header.namaKetua === aktif) ?? ambilLogbookAktif()
-  const { header, bulanan } = entri ?? loadLogbook()
 
-  const unit = [...new Set(semua.map((e) => e.header.unitKerja || 'Tanpa unit kerja'))]
+export default function LogbookPage() {
+  const { session, loading: sessionLoading } = useAuth()
+  const perisetId = session?.user?.id
 
-  const ganti = (nama: string) => {
-    pilihAktif(nama)
-    setAktif(nama)
+  const [activities, setActivities] = useState<ActivityEntry[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (sessionLoading) return
+
+    if (!perisetId) {
+      setLoading(false)
+      setError('Kamu belum login atau sesi tidak valid')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    getActivitiesForPeriset(perisetId)
+      .then(setActivities)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [perisetId, sessionLoading])
+
+  const updateHeader = (activityId: string) => (updatedHeader: ActivityEntry['header']) => {
+    setActivities((prev) =>
+      prev.map((a) => (a.id === activityId ? { ...a, header: updatedHeader } : a))
+    )
+  }
+
+  const updateMonthly = (activityId: string) => (updatedMonthly: MonthData[]) => {
+    setActivities((prev) =>
+      prev.map((a) => (a.id === activityId ? { ...a, bulanan: updatedMonthly } : a))
+    )
+  }
+
+  if (sessionLoading || loading) {
+    return <div className="p-6 text-slate-500">Memuat data logbook...</div>
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-600">Gagal memuat data: {error}</div>
+  }
+
+  if (activities.length === 0) {
+    return <div className="p-6 text-slate-500">Belum ada aktivitas.</div>
   }
 
   return (
-    <div className="px-4 pb-4 pt-20 space-y-4">
-      {semua.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2 no-print">
-          <label htmlFor="pilih-ketua" className="text-xs font-semibold text-slate-600">
-            <i className="fa-solid fa-user mr-1.5" />Logbook ketua tim
-          </label>
-          <select
-            id="pilih-ketua"
-            value={aktif}
-            onChange={(e) => ganti(e.target.value)}
-            className="max-w-full rounded border border-slate-300 bg-white p-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-          >
-            {unit.map((u) => (
-              <optgroup key={u} label={u}>
-                {semua
-                  .filter((e) => (e.header.unitKerja || 'Tanpa unit kerja') === u)
-                  .map((e) => (
-                    <option key={e.header.namaKetua} value={e.header.namaKetua}>
-                      {e.header.namaKetua}
-                    </option>
-                  ))}
-              </optgroup>
-            ))}
-          </select>
-          <span className="text-[11px] text-slate-400">{semua.length} logbook tersimpan</span>
-        </div>
-      )}
+    <div className="p-4 sm:p-6 space-y-8 mx-auto">
+      <div className='mt-16'></div>
+      <ProfileCard/>
+      <h1 className="text-xl font-bold text-slate-800">
+        Logbook Aktivitas — {activities.length} aktivitas
+      </h1>
 
-      <ActivityHeader
-        key={JSON.stringify(header)}
-        initialData={header}
-        onSave={(updated) => console.log('Header tersimpan di state:', updated)}
-      />
-
-      {FLAGS.MonthlyLogTable && (
-        <MonthlyLogTable
-          key={JSON.stringify(bulanan)}
-          initialData={bulanan}
-          onSave={(updated) => console.log('Data tersimpan di state:', updated)}
+      {activities.map((activity) => (
+        <ActivityHeader
+          key={activity.id}
+          initialData={activity.header}
+          onSave={updateHeader(activity.id)}
+          initialMonthlyData={activity.bulanan}
+          onMonthlySave={updateMonthly(activity.id)}
         />
-      )}
+      ))}
     </div>
   )
 }

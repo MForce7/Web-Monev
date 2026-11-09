@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useState, type MouseEvent } from 'react'
-import type { Attachment } from '../../types/monev'
-import { CELL_INPUT, Dash, WRAP } from '../../lib/shared'
+import type { Attachment } from '../../../types/monev'
+import { CELL_INPUT, Dash, WRAP } from '../../../lib/shared'
 
 const MAX_MB = 5
 

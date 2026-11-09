@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { clampPercent, emptyMonth, type Attachment, type MonevMonth } from '../../types/monev'
+import { clampPercent, emptyMonth, type Attachment, type MonevMonth, type MonthOutput } from '../../../types/monev'
 import { AttachmentEditor, AttachmentList } from './Attachments'
-import { defaultStatus, hasKeterangan, statusOptions, statusTone } from '../../lib/config'
-import { CELL_INPUT, Dash, JenisOptions, PercentInput, WRAP } from '../../lib/shared'
+import { defaultStatus, hasKeterangan, statusOptions, statusTone } from '../../../lib/config'
+import { CELL_INPUT, Dash, JenisOptions, PercentInput, WRAP } from '../../../lib/shared'
 
-/* Status bebas per jenis + keterangan opsional. Output pertama di `output`, tambahan di `outputTambahan`. */
-type MonthOutput = Omit<MonevMonth['output'], 'status'> & { status: string; keterangan?: string }
-export type MonthData = Omit<MonevMonth, 'output'> & { output: MonthOutput; outputTambahan?: MonthOutput[] }
+/** MonevMonth sudah mendukung status bebas per jenis + keterangan opsional + outputTambahan secara native */
+export type MonthData = MonevMonth
 
 const TEXT_FIELDS = ['uraian', 'kendala', 'mitigasi'] as const
 const CELL = `p-1.5 border-r border-slate-200 align-top min-w-0 whitespace-pre-line ${WRAP}`

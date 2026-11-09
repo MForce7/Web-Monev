@@ -1,0 +1,76 @@
+{
+  "periset": {
+    "id": "7268ce3e-a7c4-491e-a889-dfbfe3e1930d",
+    "nama": "Hogan",
+    "unitKerja": "Pusat Riset Antartika",
+    "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa"
+  },
+  "activities": [
+    {
+      "id": "activity-001",
+      "header": {
+        "judulAktivitas": "Pemetaan Cuaca Antartika",
+        "targetOutputs": [
+          { "jenis": "Publikasi", "jumlah": 1 }
+        ],
+        "progresTotal": 0,
+        "progresKeterangan": "",
+        "statusPelaksanaan": "",
+        "kategoriPendanaan": "Rupiah Murni",
+        "skemaMitraProgram": "",
+        "judulKontrak": "",
+        "targetPenerimaan": 0,
+        "targetPenggunaan": 0,
+        "banyakTermin": 0,
+        "statusKontrak": ""
+      },
+      "bulanan": [
+        { "bulan": "Januari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "April", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "September", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "November", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } }
+      ]
+    },
+    {
+      "id": "activity-002",
+      "header": {
+        "judulAktivitas": "Kerja Sama Riset dengan Mitra Industri",
+        "targetOutputs": [
+          { "jenis": "Purwarupa", "jumlah": 2 }
+        ],
+        "progresTotal": 0,
+        "progresKeterangan": "",
+        "statusPelaksanaan": "",
+        "kategoriPendanaan": "PNBP",
+        "skemaMitraProgram": "Mitra Industri A",
+        "judulKontrak": "Kontrak Kerja Sama No. 123/2026",
+        "targetPenerimaan": 500000000,
+        "targetPenggunaan": 450000000,
+        "banyakTermin": 3,
+        "statusKontrak": "Pelaksanaan / Berjalan"
+      },
+      "bulanan": [
+        { "bulan": "Januari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Februari", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Maret", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "April", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Mei", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Juni", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Juli", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Agustus", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "September", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Oktober", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "November", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } },
+        { "bulan": "Desember", "aktivitas": { "uraian": "", "kendala": "", "mitigasi": "", "dataDukung": [] }, "output": { "jenis": "", "judul": "", "status": "Belum Mulai", "capaian": 0, "dataDukung": [] } }
+      ]
+    }
+  ]
+}
