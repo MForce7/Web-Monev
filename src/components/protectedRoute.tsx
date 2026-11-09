@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useSession } from '../lib/useSession'
+import { useAuth } from '../lib/AuthContext'
 
 export default function ProtectedRoute() {
-  const { session, loading } = useSession()
+  const { session, loading } = useAuth()
   const location = useLocation()
 
   if (loading) return <p className="p-6 text-sm">Memuat...</p>
