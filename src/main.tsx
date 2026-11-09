@@ -13,7 +13,7 @@ import Rekapitulasi from './pages/rekapitulasi.tsx'
 import LogbookPages from './pages/logbookPages.tsx'
 import Profile from './pages/profile.tsx'
 import KelompokRiset from './pages/kelompokriset.tsx'
-
+import Rekappendanaan from './pages/Rekappendanaan.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
@@ -40,6 +40,8 @@ const router = createBrowserRouter([
           { path: '/profile', element: <Profile /> },
           { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
+          { path: '/rekappendanaan', element: <Rekappendanaan /> },
+        ],
                   ],
       },
     ],
