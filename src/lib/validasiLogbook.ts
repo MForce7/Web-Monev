@@ -54,31 +54,95 @@ const ALIAS_PELAKSANAAN: Record<string, string> = {
   dimanfaatkan: 'Selesai',
 }
 
-/** Teks status bebas -> salah satu status valid untuk jenis tsb; null bila tidak ada yang cocok */
+/**
+ * Teks status bebas -> salah satu status valid untuk jenis tsb (sesuai config.ts); null bila tidak ada yang cocok.
+ * Tiap aturan = [pola pada teks Excel, pola pada nama status di daftar jenis itu].
+ * Urutan dari tahap paling akhir ke paling awal; aturan yang tidak punya padanan di jenis itu dilewati.
+ */
 function petaStatusOutput(jenis: string, s: string): string | null {
   const list = statusOptions(jenis, '')
   const t = kecil(s)
   const persis = list.find((x) => kecil(x) === t)
   if (persis) return persis
 
-  const aturan: [RegExp, string][] = [
-    [/publish|terbit/, 'Published'],
-    [/ac{1,2}ept|diterima/, 'Accepted'],
-    [/regist|terdaftar|granted|diberikan/, 'Registered'],
-    [/review/, 'In-Review'],
-    [/submit/, 'Submitting'],
-    [/draf/, jenis === 'Publikasi' ? 'Drafting' : 'Pengembangan'],
-    [/pengembangan/, 'Pengembangan'],
-    [/desain|design/, 'Design'],
-    [/manufaktur|fabrikasi/, 'Manufakturing'],
-    [/test|uji/, 'Testing'],
-    [/finish|selesai/, 'FINISHED'],
+  const aturan: [RegExp, RegExp][] = [
+    [/publish|terbit/, /^published$/],
+    [/granted|diberi/, /granted|diberi/],
+    [/regist|terdaftar/, /terdaftar|registered/],
+    [/ac{1,2}ept|diterima/, /accepted/],
+    [/review/, /review/],
+    [/submit/, /submit/],
+    [/test|uji|selesai|finish/, /uji|selesai/],
+    [/manufaktur|manufactur|fabrikasi|perakitan|rakit/, /manufaktur/],
+    [/draf/, /^draf/],
+    [/draf|pengembangan/, /desain/], // Purwarupa/Model tidak punya "Draf": tahap awalnya Desain
+    [/desain|design|gambar/, /desain/],
   ]
-  const hasil = aturan.find(([re, nilai]) => re.test(t) && list.includes(nilai))
-  if (hasil) return hasil[1]
+  for (const [pola, polaItem] of aturan) {
+    if (!pola.test(t)) continue
+    const item = list.find((x) => polaItem.test(kecil(x)))
+    if (item) return item
+  }
   // "Belum Mulai" = tahap paling awal dari jenis tsb
   if (/^belum/.test(t) && list.length) return list[0]
   return null
+}
+
+/* ───────── Pemecahan sel yang memuat beberapa output ───────── */
+
+/** Penanda butir: "* ", "• ", "- ", "1. ", "2) " di awal baris */
+const MARKA = /^\s*(?:[*•·]\s*|[-–—]\s+|\d{1,2}[.)]\s+)/
+
+/** Judul: baris bertanda memulai butir baru, baris tanpa tanda disambung ke butir sebelumnya */
+function butirJudul(s: string): { butir: string[]; bertanda: number } {
+  const butir: string[] = []
+  let bertanda = 0
+  for (const baris of s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean)) {
+    if (MARKA.test(baris)) {
+      bertanda++
+      butir.push(baris.replace(MARKA, '').trim())
+    } else if (butir.length) butir[butir.length - 1] += ` ${baris}`
+    else butir.push(baris)
+  }
+  return { butir, bertanda }
+}
+
+/** Jenis/status: satu baris = satu nilai (tanda butir dibuang) */
+const barisDari = (s: string): string[] =>
+  s.split(/\r?\n/).map((x) => x.replace(MARKA, '').trim()).filter(Boolean)
+
+/**
+ * Bila Judul Output memuat >= 2 butir bertanda, pecah menjadi beberapa output.
+ * Jenis dan status dipasangkan berurutan bila jumlah barisnya sama dengan jumlah butir;
+ * bila tidak sama, butir ke-2 dst dibiarkan kosong (tidak ditebak) dan diberi peringatan.
+ */
+function pecahOutput(o: unknown, label: string, m: Masalah[]): Obj[] {
+  const r = rec(o)
+  const { butir, bertanda } = butirJudul(str(r.judul))
+  if (bertanda < 2 || butir.length < 2) return [r]
+
+  const n = butir.length
+  const jenis = barisDari(str(r.jenis))
+  const status = barisDari(str(r.status))
+  const pilih = (daftar: string[], i: number, asli: unknown) =>
+    daftar.length === n ? daftar[i] : i === 0 ? str(asli) : ''
+
+  const lengkap = jenis.length === n && status.length === n
+  m.push({
+    level: 'peringatan',
+    pesan: `${label}: judul output berisi ${n} butir, dipecah menjadi ${n} output.${
+      lengkap ? '' : ' Jenis/status butir ke-2 dan seterusnya belum terisi di Excel, lengkapi lewat tombol Edit'
+    }`,
+  })
+
+  return butir.map((judul, i) => ({
+    jenis: pilih(jenis, i, r.jenis),
+    judul,
+    status: pilih(status, i, r.status),
+    capaian: i === 0 ? r.capaian : 0,
+    dataDukung: i === 0 ? r.dataDukung : [],
+    keterangan: i === 0 ? r.keterangan : '',
+  }))
 }
 
 /* ───────── Normalisasi bagian-bagian ───────── */
@@ -140,7 +204,8 @@ function normOutput(o: unknown, label: string, m: Masalah[]): Out | null {
       // teks asli dipertahankan di keterangan bila jenisnya punya kolom keterangan
       if (hasKeterangan(jenis) && !keterangan && kecil(s) !== kecil(statusMentah)) keterangan = statusMentah
     } else {
-      m.push({ level: 'peringatan', pesan: `${label}: status "${statusMentah}" tidak sesuai untuk jenis ${jenis}` })
+      const valid = statusOptions(jenis, '').join(' | ')
+      m.push({ level: 'peringatan', pesan: `${label}: status "${statusMentah}" tidak sesuai untuk jenis ${jenis} (pilihan: ${valid || 'tidak ada'})` })
     }
   }
   if (!jenis && (judul || statusMentah)) m.push({ level: 'peringatan', pesan: `${label}: jenis output kosong padahal judul/status terisi` })
@@ -197,10 +262,13 @@ function normEntri(raw: unknown, i: number): HasilEntri {
     const b = sumber.get(kecil(nama))
     if (!b) return blankMonth(nama) // file per bulan: bulan lain memang tidak ada
     const a = rec(b.aktivitas)
-    const output = normOutput(b.output, nama, m) ?? blankOutput()
-    const tambahan = arr(b.outputTambahan)
-      .map((o, k) => normOutput(o, `${nama} output ${k + 2}`, m))
-      .filter((o): o is Out => o !== null)
+    const labelKe = (k: number) => (k === 0 ? nama : `${nama} output ${k + 1}`)
+
+    // output utama + tambahan, lalu pecah sel yang ternyata memuat beberapa butir
+    const mentah = [b.output, ...arr(b.outputTambahan)].flatMap((o, k) => pecahOutput(o, labelKe(k), m))
+    const semua = mentah.map((o, k) => normOutput(o, labelKe(k), m))
+    const output = semua[0] ?? blankOutput()
+    const tambahan = semua.slice(1).filter((o): o is Out => o !== null)
     return {
       bulan: nama,
       aktivitas: { uraian: str(a.uraian), kendala: str(a.kendala), mitigasi: str(a.mitigasi), dataDukung: lampiran(a.dataDukung) },
@@ -312,10 +380,10 @@ bulanan (tiap bulan):
 - aktivitas.uraian / kendala / mitigasi = salin PERSIS dari kolom Uraian Kemajuan, Kendala, Mitigasi. Jangan meringkas atau memperbaiki kata
 - aktivitas.dataDukung dan output.dataDukung = [{ "label", "url" }] dari kolom Data Dukung. Jika isinya URL: label = nama situs singkat, url = URL-nya. Jika isinya teks biasa: label = teksnya, url = "". Satu entri per item
 - output = Jenis Output, Judul Output, Status, Progres Capaian
-- Jika satu bulan memuat beberapa output (judul bernomor 1., 2., ...), output pertama di "output", sisanya di "outputTambahan" dengan struktur sama
+- BANYAK OUTPUT DALAM SATU BULAN: bila sel Judul Output memuat beberapa butir, baik bernomor (1., 2.), diawali tanda (*, -, •), maupun berupa beberapa baris terpisah, setiap butir adalah SATU output sendiri. Butir pertama di "output", butir lainnya SEMUA di "outputTambahan" dengan struktur sama. Jangan menggabungkan beberapa butir menjadi satu judul. Pasangkan Jenis Output dan Status secara berurutan dengan butirnya bila sel Jenis/Status juga berisi beberapa baris. Jika sel Jenis atau Status hanya berisi satu nilai padahal butirnya lebih dari satu, JANGAN menebak: pakai nilai itu untuk butir pertama, isi jenis dan status butir lainnya dengan "", lalu catat di catatanImport (sebut bulan dan judul butirnya). Jangan menghilangkan butir apa pun, jenis apa pun (Purwarupa, Model, Publikasi, KI, dst.)
 - bulan tanpa isian: biarkan kosong ("" dan 0, dataDukung [])
 
-JENIS OUTPUT dan STATUS yang valid (pakai persis penulisan ini):
+JENIS OUTPUT dan STATUS yang valid (pakai persis penulisan ini; status hanya boleh dari daftar milik jenis itu sendiri, jangan meminjam status jenis lain):
 ${jenis}
 
 Pemetaan jenis output dari Excel (periset menulis bebas, petakan berdasarkan maknanya):
@@ -324,7 +392,7 @@ Pemetaan jenis output dari Excel (periset menulis bebas, petakan berdasarkan mak
 - Purwarupa / Prototipe = Purwarupa; Model = Model
 - DESAIN INDUSTRI: ABAIKAN. Bukan KI dan tidak masuk logbook. Jangan buat output atau target untuknya, cukup catat di catatanImport (sebut bulan dan judulnya)
 - "Naskah Kebijakan ..." belum ada di sistem: kosongkan jenis dan catat di catatanImport
-Pemetaan status output: Drafting/draft = Drafting (KI: Pengembangan); Submit/Submitted/Final submit = Submitting; Reviewed/Under review = In-Review; Accepted/Diterima = Accepted; Published/Terbit = Published; Gambar Desain/Design = Design; Belum Mulai = status pertama dari jenisnya. Jika tidak ada yang cocok, kosongkan status dan catat di catatanImport.
+Pemetaan status output: pilih status dari daftar jenis itu yang maknanya paling dekat. Draft/Drafting = Draf (Purwarupa dan Model tidak punya Draf, pakai Desain); Submit/Submitted/Final submit = Submitted (Publikasi) atau Submit Intipdaqu (KI/Paten/Hak Cipta); Reviewed/Under review = Under Review; Accepted/Diterima = Accepted; Published/Terbit = Published; Registered/Terdaftar = Terdaftar DJKI; Granted = Granted/Diberi; Gambar Desain/Design = Desain; Manufaktur/Manufakturing/Perakitan/Fabrikasi = Manufaktur; Testing/Uji/Selesai = Pengujian/Selesai Uji; Belum Mulai = status pertama dari jenisnya. Jika tidak ada yang cocok, kosongkan status dan catat di catatanImport.
 
 Aturan angka: 0.1 menjadi 10, "40 %" menjadi 40, 70 tetap 70, 1.0 menjadi 100. Teks bukan angka di kolom persen menjadi 0 dan dicatat di catatanImport.
 
