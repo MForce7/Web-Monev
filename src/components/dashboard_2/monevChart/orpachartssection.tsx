@@ -35,15 +35,22 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 export default function OrpaChartsSection({ data }: { data: OrpaChartsData }) {
   const { kategori, targetVsRealisasi, komposisi } = data;
 
+  // Gradasi dibalik: warna gelap berada di sisi yang mendekati 0
+  const kategoriBalik: Kategori[] = kategori.map((k) => ({
+    ...k,
+    from: k.to,
+    to: k.from,
+  }));
+
   // Legenda mengikuti urutan series di JSON
   const legendItems = targetVsRealisasi.series
-    .map((key) => kategori.find((k) => k.key === key))
+    .map((key) => kategoriBalik.find((k) => k.key === key))
     .filter((k): k is Kategori => k !== undefined);
 
   return (
     <div className="grid gap-6 md:grid-cols-2 w-full">
       <Card title="Target Kepala ORPA vs Realisasi">
-        <TargetChart data={targetVsRealisasi} kategori={kategori} />
+        <TargetChart data={targetVsRealisasi} kategori={kategoriBalik} />
         <Legend items={legendItems} />
       </Card>
 
