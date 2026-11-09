@@ -1,6 +1,6 @@
 import raw from '../data/logbook.json'
 import { clampPercent, emptyMonth, type Attachment, type HeaderData } from '../types/monev'
-import type { MonthData } from '../components/logbook/MonthlyLogTable'
+import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
 
 /**
  * Loader JSON -> data yang siap dipakai komponen logbook.
@@ -61,6 +61,13 @@ export function loadHeader(input: unknown = raw): HeaderData {
     progresTotal: clampPercent(num(h.progresTotal)),
     progresKeterangan: str(h.progresKeterangan),
     statusPelaksanaan: str(h.statusPelaksanaan),
+    kategoriPendanaan: str(h.kategoriPendanaan) || 'Rupiah Murni',
+    skemaMitraProgram: str(h.skemaMitraProgram),
+    judulKontrak: str(h.judulKontrak),
+    targetPenerimaan: num(h.targetPenerimaan),
+    targetPenggunaan: num(h.targetPenggunaan),
+    banyakTermin: num(h.banyakTermin),
+    statusKontrak: str(h.statusKontrak),
   }
 }
 
