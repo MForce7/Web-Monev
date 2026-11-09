@@ -3,6 +3,7 @@ import Badge, { WARNA_BADGE } from "../components/importexcel/Badge";
 import Langkah from "../components/importexcel/Langkah";
 import TombolGradasi from "../components/importexcel/TombolGradasi";
 import { GRAD } from "../components/importexcel/konstanta";
+import MonthlyLogTable from "../components/logbook/MonthlyLogTable";
 import { buatPrompt, gabungEntri, parseBerkas, type EntriLogbook, type HasilEntri } from "../lib/validasiLogbook";
 import { BULAN } from "../lib/LogbookData";
 import { ambilLogbookAktif, daftarLogbook, hapusLogbook, simpanLogbook } from "../lib/logbookStore";
@@ -103,7 +104,7 @@ export default function ImportJson() {
     setError("");
     setInfo("");
     setTersimpan(null);
-    setBuka(null);
+    setBuka(null); // menutup baris, sehingga tabel bulanan dibuat ulang dari data gabungan terbaru
     const salah = fs.filter((f) => !/\.json$/i.test(f.name));
     if (salah.length) return setError(`Format file harus .json: ${salah.map((f) => f.name).join(", ")}`);
 
@@ -165,6 +166,10 @@ export default function ImportJson() {
   }, [daftar]);
 
   const tersimpanDiBrowser = useMemo(() => daftarLogbook().length, [versi, tersimpan]);
+
+  /** Dipanggil MonthlyLogTable setiap ada perubahan (termasuk data dukung yang diisi manual) */
+  const ubahBulanan = (idx: number, bulanan: HasilEntri["entri"]["bulanan"]) =>
+    setHasil((p) => (p ? p.map((x, i) => (i === idx ? { ...x, entri: { ...x.entri, bulanan } } : x)) : p));
 
   const simpan = () => {
     if (layak.length === 0) return setError("Tidak ada logbook yang layak disimpan.");
@@ -393,7 +398,7 @@ export default function ImportJson() {
                     <Badge warna={WARNA_GALAT}>{galat} galat</Badge>
                   </div>
                   <span className="text-xs text-slate-500">
-                    Yang galat dilewati, yang perlu dicek tetap disimpan. Klik baris untuk melihat catatannya
+                    Yang galat dilewati, yang perlu dicek tetap disimpan. Klik baris untuk melihat tabel per bulan dan catatannya
                   </span>
                 </div>
 
@@ -429,8 +434,8 @@ export default function ImportJson() {
                               return (
                                 <Fragment key={idx}>
                                   <tr
-                                    onClick={() => h.masalah.length > 0 && setBuka(terbuka ? null : idx)}
-                                    className={`transition-colors hover:bg-[#eaf0fa] ${h.masalah.length > 0 ? "cursor-pointer" : ""} ${i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"}`}
+                                    onClick={() => setBuka(terbuka ? null : idx)}
+                                    className={`cursor-pointer transition-colors hover:bg-[#eaf0fa] ${i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"}`}
                                   >
                                     <td className={`${td} text-center`}>{idx + 1}</td>
                                     <td className={`${td} font-medium ${teks}`}>{h.nama}</td>
@@ -451,16 +456,29 @@ export default function ImportJson() {
                                       )}
                                     </td>
                                   </tr>
+
                                   {terbuka && (
                                     <tr>
-                                      <td colSpan={8} className="border-b border-[#dbe6f7] bg-[#fffbeb] px-4 py-2.5">
-                                        <ul className="space-y-1 text-xs">
-                                          {h.masalah.map((x, k) => (
-                                            <li key={k} className={x.level === "galat" ? "font-semibold text-[#991b1b]" : "text-[#92400e]"}>
-                                              {x.level === "galat" ? "✕" : "!"} {x.pesan}
-                                            </li>
-                                          ))}
-                                        </ul>
+                                      {/* max-w-0 supaya lebar tabel validasi tidak ikut melebar oleh tabel bulanan */}
+                                      <td colSpan={8} className="max-w-0 border-b border-[#dbe6f7] bg-[#f5f8fd] px-4 py-3">
+                                        {h.masalah.length > 0 && (
+                                          <ul className="mb-3 space-y-1 rounded-xl bg-[#fffbeb] px-4 py-2.5 text-xs">
+                                            {h.masalah.map((x, k) => (
+                                              <li key={k} className={x.level === "galat" ? "font-semibold text-[#991b1b]" : "text-[#92400e]"}>
+                                                {x.level === "galat" ? "✕" : "!"} {x.pesan}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                        <div className="overflow-x-auto">
+                                          <div className="min-w-[1400px]">
+                                            <MonthlyLogTable
+                                              key={`${idx}-${files.length}`}
+                                              initialData={h.entri.bulanan}
+                                              onSave={(data) => ubahBulanan(idx, data)}
+                                            />
+                                          </div>
+                                        </div>
                                       </td>
                                     </tr>
                                   )}

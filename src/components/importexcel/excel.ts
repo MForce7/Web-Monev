@@ -71,6 +71,20 @@ function kodePusat(nama: string): string {
   return "PR" + kata.map((k) => k[0]?.toUpperCase() ?? "").join("");
 }
 
+// Bulan dari tulisan "Laporan Bulan: September" (di baris-baris atas header)
+function cariBulan(baris: string[][]): string | null {
+  for (const row of baris) {
+    for (let ci = 0; ci < row.length; ci++) {
+      const m = row[ci].match(/laporan bulan\s*:?\s*(\S*)/i);
+      if (!m) continue;
+      const calon = m[1] || row.slice(ci + 1).find(Boolean) || "";
+      const ketemu = BULAN.find((b) => b.toLowerCase() === calon.toLowerCase());
+      if (ketemu) return ketemu;
+    }
+  }
+  return null;
+}
+
 // Kolom wajib yang sama dengan pemeriksa di tabel Pemantauan
 function periksa(r: Omit<Isian, "validasi" | "belumSesuai">): Pick<Isian, "validasi" | "belumSesuai"> {
   const isian: [string, boolean][] = [
@@ -113,17 +127,7 @@ export async function bacaExcel(file: File): Promise<HasilBaca> {
     }
     const ambil = (row: string[], kol: Kolom) => (peta[kol] === undefined ? "" : row[peta[kol]!] ?? "");
 
-    // Bulan dari tulisan "Laporan Bulan: September"
-    let bulan: string | null = null;
-    for (const row of grid.slice(0, hr)) {
-      row.forEach((c, ci) => {
-        if (bulan) return;
-        const m = c.match(/laporan bulan\s*:?\s*(\S*)/i);
-        if (!m) return;
-        const calon = m[1] || row.slice(ci + 1).find(Boolean) || "";
-        bulan = BULAN.find((b) => b.toLowerCase() === calon.toLowerCase()) ?? null;
-      });
-    }
+    const bulan = cariBulan(grid.slice(0, hr));
 
     // Baris data: baris pita "PUSAT RISET ..." mengganti pusat riset aktif
     const rows: Isian[] = [];
@@ -162,7 +166,10 @@ export async function bacaExcel(file: File): Promise<HasilBaca> {
     }
 
     if (rows.length === 0) throw new Error("Header ditemukan, tapi belum ada baris data di bawahnya.");
-    return { sheet: nama, bulan, rows };
+
+    // Bentuk HasilBaca per bulan; bila bulan tidak terbaca, nama sheet dipakai sebagai kunci
+    const kunciBulan = bulan ?? nama;
+    return { sheet: nama, bulanDefault: kunciBulan, bulanAda: [kunciBulan], perBulan: { [kunciBulan]: rows } };
   }
 
   throw new Error("Kolom 'Nama Ketua Tim' tidak ditemukan. Pastikan file memakai template laporan bulanan.");
