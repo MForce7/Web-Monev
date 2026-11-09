@@ -13,7 +13,7 @@ type Kegiatan = {
   judul: string;
   pusatRiset: string;
   jangkaBulan: number | null;
-  dana: (number | null)[]; // Tahun 1, 2, 3
+  dana: (number | null)[]; // Tahun 1, 2, 3, ... (bisa lebih dari 3)
   total: number;
   nomorSK: string;
   tanggalSK: string; // "2026-08-04" atau teks bebas
@@ -33,22 +33,11 @@ const GRAD_BIRU = "linear-gradient(90deg, #1c3d85 0%, #2a58a5 100%)";
 const GRAD_BIRU_TUA = "linear-gradient(90deg, #14306b 0%, #1f468c 100%)";
 const BIRU_TEKS = "text-[#1f468c]";
 
-const KOLOM = [
-  "No",
-  "Ketua Periset",
-  "Judul",
-  "Pusat Riset",
-  "Jenis / Gelombang",
-  "Jangka (Bln)",
-  "Dana Tahun 1 (Rp)",
-  "Dana Tahun 2 (Rp)",
-  "Dana Tahun 3 (Rp)",
-  "Total Pendanaan (Rp)",
-  "Nomor SK",
-  "Status",
-  "Tindakan",
-  "Upload Data Dukung",
-];
+/** Jumlah kolom dana tahun minimal */
+const MIN_TAHUN = 3;
+/** Kolom sebelum dan sesudah kolom dana tahun */
+const KOLOM_AWAL = ["No", "Ketua Periset", "Judul", "Pusat Riset", "Jenis / Gelombang", "Jangka (Bln)"];
+const KOLOM_AKHIR = ["Total Pendanaan (Rp)", "Nomor SK", "Status / Keterangan", "Tindakan", "Upload Data Dukung"];
 /** Kolom yang tidak ikut tercetak */
 const TANPA_CETAK = ["Tindakan", "Upload Data Dukung"];
 
@@ -76,8 +65,14 @@ const tanggal = (t: string) => {
   return m ? `${Number(m[3])} ${BULAN[Number(m[2]) - 1]} ${m[1]}` : t || "—";
 };
 const ukuranFile = (b: number) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
-const jumlah = (list: Kegiatan[], t: 0 | 1 | 2) => list.reduce((n, k) => n + (k.dana[t] ?? 0), 0);
+const jumlah = (list: Kegiatan[], t: number) => list.reduce((n, k) => n + (k.dana[t] ?? 0), 0);
 const hitungTotal = (dana: (number | null)[]) => dana.reduce<number>((n, v) => n + (v ?? 0), 0);
+/** Buang termin kosong di ujung, tapi sisakan minimal MIN_TAHUN */
+const rapikanDana = (dana: (number | null)[]) => {
+  const hasil = [...dana];
+  while (hasil.length > MIN_TAHUN && hasil[hasil.length - 1] == null) hasil.pop();
+  return hasil;
+};
 /** "1.500.000" -> 1500000, kosong -> null */
 const angkaDari = (s: string) => {
   const d = s.replace(/\D/g, "");
@@ -93,7 +88,7 @@ function PrintStyles() {
         body * { visibility: hidden; }
         .rp-print, .rp-print * { visibility: visible; }
         .rp-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: 0 !important; }
-        .no-print, .rp-detail { display: none !important; }
+        .no-print { display: none !important; }
         @page { size: A4 landscape; margin: 10mm; }
       }
     `}</style>
@@ -110,12 +105,23 @@ function RekapPendanaanTable({ onSave }: Props) {
   const [skema, setSkema] = useState(SEMUA_SKEMA);
   const [pusat, setPusat] = useState(SEMUA_PUSAT);
   const [cari, setCari] = useState("");
-  const [buka, setBuka] = useState<number | null>(null);
   /** Baris yang sedang diubah + salinan kerjanya */
   const [edit, setEdit] = useState<number | null>(null);
   const [draft, setDraft] = useState<Kegiatan | null>(null);
   /** Berkas data dukung yang dipilih, per nomor kegiatan. Disimpan di memori (hilang saat halaman dimuat ulang). */
   const [berkas, setBerkas] = useState<Record<number, File[]>>({});
+
+  /** Jumlah kolom dana tahun: minimal 3, atau sebanyak termin terpanjang di data (termasuk baris yang sedang diubah) */
+  const nTahun = useMemo(
+    () => Math.max(MIN_TAHUN, ...rows.map((r) => r.dana.length), draft?.dana.length ?? 0),
+    [rows, draft],
+  );
+  const indeksTahun = useMemo(() => Array.from({ length: nTahun }, (_, i) => i), [nTahun]);
+
+  const kolom = useMemo(
+    () => [...KOLOM_AWAL, ...indeksTahun.map((i) => `Dana Tahun ${i + 1} (Rp)`), ...KOLOM_AKHIR],
+    [indeksTahun],
+  );
 
   const daftarPusat = useMemo(() => Array.from(new Set(rows.map((k) => k.pusatRiset).filter(Boolean))), [rows]);
 
@@ -123,7 +129,10 @@ function RekapPendanaanTable({ onSave }: Props) {
     const q = cari.trim().toLowerCase();
     return rows
       .filter((k) => (skema === SEMUA_SKEMA || k.skema === skema) && (pusat === SEMUA_PUSAT || k.pusatRiset === pusat))
-      .filter((k) => !q || [k.ketua, k.judul, k.pusatRiset, k.jenis, k.nomorSK, k.status].some((t) => t.toLowerCase().includes(q)));
+      .filter(
+        (k) =>
+          !q || [k.ketua, k.judul, k.pusatRiset, k.jenis, k.nomorSK, k.status, k.keterangan].some((t) => (t ?? "").toLowerCase().includes(q)),
+      );
   }, [rows, skema, pusat, cari]);
 
   const grup = URUTAN_SKEMA.map((s) => ({ skema: s, list: tampil.filter((k) => k.skema === s) })).filter((g) => g.list.length > 0);
@@ -132,7 +141,6 @@ function RekapPendanaanTable({ onSave }: Props) {
   const mulaiUbah = (k: Kegiatan) => {
     setEdit(k.no);
     setDraft({ ...k, dana: [...k.dana] });
-    setBuka(null);
   };
   const batalUbah = () => {
     setEdit(null);
@@ -140,11 +148,13 @@ function RekapPendanaanTable({ onSave }: Props) {
   };
   const simpan = () => {
     if (!draft) return;
+    const dana = rapikanDana(draft.dana);
     const baru: Kegiatan = {
       ...draft,
       ketua: draft.ketua.trim(),
       judul: draft.judul.trim(),
-      total: hitungTotal(draft.dana), // total selalu = jumlah dana tahun 1-3
+      dana,
+      total: hitungTotal(dana), // total selalu = jumlah seluruh termin
     };
     const next = rows.map((r) => (r.no === baru.no ? baru : r));
     setRows(next);
@@ -165,7 +175,22 @@ function RekapPendanaanTable({ onSave }: Props) {
   };
   const ubah = <F extends keyof Kegiatan>(f: F, v: Kegiatan[F]) => setDraft((d) => (d ? { ...d, [f]: v } : d));
   const ubahDana = (i: number, s: string) =>
-    setDraft((d) => (d ? { ...d, dana: d.dana.map((x, idx) => (idx === i ? angkaDari(s) : x)) } : d));
+    setDraft((d) => {
+      if (!d) return d;
+      const dana = Array.from({ length: Math.max(d.dana.length, i + 1) }, (_, idx) => d.dana[idx] ?? null);
+      dana[i] = angkaDari(s);
+      return { ...d, dana };
+    });
+  /** Tambah termin baru (kolom Dana Tahun berikutnya) */
+  const tambahTahun = () =>
+    setDraft((d) => {
+      if (!d) return d;
+      const dana = Array.from({ length: nTahun }, (_, i) => d.dana[i] ?? null);
+      return { ...d, dana: [...dana, null] };
+    });
+  /** Hapus termin terakhir, hanya kalau kosong dan masih di atas minimal 3 */
+  const kurangiTahun = () =>
+    setDraft((d) => (d ? { ...d, dana: d.dana.slice(0, Math.max(MIN_TAHUN, nTahun - 1)) } : d));
 
   /* ----- berkas data dukung ----- */
   const tambahBerkas = (no: number, files: FileList | null) => {
@@ -293,7 +318,7 @@ function RekapPendanaanTable({ onSave }: Props) {
         <table className="w-max min-w-full text-left text-[11px] border-collapse">
           <thead>
             <tr className="text-white text-center font-extrabold" style={{ background: GRAD_BIRU }}>
-              {KOLOM.map((l) => (
+              {kolom.map((l) => (
                 <th
                   key={l}
                   className={`p-2.5 px-3 border-r border-white/25 last:border-r-0 whitespace-nowrap ${TANPA_CETAK.includes(l) ? "no-print" : ""}`}
@@ -309,7 +334,7 @@ function RekapPendanaanTable({ onSave }: Props) {
               <Fragment key={g.skema}>
                 <tr>
                   <td
-                    colSpan={KOLOM.length}
+                    colSpan={kolom.length}
                     className="p-2 text-white text-center font-extrabold uppercase tracking-wider"
                     style={{ background: GRAD_BIRU_TUA }}
                   >
@@ -321,6 +346,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                   /* ===== Baris sedang diubah ===== */
                   if (edit === k.no && draft) {
                     const d = draft;
+                    const bisaKurangi = nTahun > MIN_TAHUN && d.dana[nTahun - 1] == null;
                     return (
                       <Fragment key={k.no}>
                         <tr className="bg-[#f5f8fd]">
@@ -355,7 +381,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                               aria-label="Jangka waktu (bulan)"
                             />
                           </td>
-                          {[0, 1, 2].map((i) => (
+                          {indeksTahun.map((i) => (
                             <td key={i} className={`${td} min-w-[130px]`}>
                               <input
                                 className={`${INPUT} text-right tabular-nums`}
@@ -366,7 +392,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                               />
                             </td>
                           ))}
-                          <td className={`${angka} font-extrabold text-slate-800`} title="Dihitung otomatis dari dana tahun 1 sampai 3">
+                          <td className={`${angka} font-extrabold text-slate-800`} title="Dihitung otomatis dari seluruh dana tahun">
                             {rupiah(hitungTotal(d.dana))}
                           </td>
                           <td className={`${td} min-w-[150px]`}>
@@ -380,7 +406,10 @@ function RekapPendanaanTable({ onSave }: Props) {
                             />
                           </td>
                           <td className={`${td} min-w-[260px] max-w-[320px]`}>
-                            <textarea className={INPUT} rows={4} value={d.status} onChange={(e) => ubah("status", e.target.value)} aria-label="Status" />
+                            <span className="mb-0.5 block font-extrabold text-[#1f468c]">Status</span>
+                            <textarea className={`${INPUT} mb-2`} rows={3} value={d.status} onChange={(e) => ubah("status", e.target.value)} aria-label="Status" />
+                            <span className="mb-0.5 block font-extrabold text-[#1f468c]">Keterangan</span>
+                            <textarea className={INPUT} rows={3} value={d.keterangan} onChange={(e) => ubah("keterangan", e.target.value)} aria-label="Keterangan" />
                           </td>
                           <td className={`${td} whitespace-nowrap no-print`}>
                             <button
@@ -394,21 +423,33 @@ function RekapPendanaanTable({ onSave }: Props) {
                             <button
                               type="button"
                               onClick={batalUbah}
-                              className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
+                              className="mb-3 block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
                             >
                               Batal
+                            </button>
+                            <button
+                              type="button"
+                              onClick={tambahTahun}
+                              className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb]"
+                            >
+                              + Tahun
+                            </button>
+                            <button
+                              type="button"
+                              onClick={kurangiTahun}
+                              disabled={!bisaKurangi}
+                              title={bisaKurangi ? "Hapus termin terakhir" : "Hanya bisa jika termin terakhir kosong dan lebih dari 3"}
+                              className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              − Tahun
                             </button>
                           </td>
                           {selUpload(k)}
                         </tr>
                         <tr className="bg-[#f5f8fd] no-print">
                           <td className="border-b border-slate-200" />
-                          <td colSpan={KOLOM.length - 1} className="p-3 border-b border-slate-200">
+                          <td colSpan={kolom.length - 1} className="p-3 border-b border-slate-200">
                             <div className="sticky left-3 max-w-[820px] space-y-2">
-                              <label className="block">
-                                <span className="mb-1 block font-extrabold text-[#1f468c]">Keterangan</span>
-                                <textarea className={INPUT} rows={3} value={d.keterangan} onChange={(e) => ubah("keterangan", e.target.value)} />
-                              </label>
                               <label className="block">
                                 <span className="mb-1 block font-extrabold text-[#1f468c]">Tautan folder / dokumen</span>
                                 <input className={INPUT} value={d.link} onChange={(e) => ubah("link", e.target.value)} placeholder="https://..." />
@@ -430,79 +471,50 @@ function RekapPendanaanTable({ onSave }: Props) {
                   }
 
                   /* ===== Baris biasa ===== */
-                  const terbuka = buka === k.no;
                   return (
-                    <Fragment key={k.no}>
-                      <tr
-                        onClick={() => setBuka(terbuka ? null : k.no)}
-                        className="hover:bg-[#eef3fb] transition-colors cursor-pointer"
-                        title="Klik untuk melihat keterangan"
-                      >
-                        <td className={`${td} text-center font-bold text-slate-600 whitespace-nowrap`}>{k.no}</td>
-                        <td className={`${td} font-bold min-w-[170px]`}>{k.ketua}</td>
-                        <td className={`${td} font-semibold ${BIRU_TEKS} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
-                        <td className={`${td} min-w-[150px]`}>{k.pusatRiset}</td>
-                        <td className={`${td} text-center whitespace-nowrap`}>
-                          <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
+                    <tr key={k.no} className="hover:bg-[#eef3fb] transition-colors">
+                      <td className={`${td} text-center font-bold text-slate-600 whitespace-nowrap`}>{k.no}</td>
+                      <td className={`${td} font-bold min-w-[170px]`}>{k.ketua}</td>
+                      <td className={`${td} font-semibold ${BIRU_TEKS} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
+                      <td className={`${td} min-w-[150px]`}>{k.pusatRiset}</td>
+                      <td className={`${td} text-center whitespace-nowrap`}>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
+                      </td>
+                      <td className={`${td} text-center tabular-nums whitespace-nowrap`}>{k.jangkaBulan ?? "—"}</td>
+                      {indeksTahun.map((i) => (
+                        <td key={i} className={angka}>
+                          {rupiah(k.dana[i])}
                         </td>
-                        <td className={`${td} text-center tabular-nums whitespace-nowrap`}>{k.jangkaBulan ?? "—"}</td>
-                        <td className={angka}>{rupiah(k.dana[0])}</td>
-                        <td className={angka}>{rupiah(k.dana[1])}</td>
-                        <td className={angka}>{rupiah(k.dana[2])}</td>
-                        <td className={`${angka} font-extrabold text-slate-800`}>{rupiah(k.total)}</td>
-                        <td className={`${td} whitespace-nowrap`}>
-                          <div className="font-semibold">{k.nomorSK || "—"}</div>
-                          <div className="text-slate-500">{tanggal(k.tanggalSK)}</div>
-                        </td>
-                        <td className={`${td} text-slate-600 min-w-[260px] max-w-[320px]`}>
-                          <div style={{ display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{k.status}</div>
-                        </td>
-                        <td className={`${td} whitespace-nowrap no-print`} onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => mulaiUbah(k)}
-                            disabled={edit !== null}
-                            className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            Ubah
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => hapus(k)}
-                            disabled={edit !== null}
-                            className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            Hapus
-                          </button>
-                        </td>
-                        {selUpload(k)}
-                      </tr>
-
-                      {terbuka && (
-                        <tr className="rp-detail bg-[#f5f8fd]">
-                          <td className="border-b border-slate-200" />
-                          <td colSpan={KOLOM.length - 1} className="p-3 border-b border-slate-200 text-slate-700">
-                            <div className="sticky left-3 max-w-[820px] whitespace-normal">
-                              <div className="font-extrabold text-[#1f468c] mb-1">Status</div>
-                              <p className="mb-2 whitespace-pre-line">{k.status || "—"}</p>
-                              <div className="font-extrabold text-[#1f468c] mb-1">Keterangan</div>
-                              <p className="whitespace-pre-line">{k.keterangan || "—"}</p>
-                              {k.link && (
-                                <a
-                                  href={k.link}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="mt-2 inline-block font-bold text-[#2a58a5] underline"
-                                >
-                                  Buka folder dokumen
-                                </a>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
+                      ))}
+                      <td className={`${angka} font-extrabold text-slate-800`}>{rupiah(k.total)}</td>
+                      <td className={`${td} whitespace-nowrap`}>
+                        <div className="font-semibold">{k.nomorSK || "—"}</div>
+                        <div className="text-slate-500">{tanggal(k.tanggalSK)}</div>
+                      </td>
+                      <td className={`${td} min-w-[260px] max-w-[320px]`}>
+                        <div className="whitespace-pre-line text-slate-700">{k.status || "—"}</div>
+                        {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[10px] text-slate-500">{k.keterangan}</div>}
+                      </td>
+                      <td className={`${td} whitespace-nowrap no-print`}>
+                        <button
+                          type="button"
+                          onClick={() => mulaiUbah(k)}
+                          disabled={edit !== null}
+                          className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Ubah
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => hapus(k)}
+                          disabled={edit !== null}
+                          className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Hapus
+                        </button>
+                      </td>
+                      {selUpload(k)}
+                    </tr>
                   );
                 })}
 
@@ -511,9 +523,11 @@ function RekapPendanaanTable({ onSave }: Props) {
                     Total {g.skema} · {g.list.length} kegiatan
                   </td>
                   <td className="border-b border-slate-300" />
-                  <td className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">{rupiah(jumlah(g.list, 0))}</td>
-                  <td className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">{rupiah(jumlah(g.list, 1))}</td>
-                  <td className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">{rupiah(jumlah(g.list, 2))}</td>
+                  {indeksTahun.map((i) => (
+                    <td key={i} className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">
+                      {rupiah(jumlah(g.list, i))}
+                    </td>
+                  ))}
                   <td className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">
                     {rupiah(g.list.reduce((n, k) => n + k.total, 0))}
                   </td>
@@ -528,9 +542,11 @@ function RekapPendanaanTable({ onSave }: Props) {
                   Total seluruhnya · {tampil.length} kegiatan
                 </td>
                 <td />
-                <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{rupiah(jumlah(tampil, 0))}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{rupiah(jumlah(tampil, 1))}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{rupiah(jumlah(tampil, 2))}</td>
+                {indeksTahun.map((i) => (
+                  <td key={i} className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">
+                    {rupiah(jumlah(tampil, i))}
+                  </td>
+                ))}
                 <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{rupiah(tampil.reduce((n, k) => n + k.total, 0))}</td>
                 <td colSpan={4} />
               </tr>
@@ -538,7 +554,7 @@ function RekapPendanaanTable({ onSave }: Props) {
 
             {tampil.length === 0 && (
               <tr>
-                <td colSpan={KOLOM.length} className="p-6 text-center text-slate-500">
+                <td colSpan={kolom.length} className="p-6 text-center text-slate-500">
                   Tidak ada data yang cocok dengan pencarian.
                 </td>
               </tr>
