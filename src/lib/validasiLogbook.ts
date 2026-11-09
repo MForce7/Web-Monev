@@ -220,6 +220,28 @@ function normOutput(o: unknown, label: string, m: Masalah[]): Out | null {
   }
 }
 
+const outputKosong = (o: Out) =>
+  !(o.jenis || o.judul || o.status || o.keterangan || o.capaian > 0 || o.dataDukung.length)
+
+/** Buang output yang benar-benar kosong, lalu tambah satu baris kosong untuk tiap jenis target yang belum ada di bulan itu */
+function lengkapiTarget(semua: Out[], target: { jenis: string }[]): Out[] {
+  const ada = semua.filter((o) => !outputKosong(o))
+  const jenisAda = new Set(ada.map((o) => o.jenis))
+  const tambah = [...new Set(target.map((t) => t.jenis).filter((j) => j && JENIS.includes(j)))]
+    .filter((j) => !jenisAda.has(j))
+    .map((j): Out => ({ ...blankOutput(), jenis: j }))
+  return [...ada, ...tambah]
+}
+
+function susunBulan(nama: string, aktivitas: MonthData['aktivitas'], outs: Out[]): MonthData {
+  return {
+    bulan: nama,
+    aktivitas,
+    output: outs[0] ?? blankOutput(),
+    ...(outs.length > 1 ? { outputTambahan: outs.slice(1) } : {}),
+  }
+}
+
 function normEntri(raw: unknown, i: number): HasilEntri {
   const r = rec(raw)
   const h = rec(r.header)
@@ -266,15 +288,18 @@ function normEntri(raw: unknown, i: number): HasilEntri {
 
     // output utama + tambahan, lalu pecah sel yang ternyata memuat beberapa butir
     const mentah = [b.output, ...arr(b.outputTambahan)].flatMap((o, k) => pecahOutput(o, labelKe(k), m))
-    const semua = mentah.map((o, k) => normOutput(o, labelKe(k), m))
-    const output = semua[0] ?? blankOutput()
-    const tambahan = semua.slice(1).filter((o): o is Out => o !== null)
-    return {
-      bulan: nama,
-      aktivitas: { uraian: str(a.uraian), kendala: str(a.kendala), mitigasi: str(a.mitigasi), dataDukung: lampiran(a.dataDukung) },
-      output,
-      ...(tambahan.length ? { outputTambahan: tambahan } : {}),
+    const semua = mentah.map((o, k) => normOutput(o, labelKe(k), m)).filter((o): o is Out => o !== null)
+    const aktivitas = {
+      uraian: str(a.uraian),
+      kendala: str(a.kendala),
+      mitigasi: str(a.mitigasi),
+      dataDukung: lampiran(a.dataDukung),
     }
+
+    const apaAdanya = susunBulan(nama, aktivitas, semua)
+    // bulan yang sama sekali kosong dibiarkan kosong supaya tidak dihitung "terisi" dan tidak menimpa data lama saat digabung
+    if (!bulanAdaIsi(apaAdanya)) return apaAdanya
+    return susunBulan(nama, aktivitas, lengkapiTarget(semua, targetOutputs))
   })
 
   const header: HeaderData = {
@@ -381,6 +406,7 @@ bulanan (tiap bulan):
 - aktivitas.dataDukung dan output.dataDukung = [{ "label", "url" }] dari kolom Data Dukung. Jika isinya URL: label = nama situs singkat, url = URL-nya. Jika isinya teks biasa: label = teksnya, url = "". Satu entri per item
 - output = Jenis Output, Judul Output, Status, Progres Capaian
 - BANYAK OUTPUT DALAM SATU BULAN: bila sel Judul Output memuat beberapa butir, baik bernomor (1., 2.), diawali tanda (*, -, •), maupun berupa beberapa baris terpisah, setiap butir adalah SATU output sendiri. Butir pertama di "output", butir lainnya SEMUA di "outputTambahan" dengan struktur sama. Jangan menggabungkan beberapa butir menjadi satu judul. Pasangkan Jenis Output dan Status secara berurutan dengan butirnya bila sel Jenis/Status juga berisi beberapa baris. Jika sel Jenis atau Status hanya berisi satu nilai padahal butirnya lebih dari satu, JANGAN menebak: pakai nilai itu untuk butir pertama, isi jenis dan status butir lainnya dengan "", lalu catat di catatanImport (sebut bulan dan judul butirnya). Jangan menghilangkan butir apa pun, jenis apa pun (Purwarupa, Model, Publikasi, KI, dst.)
+- Jika sebuah bulan hanya menyebut sebagian jenis dari target output (mis. target 1 KI + 1 Publikasi tetapi bulan itu hanya menulis Publikasi), tulis yang ada saja. Jangan membuat output KI kosong atau mengarang isinya; sistem yang menambahkan barisnya
 - bulan tanpa isian: biarkan kosong ("" dan 0, dataDukung [])
 
 JENIS OUTPUT dan STATUS yang valid (pakai persis penulisan ini; status hanya boleh dari daftar milik jenis itu sendiri, jangan meminjam status jenis lain):
