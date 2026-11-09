@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
-import rekapOutput from "../../config/rekapOutput.json";
+import rekapOutput from "../../data/rekapOutput.json";
 
 /* Bentuk satu baris output */
 type LinkDukung = { label: string; url: string };
