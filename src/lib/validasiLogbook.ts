@@ -1,11 +1,14 @@
 import { JENIS_OUTPUT, hasKeterangan, statusOptions } from './config'
 import { BULAN } from './LogbookData'
 import { STATUS_PELAKSANAAN, type Attachment, type HeaderData } from '../types/monev'
-import type { MonthData } from '../components/logbook/MonthlyLogTable'
+import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
 
 export type Masalah = { level: 'galat' | 'peringatan'; pesan: string }
 export interface EntriLogbook { header: HeaderData; bulanan: MonthData[]; catatanImport?: string[] }
 export interface HasilEntri { nama: string; entri: EntriLogbook; masalah: Masalah[] }
+
+/** ID stabil untuk satu masalah (dipakai untuk menandai "selesai" di daftar validasi) */
+export const idMasalah = (nama: string, m: Masalah) => `${nama}|${m.level}|${m.pesan}`
 
 type Out = MonthData['output']
 
@@ -54,45 +57,126 @@ const ALIAS_PELAKSANAAN: Record<string, string> = {
   dimanfaatkan: 'Selesai',
 }
 
-/** Teks status bebas -> salah satu status valid untuk jenis tsb; null bila tidak ada yang cocok */
+/**
+ * Teks status bebas -> salah satu status valid untuk jenis tsb (sesuai config.ts); null bila tidak ada yang cocok.
+ * Tiap aturan = [pola pada teks Excel, pola pada nama status di daftar jenis itu].
+ * Urutan dari tahap paling akhir ke paling awal; aturan yang tidak punya padanan di jenis itu dilewati.
+ */
 function petaStatusOutput(jenis: string, s: string): string | null {
   const list = statusOptions(jenis, '')
   const t = kecil(s)
   const persis = list.find((x) => kecil(x) === t)
   if (persis) return persis
 
-  const aturan: [RegExp, string][] = [
-    [/publish|terbit/, 'Published'],
-    [/ac{1,2}ept|diterima/, 'Accepted'],
-    [/regist|terdaftar|granted|diberikan/, 'Registered'],
-    [/review/, 'In-Review'],
-    [/submit/, 'Submitting'],
-    [/draf/, jenis === 'Publikasi' ? 'Drafting' : 'Pengembangan'],
-    [/pengembangan/, 'Pengembangan'],
-    [/desain|design/, 'Design'],
-    [/manufaktur|fabrikasi/, 'Manufakturing'],
-    [/test|uji/, 'Testing'],
-    [/finish|selesai/, 'FINISHED'],
+  const aturan: [RegExp, RegExp][] = [
+    [/publish|terbit/, /^published$/],
+    [/granted|diberi/, /granted|diberi/],
+    [/regist|terdaftar/, /terdaftar|registered/],
+    [/ac{1,2}ept|diterima/, /accepted/],
+    [/review/, /review/],
+    [/submit/, /submit/],
+    [/test|uji|selesai|finish/, /uji|selesai/],
+    [/manufaktur|manufactur|fabrikasi|perakitan|rakit/, /manufaktur/],
+    [/draf/, /^draf/],
+    [/draf|pengembangan/, /desain/], // Purwarupa/Model tidak punya "Draf": tahap awalnya Desain
+    [/desain|design|gambar/, /desain/],
   ]
-  const hasil = aturan.find(([re, nilai]) => re.test(t) && list.includes(nilai))
-  if (hasil) return hasil[1]
+  for (const [pola, polaItem] of aturan) {
+    if (!pola.test(t)) continue
+    const item = list.find((x) => polaItem.test(kecil(x)))
+    if (item) return item
+  }
   // "Belum Mulai" = tahap paling awal dari jenis tsb
   if (/^belum/.test(t) && list.length) return list[0]
   return null
 }
 
+/* ───────── Pemecahan sel yang memuat beberapa output ───────── */
+
+/** Penanda butir: "* ", "• ", "- ", "1. ", "2) " di awal baris */
+const MARKA = /^\s*(?:[*•·]\s*|[-–—]\s+|\d{1,2}[.)]\s+)/
+
+/** Judul: baris bertanda memulai butir baru, baris tanpa tanda disambung ke butir sebelumnya */
+function butirJudul(s: string): { butir: string[]; bertanda: number } {
+  const butir: string[] = []
+  let bertanda = 0
+  for (const baris of s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean)) {
+    if (MARKA.test(baris)) {
+      bertanda++
+      butir.push(baris.replace(MARKA, '').trim())
+    } else if (butir.length) butir[butir.length - 1] += ` ${baris}`
+    else butir.push(baris)
+  }
+  return { butir, bertanda }
+}
+
+/** Jenis/status: satu baris = satu nilai (tanda butir dibuang) */
+const barisDari = (s: string): string[] =>
+  s.split(/\r?\n/).map((x) => x.replace(MARKA, '').trim()).filter(Boolean)
+
+/**
+ * Bila Judul Output memuat >= 2 butir bertanda, pecah menjadi beberapa output.
+ * Jenis dan status dipasangkan berurutan bila jumlah barisnya sama dengan jumlah butir;
+ * bila tidak sama, butir ke-2 dst dibiarkan kosong (tidak ditebak) dan diberi peringatan.
+ */
+function pecahOutput(o: unknown, label: string, m: Masalah[]): Obj[] {
+  const r = rec(o)
+  const { butir, bertanda } = butirJudul(str(r.judul))
+  if (bertanda < 2 || butir.length < 2) return [r]
+
+  const n = butir.length
+  const jenis = barisDari(str(r.jenis))
+  const status = barisDari(str(r.status))
+  const pilih = (daftar: string[], i: number, asli: unknown) =>
+    daftar.length === n ? daftar[i] : i === 0 ? str(asli) : ''
+
+  const lengkap = jenis.length === n && status.length === n
+  m.push({
+    level: 'peringatan',
+    pesan: `${label}: judul output berisi ${n} butir, dipecah menjadi ${n} output.${
+      lengkap ? '' : ' Jenis/status butir ke-2 dan seterusnya belum terisi di Excel, lengkapi lewat tombol Edit'
+    }`,
+  })
+
+  return butir.map((judul, i) => ({
+    jenis: pilih(jenis, i, r.jenis),
+    judul,
+    status: pilih(status, i, r.status),
+    capaian: i === 0 ? r.capaian : 0,
+    dataDukung: i === 0 ? r.dataDukung : [],
+    keterangan: i === 0 ? r.keterangan : '',
+  }))
+}
+
 /* ───────── Normalisasi bagian-bagian ───────── */
 
-/** Angka 0–100 bulat; menambah masalah bila perlu dibetulkan */
+/** Normalisasi persentase menjadi angka bulat 0–100 */
 function persen(v: unknown, label: string, m: Masalah[]): number {
   if (v === '' || v == null) return 0
-  const n = angka(v)
+
+  let n = angka(v)
+
   if (!Number.isFinite(n)) {
-    m.push({ level: 'peringatan', pesan: `${label}: "${str(v)}" bukan angka, dijadikan 0` })
+    m.push({
+      level: 'peringatan',
+      pesan: `${label}: "${str(v)}" bukan angka, dijadikan 0`,
+    })
     return 0
   }
-  if (n < 0 || n > 100) m.push({ level: 'peringatan', pesan: `${label}: ${n} di luar 0–100, dipotong` })
-  if (n > 0 && n < 1) m.push({ level: 'peringatan', pesan: `${label}: ${n} mungkin pecahan, pastikan bukan ${n * 100}%` })
+
+  // Nilai desimal antara 0 dan 1 dianggap sebagai pecahan persentase.
+  // Contoh: 0.1 = 10%, 0.5 = 50%, 1.0 = 100%.
+  if (n > 0 && n <= 1) {
+    n *= 100
+  }
+
+  if (n < 0 || n > 100) {
+    m.push({
+      level: 'peringatan',
+      pesan: `${label}: ${n} di luar 0–100, dipotong`,
+    })
+  }
+
   return Math.min(100, Math.max(0, Math.round(n)))
 }
 
@@ -140,7 +224,8 @@ function normOutput(o: unknown, label: string, m: Masalah[]): Out | null {
       // teks asli dipertahankan di keterangan bila jenisnya punya kolom keterangan
       if (hasKeterangan(jenis) && !keterangan && kecil(s) !== kecil(statusMentah)) keterangan = statusMentah
     } else {
-      m.push({ level: 'peringatan', pesan: `${label}: status "${statusMentah}" tidak sesuai untuk jenis ${jenis}` })
+      const valid = statusOptions(jenis, '').join(' | ')
+      m.push({ level: 'peringatan', pesan: `${label}: status "${statusMentah}" tidak sesuai untuk jenis ${jenis} (pilihan: ${valid || 'tidak ada'})` })
     }
   }
   if (!jenis && (judul || statusMentah)) m.push({ level: 'peringatan', pesan: `${label}: jenis output kosong padahal judul/status terisi` })
@@ -152,6 +237,45 @@ function normOutput(o: unknown, label: string, m: Masalah[]): Out | null {
     capaian: persen(r.capaian, `${label} capaian`, m),
     dataDukung: lampiran(r.dataDukung),
     ...(keterangan ? { keterangan } : {}),
+  }
+}
+
+const outputKosong = (o: Out) =>
+  !(o.jenis || o.judul || o.status || o.keterangan || o.capaian > 0 || o.dataDukung.length)
+
+/**
+ * Buang output yang benar-benar kosong, lalu tambah baris kosong sesuai JUMLAH target tiap jenis
+ * (mis. target "2 KI" tetapi bulan itu baru mengisi 1 KI -> ditambah 1 baris KI kosong).
+ * Judul output yang sudah ada tidak diubah.
+ */
+function lengkapiTarget(semua: Out[], target: { jenis: string; jumlah: number }[]): Out[] {
+  const ada = semua.filter((o) => !outputKosong(o))
+
+  const terisi = new Map<string, number>()
+  ada.forEach((o) => terisi.set(o.jenis, (terisi.get(o.jenis) ?? 0) + 1))
+
+  const butuh = new Map<string, number>()
+  target.forEach((x) => {
+    if (x.jenis && JENIS.includes(x.jenis)) {
+      butuh.set(x.jenis, (butuh.get(x.jenis) ?? 0) + Math.max(1, x.jumlah || 1))
+    }
+  })
+
+  const tambah: Out[] = []
+  butuh.forEach((jumlah, jenis) => {
+    const kurang = jumlah - (terisi.get(jenis) ?? 0)
+    for (let k = 0; k < kurang; k++) tambah.push({ ...blankOutput(), jenis })
+  })
+
+  return [...ada, ...tambah]
+}
+
+function susunBulan(nama: string, aktivitas: MonthData['aktivitas'], outs: Out[]): MonthData {
+  return {
+    bulan: nama,
+    aktivitas,
+    output: outs[0] ?? blankOutput(),
+    ...(outs.length > 1 ? { outputTambahan: outs.slice(1) } : {}),
   }
 }
 
@@ -197,19 +321,27 @@ function normEntri(raw: unknown, i: number): HasilEntri {
     const b = sumber.get(kecil(nama))
     if (!b) return blankMonth(nama) // file per bulan: bulan lain memang tidak ada
     const a = rec(b.aktivitas)
-    const output = normOutput(b.output, nama, m) ?? blankOutput()
-    const tambahan = arr(b.outputTambahan)
-      .map((o, k) => normOutput(o, `${nama} output ${k + 2}`, m))
-      .filter((o): o is Out => o !== null)
-    return {
-      bulan: nama,
-      aktivitas: { uraian: str(a.uraian), kendala: str(a.kendala), mitigasi: str(a.mitigasi), dataDukung: lampiran(a.dataDukung) },
-      output,
-      ...(tambahan.length ? { outputTambahan: tambahan } : {}),
+    const labelKe = (k: number) => (k === 0 ? nama : `${nama} output ${k + 1}`)
+
+    // output utama + tambahan, lalu pecah sel yang ternyata memuat beberapa butir
+    const mentah = [b.output, ...arr(b.outputTambahan)].flatMap((o, k) => pecahOutput(o, labelKe(k), m))
+    const semua = mentah.map((o, k) => normOutput(o, labelKe(k), m)).filter((o): o is Out => o !== null)
+    const aktivitas = {
+      uraian: str(a.uraian),
+      kendala: str(a.kendala),
+      mitigasi: str(a.mitigasi),
+      dataDukung: lampiran(a.dataDukung),
     }
+
+    const apaAdanya = susunBulan(nama, aktivitas, semua)
+    // bulan yang sama sekali kosong dibiarkan kosong supaya tidak dihitung "terisi" dan tidak menimpa data lama saat digabung
+    if (!bulanAdaIsi(apaAdanya)) return apaAdanya
+    return susunBulan(nama, aktivitas, lengkapiTarget(semua, targetOutputs))
   })
 
-  const header: HeaderData = {
+  // Field lain di HeaderData (pendanaan, kontrak, dst.) tidak ada di JSON import,
+  // jadi objek ini di-assert ke HeaderData dan field tsb dipertahankan dari data lama saat digabung.
+  const header = {
     namaKetua,
     unitKerja: str(h.unitKerja),
     satuanKerja: str(h.satuanKerja),
@@ -218,7 +350,7 @@ function normEntri(raw: unknown, i: number): HasilEntri {
     progresTotal: persen(h.progresTotal, 'Progres total', m),
     progresKeterangan: str(h.progresKeterangan),
     statusPelaksanaan,
-  }
+  } as HeaderData
 
   const catatanImport = arr(r.catatanImport).map(str).filter(Boolean)
   catatanImport.forEach((pesan) => m.push({ level: 'peringatan', pesan: `Catatan AI: ${pesan}` }))
@@ -248,6 +380,7 @@ export function gabungEntri(lama: EntriLogbook, baru: EntriLogbook): EntriLogboo
   const hc = (utama === baru ? lama : baru).header
 
   const header: HeaderData = {
+    ...hc, // field yang tidak ada di import (pendanaan, kontrak, dst.) tetap dari data lama
     ...hu,
     unitKerja: hu.unitKerja || hc.unitKerja,
     satuanKerja: hu.satuanKerja || hc.satuanKerja,
@@ -303,7 +436,7 @@ Satu objek logbook per Nama Ketua Tim. Data diambil dari sheet "Aktivitas Bulan 
 header:
 - namaKetua, unitKerja, satuanKerja = kolom Nama Ketua Tim, Unit Kerja, Satuan Kerja (hapus spasi dan enter di ujung)
 - judulAktivitas = Judul Aktivitas bulan terakhir yang terisi
-- targetOutputs = kolom Target Output, dipecah menjadi [{ "jenis", "jumlah" }]. Contoh "1 HKI; 1 Publikasi Internasional" menjadi dua entri. Jika target berbeda-beda antarbulan, pakai yang paling lengkap dan tulis konfliknya di catatanImport
+- targetOutputs = kolom Target Output, dipecah menjadi [{ "jenis", "jumlah" }] . Contoh "1 HKI; 1 Publikasi Internasional" menjadi dua entri. Jika target berbeda-beda antarbulan, pakai yang paling lengkap dan tulis konfliknya di catatanImport
 - progresTotal = Persentase Progres Pelaksanaan bulan terakhir yang terisi, angka bulat 0-100
 - statusPelaksanaan = Status Pelaksanaan bulan terakhir yang terisi, salah satu dari: ${STATUS_PELAKS.join(', ')}. Pemetaan dari Excel: Perencanaan = Perencanaan, Persiapan = Perencanaan, Pelaksanaan = Pelaksanaan / Berjalan, Selesai = Selesai, Dimanfaatkan = Selesai
 - progresKeterangan = "" kecuali ada keterangan yang jelas
@@ -312,10 +445,11 @@ bulanan (tiap bulan):
 - aktivitas.uraian / kendala / mitigasi = salin PERSIS dari kolom Uraian Kemajuan, Kendala, Mitigasi. Jangan meringkas atau memperbaiki kata
 - aktivitas.dataDukung dan output.dataDukung = [{ "label", "url" }] dari kolom Data Dukung. Jika isinya URL: label = nama situs singkat, url = URL-nya. Jika isinya teks biasa: label = teksnya, url = "". Satu entri per item
 - output = Jenis Output, Judul Output, Status, Progres Capaian
-- Jika satu bulan memuat beberapa output (judul bernomor 1., 2., ...), output pertama di "output", sisanya di "outputTambahan" dengan struktur sama
+- BANYAK OUTPUT DALAM SATU BULAN: bila sel Judul Output memuat beberapa butir, baik bernomor (1., 2.), diawali tanda (*, -, •), maupun berupa beberapa baris terpisah, setiap butir adalah SATU output sendiri. Butir pertama di "output", butir lainnya SEMUA di "outputTambahan" dengan struktur sama. Jangan menggabungkan beberapa butir menjadi satu judul. Pasangkan Jenis Output dan Status secara berurutan dengan butirnya bila sel Jenis/Status juga berisi beberapa baris. Jika sel Jenis atau Status hanya berisi satu nilai padahal butirnya lebih dari satu, JANGAN menebak: pakai nilai itu untuk butir pertama, isi jenis dan status butir lainnya dengan "", lalu catat di catatanImport (sebut bulan dan judul butirnya). Jangan menghilangkan butir apa pun, jenis apa pun (Purwarupa, Model, Publikasi, KI, dst.)
+- Jika sebuah bulan hanya menyebut sebagian jenis dari target output (mis. target 1 KI + 1 Publikasi tetapi bulan itu hanya menulis Publikasi), tulis yang ada saja. Jangan membuat output KI kosong atau mengarang isinya; sistem yang menambahkan barisnya
 - bulan tanpa isian: biarkan kosong ("" dan 0, dataDukung [])
 
-JENIS OUTPUT dan STATUS yang valid (pakai persis penulisan ini):
+JENIS OUTPUT dan STATUS yang valid (pakai persis penulisan ini; status hanya boleh dari daftar milik jenis itu sendiri, jangan meminjam status jenis lain):
 ${jenis}
 
 Pemetaan jenis output dari Excel (periset menulis bebas, petakan berdasarkan maknanya):
@@ -324,7 +458,7 @@ Pemetaan jenis output dari Excel (periset menulis bebas, petakan berdasarkan mak
 - Purwarupa / Prototipe = Purwarupa; Model = Model
 - DESAIN INDUSTRI: ABAIKAN. Bukan KI dan tidak masuk logbook. Jangan buat output atau target untuknya, cukup catat di catatanImport (sebut bulan dan judulnya)
 - "Naskah Kebijakan ..." belum ada di sistem: kosongkan jenis dan catat di catatanImport
-Pemetaan status output: Drafting/draft = Drafting (KI: Pengembangan); Submit/Submitted/Final submit = Submitting; Reviewed/Under review = In-Review; Accepted/Diterima = Accepted; Published/Terbit = Published; Gambar Desain/Design = Design; Belum Mulai = status pertama dari jenisnya. Jika tidak ada yang cocok, kosongkan status dan catat di catatanImport.
+Pemetaan status output: pilih status dari daftar jenis itu yang maknanya paling dekat. Draft/Drafting = Draf (Purwarupa dan Model tidak punya Draf, pakai Desain); Submit/Submitted/Final submit = Submitted (Publikasi) atau Submit Intipdaqu (KI/Paten/Hak Cipta); Reviewed/Under review = Under Review; Accepted/Diterima = Accepted; Published/Terbit = Published; Registered/Terdaftar = Terdaftar DJKI; Granted = Granted/Diberi; Gambar Desain/Design = Desain; Manufaktur/Manufakturing/Perakitan/Fabrikasi = Manufaktur; Testing/Uji/Selesai = Pengujian/Selesai Uji; Belum Mulai = status pertama dari jenisnya. Jika tidak ada yang cocok, kosongkan status dan catat di catatanImport.
 
 Aturan angka: 0.1 menjadi 10, "40 %" menjadi 40, 70 tetap 70, 1.0 menjadi 100. Teks bukan angka di kolom persen menjadi 0 dan dicatat di catatanImport.
 

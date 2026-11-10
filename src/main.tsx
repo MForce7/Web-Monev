@@ -77,6 +77,9 @@ import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
 import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
+import KelompokRiset from './pages/kelompokriset.tsx'
+import Rekappendanaan from './pages/Rekappendanaan.tsx'
+import Importjson from './pages/importjson.tsx'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -94,6 +97,8 @@ const router = createBrowserRouter([
           { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
         ],
+              
+                  
       },
     ],
   },
