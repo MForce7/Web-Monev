@@ -20,24 +20,30 @@ function buildDefaultMonths(): MonthData[] {
 }
 
 interface Props {
+  activityId: string   // ⬅️ tambahkan ini
   initialData: HeaderData
-  onSave?: (updatedData: HeaderData) => void
-
+  // onSave?: (updatedData: HeaderData) => void
+  onSave?: (updatedData: HeaderData) => void | Promise<void> 
   initialMonthlyData?: MonthData[]
   onMonthlySave?: (updatedData: MonthData[]) => void
 }
 
 export default function ActivityHeader({
+  activityId,   // ⬅️ tambahkan ini
   initialData,
   onSave,
   initialMonthlyData,
   onMonthlySave
 }: Props) {
 
+// debug purpose
+   console.log('[ActivityHeader] render, activityId =', activityId)
+
   const [isEditing, setIsEditing] = useState(false)
   const [saved, setSaved] = useState(initialData)
   const [draft, setDraft] = useState(initialData)
-
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const data = isEditing ? draft : saved
 
   // Fallback: kalau parent tidak kirim data bulanan, pakai 12 bulan kosong
@@ -102,10 +108,19 @@ export default function ActivityHeader({
     setIsEditing(false)
   }
 
-  const handleSave = () => {
-    setSaved(draft)
-    setIsEditing(false)
-    onSave?.(draft)
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      await onSave?.(draft)
+      setSaved(draft)
+      setIsEditing(false)
+    } catch (err) {
+      setSaveError((err as Error).message)
+      // tetap di mode edit, draft tidak hilang, supaya user bisa coba simpan lagi
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -139,6 +154,14 @@ export default function ActivityHeader({
             Informasi aktivitas dan capaian program mitra
           </p>
         </div>
+
+
+        {saveError && (
+          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+            <i className="fa-solid fa-triangle-exclamation mr-1.5" />
+            Gagal menyimpan: {saveError}
+          </div>
+        )}
 
         {!isEditing && (
           <button
@@ -236,16 +259,18 @@ export default function ActivityHeader({
             <button
               type="button"
               onClick={handleSave}
+              disabled={saving}
               className="
                 px-5 py-2.5
                 bg-[#1e3a8a] hover:bg-blue-900
                 text-white rounded-xl
                 text-sm font-semibold shadow-md
                 transition-all
+                disabled:opacity-60 disabled:cursor-not-allowed
               "
             >
-              <i className="fa-solid fa-check mr-1.5" />
-              Simpan Perubahan
+              <i className={`fa-solid ${saving ? 'fa-spinner fa-spin' : 'fa-check'} mr-1.5`} />
+              {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
             </button>
           </div>
         )}
@@ -261,11 +286,13 @@ export default function ActivityHeader({
 
           {/* LOG PROGRES BULANAN */}
           <div className="w-full min-w-0 mt-6">
+
             <MonthlyLogTable
+              activityId={activityId}   // ⬅️ tambahkan ini
               initialData={monthlyData}
               onSave={onMonthlySave}
-              isEditing={isEditing}
             />
+            
           </div>
 
         </div>
