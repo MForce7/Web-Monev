@@ -7,6 +7,9 @@ export type Masalah = { level: 'galat' | 'peringatan'; pesan: string }
 export interface EntriLogbook { header: HeaderData; bulanan: MonthData[]; catatanImport?: string[] }
 export interface HasilEntri { nama: string; entri: EntriLogbook; masalah: Masalah[] }
 
+/** ID stabil untuk satu masalah (dipakai untuk menandai "selesai" di daftar validasi) */
+export const idMasalah = (nama: string, m: Masalah) => `${nama}|${m.level}|${m.pesan}`
+
 type Out = MonthData['output']
 
 const JENIS = JENIS_OUTPUT as readonly string[]
@@ -336,7 +339,9 @@ function normEntri(raw: unknown, i: number): HasilEntri {
     return susunBulan(nama, aktivitas, lengkapiTarget(semua, targetOutputs))
   })
 
-  const header: HeaderData = {
+  // Field lain di HeaderData (pendanaan, kontrak, dst.) tidak ada di JSON import,
+  // jadi objek ini di-assert ke HeaderData dan field tsb dipertahankan dari data lama saat digabung.
+  const header = {
     namaKetua,
     unitKerja: str(h.unitKerja),
     satuanKerja: str(h.satuanKerja),
@@ -345,7 +350,7 @@ function normEntri(raw: unknown, i: number): HasilEntri {
     progresTotal: persen(h.progresTotal, 'Progres total', m),
     progresKeterangan: str(h.progresKeterangan),
     statusPelaksanaan,
-  }
+  } as HeaderData
 
   const catatanImport = arr(r.catatanImport).map(str).filter(Boolean)
   catatanImport.forEach((pesan) => m.push({ level: 'peringatan', pesan: `Catatan AI: ${pesan}` }))
@@ -375,6 +380,7 @@ export function gabungEntri(lama: EntriLogbook, baru: EntriLogbook): EntriLogboo
   const hc = (utama === baru ? lama : baru).header
 
   const header: HeaderData = {
+    ...hc, // field yang tidak ada di import (pendanaan, kontrak, dst.) tetap dari data lama
     ...hu,
     unitKerja: hu.unitKerja || hc.unitKerja,
     satuanKerja: hu.satuanKerja || hc.satuanKerja,
