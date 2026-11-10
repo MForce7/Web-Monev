@@ -3,7 +3,7 @@ import Badge, { WARNA_BADGE } from "../components/importexcel/Badge";
 import Langkah from "../components/importexcel/Langkah";
 import TombolGradasi from "../components/importexcel/TombolGradasi";
 import { GRAD } from "../components/importexcel/konstanta";
-import MonthlyLogTable from "../components/logbook/MonthlyLogTable";
+// import MonthlyLogTable from "../components/logbook/MonthlyLogTable";
 import { buatPrompt, gabungEntri, parseBerkas, type EntriLogbook, type HasilEntri } from "../lib/validasiLogbook";
 import { BULAN } from "../lib/LogbookData";
 import { ambilLogbookAktif, daftarLogbook, hapusLogbook, simpanLogbook } from "../lib/logbookStore";

@@ -71,33 +71,51 @@
 
 import { useState } from 'react'
 import { emptyMonth } from '../../../types/monev'
-// import MonthRow, { type MonthData } from './MonthRow'
-import MonthRow from './MonthRow'
+import { updateMonthlyReport } from '../../../lib/supabaseLogbookData'
+import MonthRow, { type MonthData } from './MonthRow'
 import { PrintStyles, WRAP } from '../shared'
-import type { MonevMonth } from '../../../types/monev'
 
-export type MonthData = MonevMonth
-// export type { MonthData }
+export type { MonthData }
 
-/** Lebar kolom (%), total 100; kolom terakhir (Tindakan) disembunyikan saat cetak */
 const WIDTHS = [6, 12, 9, 9, 8, 8, 11, 10, 8, 8, 11]
 
 const AKTIVITAS = ['Uraian Kemajuan Aktivitas', 'Kendala Ditemui', 'Mitigasi / Rencana Tindak Lanjut', 'Data Dukung Progres']
 const OUTPUT = ['Jenis Output', 'Judul Output', 'Status', 'Capaian (%)', 'Data Dukung Output']
 
 interface Props {
+  /** ID aktivitas pemilik log bulanan ini — dipakai untuk menyimpan ke Supabase */
+  activityId: string
   initialData: MonthData[]
   onSave?(updatedData: MonthData[]): void
-  isEditing?: boolean
 }
 
-export default function MonthlyLogTable({ initialData, onSave }: Props) {
+export default function MonthlyLogTable({ activityId, initialData, onSave }: Props) {
   const [rows, setRows] = useState(initialData)
+  const [savingIndex, setSavingIndex] = useState<number | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
-  const commit = (i: number, next: MonthData) => {
+  const commit = async (i: number, next: MonthData) => {
+
+// debug purpose
+    console.log('[MonthlyLogTable] commit dipanggil, activityId =', activityId)
+    
+    
+    
+    setSavingIndex(i)
+    setSaveError(null)
+
+    try {
+      await updateMonthlyReport(activityId, next)
+    } catch (err) {
+      setSaveError((err as Error).message)
+      setSavingIndex(null)
+      return // gagal simpan ke server -> jangan update tampilan, biar user tahu belum tersimpan
+    }
+
     const updated = rows.map((r, idx) => (idx === i ? next : r))
     setRows(updated)
     onSave?.(updated)
+    setSavingIndex(null)
   }
 
   return (
@@ -112,6 +130,13 @@ export default function MonthlyLogTable({ initialData, onSave }: Props) {
           <i className="fa-solid fa-print" /> Cetak Laporan
         </button>
       </div>
+
+      {saveError && (
+        <div className="px-3 py-2 bg-red-50 border-b border-red-200 text-xs text-red-700 no-print">
+          <i className="fa-solid fa-triangle-exclamation mr-1.5" />
+          Gagal menyimpan: {saveError}
+        </div>
+      )}
 
       <table id="mainTable" className="w-full max-w-full table-fixed text-left text-[11px] border-collapse">
         <colgroup>
@@ -133,10 +158,22 @@ export default function MonthlyLogTable({ initialData, onSave }: Props) {
 
         <tbody id="tableBody">
           {rows.map((m, i) => (
-            <MonthRow key={m.bulan} month={m} onSave={(next) => commit(i, next)} onClear={() => commit(i, emptyMonth(m.bulan))} />
+            <MonthRow
+              key={m.bulan}
+              month={m}
+              onSave={(next) => commit(i, next)}
+              onClear={() => commit(i, emptyMonth(m.bulan))}
+            />
           ))}
         </tbody>
       </table>
+
+      {savingIndex !== null && (
+        <div className="px-3 py-2 bg-amber-50 border-t border-amber-200 text-xs text-amber-700 no-print">
+          <i className="fa-solid fa-spinner fa-spin mr-1.5" />
+          Menyimpan {rows[savingIndex]?.bulan}...
+        </div>
+      )}
     </div>
   )
 }
