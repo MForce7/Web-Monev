@@ -16,9 +16,6 @@ import ProtectedRoute from './components/protectedRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
 import KelompokRiset from './pages/kelompokriset.tsx'
 import Rekappendanaan from './pages/Rekappendanaan.tsx'
-
-import MainLayout from './components/mainLayout.tsx'
-import ProtectedRoute from './components/protectedRoute.tsx'
 import Importjson from './pages/importjson.tsx'
 
 const router = createBrowserRouter([

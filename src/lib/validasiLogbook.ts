@@ -1,7 +1,7 @@
 import { JENIS_OUTPUT, hasKeterangan, statusOptions } from './config'
 import { BULAN } from './LogbookData'
 import { STATUS_PELAKSANAAN, type Attachment, type HeaderData } from '../types/monev'
-import type { MonthData } from '../components/logbook/MonthlyLogTable'
+import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
 
 export type Masalah = { level: 'galat' | 'peringatan'; pesan: string }
 export interface EntriLogbook { header: HeaderData; bulanan: MonthData[]; catatanImport?: string[] }
@@ -147,16 +147,33 @@ function pecahOutput(o: unknown, label: string, m: Masalah[]): Obj[] {
 
 /* ───────── Normalisasi bagian-bagian ───────── */
 
-/** Angka 0–100 bulat; menambah masalah bila perlu dibetulkan */
+/** Normalisasi persentase menjadi angka bulat 0–100 */
 function persen(v: unknown, label: string, m: Masalah[]): number {
   if (v === '' || v == null) return 0
-  const n = angka(v)
+
+  let n = angka(v)
+
   if (!Number.isFinite(n)) {
-    m.push({ level: 'peringatan', pesan: `${label}: "${str(v)}" bukan angka, dijadikan 0` })
+    m.push({
+      level: 'peringatan',
+      pesan: `${label}: "${str(v)}" bukan angka, dijadikan 0`,
+    })
     return 0
   }
-  if (n < 0 || n > 100) m.push({ level: 'peringatan', pesan: `${label}: ${n} di luar 0–100, dipotong` })
-  if (n > 0 && n < 1) m.push({ level: 'peringatan', pesan: `${label}: ${n} mungkin pecahan, pastikan bukan ${n * 100}%` })
+
+  // Nilai desimal antara 0 dan 1 dianggap sebagai pecahan persentase.
+  // Contoh: 0.1 = 10%, 0.5 = 50%, 1.0 = 100%.
+  if (n > 0 && n <= 1) {
+    n *= 100
+  }
+
+  if (n < 0 || n > 100) {
+    m.push({
+      level: 'peringatan',
+      pesan: `${label}: ${n} di luar 0–100, dipotong`,
+    })
+  }
+
   return Math.min(100, Math.max(0, Math.round(n)))
 }
 
@@ -223,13 +240,30 @@ function normOutput(o: unknown, label: string, m: Masalah[]): Out | null {
 const outputKosong = (o: Out) =>
   !(o.jenis || o.judul || o.status || o.keterangan || o.capaian > 0 || o.dataDukung.length)
 
-/** Buang output yang benar-benar kosong, lalu tambah satu baris kosong untuk tiap jenis target yang belum ada di bulan itu */
-function lengkapiTarget(semua: Out[], target: { jenis: string }[]): Out[] {
+/**
+ * Buang output yang benar-benar kosong, lalu tambah baris kosong sesuai JUMLAH target tiap jenis
+ * (mis. target "2 KI" tetapi bulan itu baru mengisi 1 KI -> ditambah 1 baris KI kosong).
+ * Judul output yang sudah ada tidak diubah.
+ */
+function lengkapiTarget(semua: Out[], target: { jenis: string; jumlah: number }[]): Out[] {
   const ada = semua.filter((o) => !outputKosong(o))
-  const jenisAda = new Set(ada.map((o) => o.jenis))
-  const tambah = [...new Set(target.map((t) => t.jenis).filter((j) => j && JENIS.includes(j)))]
-    .filter((j) => !jenisAda.has(j))
-    .map((j): Out => ({ ...blankOutput(), jenis: j }))
+
+  const terisi = new Map<string, number>()
+  ada.forEach((o) => terisi.set(o.jenis, (terisi.get(o.jenis) ?? 0) + 1))
+
+  const butuh = new Map<string, number>()
+  target.forEach((x) => {
+    if (x.jenis && JENIS.includes(x.jenis)) {
+      butuh.set(x.jenis, (butuh.get(x.jenis) ?? 0) + Math.max(1, x.jumlah || 1))
+    }
+  })
+
+  const tambah: Out[] = []
+  butuh.forEach((jumlah, jenis) => {
+    const kurang = jumlah - (terisi.get(jenis) ?? 0)
+    for (let k = 0; k < kurang; k++) tambah.push({ ...blankOutput(), jenis })
+  })
+
   return [...ada, ...tambah]
 }
 
@@ -396,7 +430,7 @@ Satu objek logbook per Nama Ketua Tim. Data diambil dari sheet "Aktivitas Bulan 
 header:
 - namaKetua, unitKerja, satuanKerja = kolom Nama Ketua Tim, Unit Kerja, Satuan Kerja (hapus spasi dan enter di ujung)
 - judulAktivitas = Judul Aktivitas bulan terakhir yang terisi
-- targetOutputs = kolom Target Output, dipecah menjadi [{ "jenis", "jumlah" }]. Contoh "1 HKI; 1 Publikasi Internasional" menjadi dua entri. Jika target berbeda-beda antarbulan, pakai yang paling lengkap dan tulis konfliknya di catatanImport
+- targetOutputs = kolom Target Output, dipecah menjadi [{ "jenis", "jumlah" }] . Contoh "1 HKI; 1 Publikasi Internasional" menjadi dua entri. Jika target berbeda-beda antarbulan, pakai yang paling lengkap dan tulis konfliknya di catatanImport
 - progresTotal = Persentase Progres Pelaksanaan bulan terakhir yang terisi, angka bulat 0-100
 - statusPelaksanaan = Status Pelaksanaan bulan terakhir yang terisi, salah satu dari: ${STATUS_PELAKS.join(', ')}. Pemetaan dari Excel: Perencanaan = Perencanaan, Persiapan = Perencanaan, Pelaksanaan = Pelaksanaan / Berjalan, Selesai = Selesai, Dimanfaatkan = Selesai
 - progresKeterangan = "" kecuali ada keterangan yang jelas
