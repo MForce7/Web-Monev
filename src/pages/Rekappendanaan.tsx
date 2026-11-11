@@ -26,12 +26,10 @@ type Kegiatan = {
 
 const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
 
-/* ---------- Tampilan ---------- */
-/** Font, warna, dan sudut disamakan dengan halaman Rekapitulasi / Kelompok Riset */
-const FONT = "font-['Inter',ui-sans-serif,system-ui,sans-serif]";
+/* ---------- Tampilan ----------
+   Font mengikuti tabel Rekapitulasi: 11px, header bold, isi normal berwarna #1b3560. */
 const GRAD_BIRU = "linear-gradient(90deg, #1c3d85 0%, #2a58a5 100%)";
 const GRAD_BIRU_TUA = "linear-gradient(90deg, #14306b 0%, #1f468c 100%)";
-const BIRU_TEKS = "text-[#1f468c]";
 
 /** Jumlah kolom dana tahun minimal */
 const MIN_TAHUN = 3;
@@ -232,7 +230,7 @@ function RekapPendanaanTable({ onSave }: Props) {
               target="_blank"
               rel="noreferrer"
               title={k.link}
-              className="max-w-[190px] truncate font-semibold text-[#2a58a5] underline"
+              className="max-w-[190px] truncate text-[#2a58a5] underline"
             >
               {k.linkLabel || "Folder dokumen"}
             </a>
@@ -244,7 +242,7 @@ function RekapPendanaanTable({ onSave }: Props) {
             <button
               type="button"
               onClick={() => window.open(URL.createObjectURL(f), "_blank")}
-              className="max-w-[150px] truncate text-left font-semibold text-[#2a58a5] underline"
+              className="max-w-[150px] truncate text-left text-[#2a58a5] underline"
               title={`Buka ${f.name}`}
             >
               {f.name}
@@ -265,13 +263,11 @@ function RekapPendanaanTable({ onSave }: Props) {
   );
 
   return (
-    <div
-      className={`rp-print ${FONT} bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 overflow-hidden w-full max-w-full min-w-0`}
-    >
+    <div className="rp-print bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 overflow-hidden w-full max-w-full min-w-0">
       <PrintStyles />
 
       <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3 no-print">
-        <h3 className="font-extrabold text-slate-800 text-base min-w-0">
+        <h3 className="font-bold text-[#1b3560] text-base min-w-0">
           Rekap Pendanaan PRIS dan RIIM ORPA
           <span className="ml-2 text-xs font-semibold text-slate-500">{rows.length} kegiatan</span>
         </h3>
@@ -315,9 +311,9 @@ function RekapPendanaanTable({ onSave }: Props) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-max min-w-full text-left text-[11px] border-collapse">
+        <table className="w-max min-w-full text-left text-[11px] text-[#1b3560] border-collapse">
           <thead>
-            <tr className="text-white text-center font-extrabold" style={{ background: GRAD_BIRU }}>
+            <tr className="text-white text-center font-bold" style={{ background: GRAD_BIRU }}>
               {kolom.map((l) => (
                 <th
                   key={l}
@@ -335,7 +331,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                 <tr>
                   <td
                     colSpan={kolom.length}
-                    className="p-2 text-white text-center font-extrabold uppercase tracking-wider"
+                    className="p-2 text-white text-center font-bold uppercase tracking-wider"
                     style={{ background: GRAD_BIRU_TUA }}
                   >
                     {NAMA_SKEMA[g.skema]}
@@ -350,7 +346,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                     return (
                       <Fragment key={k.no}>
                         <tr className="bg-[#f5f8fd]">
-                          <td className={`${td} text-center font-bold text-slate-600 whitespace-nowrap`}>{k.no}</td>
+                          <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
                           <td className={`${td} min-w-[170px]`}>
                             <input className={INPUT} value={d.ketua} onChange={(e) => ubah("ketua", e.target.value)} aria-label="Ketua periset" />
                           </td>
@@ -392,7 +388,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                               />
                             </td>
                           ))}
-                          <td className={`${angka} font-extrabold text-slate-800`} title="Dihitung otomatis dari seluruh dana tahun">
+                          <td className={`${angka} font-bold`} title="Dihitung otomatis dari seluruh dana tahun">
                             {rupiah(hitungTotal(d.dana))}
                           </td>
                           <td className={`${td} min-w-[150px]`}>
@@ -406,9 +402,9 @@ function RekapPendanaanTable({ onSave }: Props) {
                             />
                           </td>
                           <td className={`${td} min-w-[260px] max-w-[320px]`}>
-                            <span className="mb-0.5 block font-extrabold text-[#1f468c]">Status</span>
+                            <span className="mb-0.5 block font-bold">Status</span>
                             <textarea className={`${INPUT} mb-2`} rows={3} value={d.status} onChange={(e) => ubah("status", e.target.value)} aria-label="Status" />
-                            <span className="mb-0.5 block font-extrabold text-[#1f468c]">Keterangan</span>
+                            <span className="mb-0.5 block font-bold">Keterangan</span>
                             <textarea className={INPUT} rows={3} value={d.keterangan} onChange={(e) => ubah("keterangan", e.target.value)} aria-label="Keterangan" />
                           </td>
                           <td className={`${td} whitespace-nowrap no-print`}>
@@ -451,11 +447,11 @@ function RekapPendanaanTable({ onSave }: Props) {
                           <td colSpan={kolom.length - 1} className="p-3 border-b border-slate-200">
                             <div className="sticky left-3 max-w-[820px] space-y-2">
                               <label className="block">
-                                <span className="mb-1 block font-extrabold text-[#1f468c]">Tautan folder / dokumen</span>
+                                <span className="mb-1 block font-bold">Tautan folder / dokumen</span>
                                 <input className={INPUT} value={d.link} onChange={(e) => ubah("link", e.target.value)} placeholder="https://..." />
                               </label>
                               <label className="block">
-                                <span className="mb-1 block font-extrabold text-[#1f468c]">Nama tautan (yang ditampilkan)</span>
+                                <span className="mb-1 block font-bold">Nama tautan (yang ditampilkan)</span>
                                 <input
                                   className={INPUT}
                                   value={d.linkLabel ?? ""}
@@ -473,9 +469,9 @@ function RekapPendanaanTable({ onSave }: Props) {
                   /* ===== Baris biasa ===== */
                   return (
                     <tr key={k.no} className="hover:bg-[#eef3fb] transition-colors">
-                      <td className={`${td} text-center font-bold text-slate-600 whitespace-nowrap`}>{k.no}</td>
-                      <td className={`${td} font-bold min-w-[170px]`}>{k.ketua}</td>
-                      <td className={`${td} font-semibold ${BIRU_TEKS} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
+                      <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
+                      <td className={`${td} min-w-[170px]`}>{k.ketua}</td>
+                      <td className={`${td} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
                       <td className={`${td} min-w-[150px]`}>{k.pusatRiset}</td>
                       <td className={`${td} text-center whitespace-nowrap`}>
                         <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
@@ -486,13 +482,13 @@ function RekapPendanaanTable({ onSave }: Props) {
                           {rupiah(k.dana[i])}
                         </td>
                       ))}
-                      <td className={`${angka} font-extrabold text-slate-800`}>{rupiah(k.total)}</td>
+                      <td className={angka}>{rupiah(k.total)}</td>
                       <td className={`${td} whitespace-nowrap`}>
-                        <div className="font-semibold">{k.nomorSK || "—"}</div>
+                        <div>{k.nomorSK || "—"}</div>
                         <div className="text-slate-500">{tanggal(k.tanggalSK)}</div>
                       </td>
                       <td className={`${td} min-w-[260px] max-w-[320px]`}>
-                        <div className="whitespace-pre-line text-slate-700">{k.status || "—"}</div>
+                        <div className="whitespace-pre-line">{k.status || "—"}</div>
                         {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[10px] text-slate-500">{k.keterangan}</div>}
                       </td>
                       <td className={`${td} whitespace-nowrap no-print`}>
@@ -518,7 +514,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                   );
                 })}
 
-                <tr className="bg-[#e8effb] font-extrabold text-slate-800">
+                <tr className="bg-[#e8effb] font-bold">
                   <td colSpan={5} className="px-3 py-2.5 border-b border-slate-300 text-right uppercase tracking-wide whitespace-nowrap">
                     Total {g.skema} · {g.list.length} kegiatan
                   </td>
@@ -537,7 +533,7 @@ function RekapPendanaanTable({ onSave }: Props) {
             ))}
 
             {grup.length > 1 && (
-              <tr className="text-white font-extrabold" style={{ background: GRAD_BIRU }}>
+              <tr className="text-white font-bold" style={{ background: GRAD_BIRU }}>
                 <td colSpan={5} className="px-3 py-2.5 text-right uppercase tracking-wide whitespace-nowrap">
                   Total seluruhnya · {tampil.length} kegiatan
                 </td>
@@ -569,7 +565,7 @@ function RekapPendanaanTable({ onSave }: Props) {
 /* ---------- Halaman ---------- */
 export default function RekapPendanaanPage() {
   return (
-    <div className={`mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden ${FONT}`} translate="no">
+    <div className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden" translate="no">
       <InstansiBar />
       <div className="p-6 md:p-8">
         <RekapPendanaanTable />

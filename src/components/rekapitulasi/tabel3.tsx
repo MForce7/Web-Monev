@@ -199,8 +199,9 @@ async function cetakPdf(pusatRiset: string, data: BarisPantau[]) {
 }
 
 /* ---------- Tabel ---------- */
-const th = "border-r border-white/25 px-3 py-2 text-center text-xs font-bold text-white last:border-r-0";
-const td = "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-sm text-[#1b3560]";
+const th = "border-r border-white/25 px-3 py-2 text-center text-[11px] font-bold text-white last:border-r-0";
+const td =
+  "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-xs leading-snug text-[#1b3560] [overflow-wrap:break-word]";
 
 // Lebar dikunci (width + min + max) supaya posisi kolom Nama tepat di 56px dan tidak ada celah
 const kunci1 = "w-[56px] min-w-[56px] max-w-[56px]";
@@ -308,7 +309,7 @@ export default function Tabel3({ pusatRiset }: Props) {
                   <th rowSpan={2} className={`${th} ${stickyHead1} bg-[#1b3f78] border-b`}>No</th>
                   <th rowSpan={2} className={`${th} ${stickyHead2} bg-[#1b3f78] border-b text-left`}>Nama Ketua Tim</th>
                   {BULAN.map((b) => (
-                    <th key={b} colSpan={2} className={`${th} min-w-[260px] border-b text-sm`}>{b}</th>
+                    <th key={b} colSpan={2} className={`${th} min-w-[260px] border-b text-xs`}>{b}</th>
                   ))}
                 </tr>
                 <tr>
@@ -382,8 +383,8 @@ function TombolPanah({ arah, onClick, style }: { arah: "kiri" | "kanan"; onClick
 function FragmentHead() {
   return (
     <>
-      <th className={`${th} min-w-[110px] bg-white/10 border-b`}>Status</th>
-      <th className={`${th} min-w-[150px] bg-white/10 border-b`}>Belum Sesuai</th>
+      <th className={`${th} min-w-[120px] bg-white/10 border-b`}>Status</th>
+      <th className={`${th} min-w-[140px] bg-white/10 border-b`}>Belum Sesuai</th>
     </>
   );
 }
@@ -403,14 +404,14 @@ function FragmentSel({
       <td className={td}>
         {ada &&
           (status ? (
-            <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${WARNA_STATUS[status]}`}>
+            <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${WARNA_STATUS[status]}`}>
               {status}
             </span>
           ) : (
             <span className="text-slate-400">–</span>
           ))}
       </td>
-      <td className={`${td} text-left text-xs`}>
+      <td className={`${td} text-left text-[11px]`}>
         {item.length > 0 && (
           <ul className="space-y-0.5">
             {item.map((x) => (
