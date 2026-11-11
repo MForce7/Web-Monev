@@ -1,76 +1,5 @@
-// import { useEffect, useState } from "react";
-// import logoBrin from "../assets/logo_brin.svg";
-// import userPhoto from "../assets/hero.png";
-
-// const menus = [
-//   { label: "Dashboard", href: "/dashboard" },
-//   { label: "Login", href: "/login" },
-//   { label: "Logbook", href: "/logbook" },
-//   { label: "Rekapitulasi", href: "/rekapitulasi" },
-// ];
-
-// export default function Navbar() {
-//   const [scrolled, setScrolled] = useState(false);
-
-//   useEffect(() => {
-//     const handleScroll = () => setScrolled(window.scrollY > 10);
-
-//     handleScroll(); // cek posisi saat pertama load (misal refresh di tengah halaman)
-//     window.addEventListener("scroll", handleScroll, { passive: true });
-
-//     return () => window.removeEventListener("scroll", handleScroll);
-//   }, []);
-
-//   return (
-//     <nav
-//       className={`fixed inset-x-4 top-4 z-50 flex items-center justify-between rounded-xl px-6 py-3 transition-all duration-300 ${
-//         scrolled
-//           ? "bg-white text-red-900 shadow-md"
-//           : "bg-black/70 text-white backdrop-blur-md"
-//       }`}
-//     >
-//       <div>
-//         <img src={logoBrin} alt="Logo BRIN" className="h-8 w-auto" />
-//       </div>
-
-//       <ul className="flex items-center gap-12">
-//         {menus.map((menu) => {
-//           const isActive = window.location.pathname === menu.href;
-
-//           return (
-//             <li key={menu.href}>
-//               <a
-//                 href={menu.href}
-//                 className={`transition-colors hover:opacity-80 ${
-//                   isActive ? "font-bold" : "font-normal"
-//                 }`}
-//               >
-//                 {menu.label}
-//               </a>
-//             </li>
-//           );
-//         })}
-//       </ul>
-
-//       <div>
-//         <img
-//           src={userPhoto}
-//           alt="Foto user"
-//           className="h-8 w-8 rounded-full object-cover"
-//         />
-//       </div>
-//     </nav>
-//   );
-// }
-
-
-
-
-
-
-
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import logoBrin from "../assets/logo_brin.svg";
 import userPhoto from "../assets/hero.png";
 import { supabase } from "../lib/supabase";
@@ -80,7 +9,12 @@ import { clearAvatarCache, useAvatar } from "../lib/useAvatar";
 const menus = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Logbook", href: "/logbook" },
+];
+
+const adminMenus = [
   { label: "Rekapitulasi", href: "/rekapitulasi" },
+  { label: "Import Excel", href: "/importjson" },
+  { label: "Rekap Pendanaan", href: "/rekappendanaan" },
   { label: "Kelompok Riset", href: "/kelompokriset" },
 ];
 
@@ -97,6 +31,7 @@ function getInitials(name: string): string {
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { session, loading: sessionLoading } = useSession();
   const user = session?.user;
   const { name, photoUrl, loading: photoLoading } = useAvatar(user?.id);
@@ -108,6 +43,7 @@ export default function Navbar() {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const displayName = name?.trim() || user?.email || "";
+  const adminAktif = adminMenus.some((m) => pathname.startsWith(m.href));
 
   // Efek scroll (tidak berubah)
   useEffect(() => {
@@ -117,7 +53,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Tutup dropdown: klik di luar atau tekan Esc
+  // Tutup dropdown akun: klik di luar atau tekan Esc
   useEffect(() => {
     if (!open) return;
 
@@ -234,6 +170,55 @@ export default function Navbar() {
             </NavLink>
           </li>
         ))}
+
+        {/* Admin: dropdown muncul saat kursor diarahkan (atau fokus keyboard) */}
+        <li className="group relative">
+          <button
+            type="button"
+            aria-haspopup="menu"
+            className={`flex items-center gap-1 transition-colors hover:opacity-80 focus-visible:outline-none ${
+              adminAktif ? "font-bold" : "font-normal"
+            }`}
+          >
+            Admin
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          {/* pt-3 menjembatani jarak supaya dropdown tidak menutup saat kursor turun */}
+          <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div
+              role="menu"
+              aria-label="Menu admin"
+              className="w-52 overflow-hidden rounded-xl bg-white text-gray-800 shadow-xl ring-1 ring-black/5"
+            >
+              {adminMenus.map((m) => (
+                <NavLink
+                  key={m.href}
+                  to={m.href}
+                  role="menuitem"
+                  className={({ isActive }) =>
+                    `block px-4 py-2.5 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
+                      isActive ? "font-bold text-red-900" : ""
+                    }`
+                  }
+                >
+                  {m.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        </li>
       </ul>
 
       <div ref={wrapRef} className="relative">

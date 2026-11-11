@@ -29,13 +29,14 @@ type RekapJson = {
 const json = rekapOutput as unknown as RekapJson;
 
 /* ---------- Kolom ---------- */
+const NAMA_KETUA = "Nama Ketua Tim";
 const kemajuan = ["Uraian Kemajuan Aktivitas", "Kendala Ditemui", "Mitigasi / Rencana Tindak Lanjut", "Data Dukung Progres"];
 const output = ["Jenis Output", "Judul Output", "Status", "Presentase Progress (%)", "Output Data Dukung"];
 const kolom = [...kemajuan, ...output];
 
-const th = "border-b border-r border-white/25 px-3 py-2 text-center text-xs font-bold text-white last:border-r-0";
+const th = "border-b border-r border-white/25 px-3 py-2 text-center text-[11px] font-bold text-white last:border-r-0";
 const td =
-  "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-sm text-[#1b3560] last:border-r-0 [overflow-wrap:anywhere]";
+  "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-xs leading-snug text-[#1b3560] last:border-r-0 [overflow-wrap:break-word]";
 
 /* ---------- Ambil data ---------- */
 // Nilai kosong atau diawali "Semua" dianggap belum memilih (tidak memfilter)
@@ -96,8 +97,9 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
       <div className="isolate w-full overflow-hidden rounded-2xl border border-[#dbe6f7] [clip-path:inset(0_round_1rem)]">
-        <table className="w-full min-w-[950px] border-separate border-spacing-0 bg-white">
+        <table className="w-full min-w-[1130px] border-separate border-spacing-0 bg-white">
           <colgroup>
+            <col style={{ width: 180 }} />
             {kolom.map((label) => (
               <col key={label} style={label === "Presentase Progress (%)" ? { width: 90 } : undefined} />
             ))}
@@ -106,6 +108,9 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
           {/* SATU gradasi mengalir di seluruh baris judul, sama dengan header sidebar */}
           <thead style={{ background: GRAD_CARD }}>
             <tr>
+              <th rowSpan={2} className={`${th} bg-[#1b3f78] text-left`}>
+                {NAMA_KETUA}
+              </th>
               <th colSpan={kemajuan.length} className={`${th} uppercase`}>
                 Kemajuan Aktivitas / Kegiatan
               </th>
@@ -132,6 +137,7 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
                     i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"
                   }`}
                 >
+                  <td className={`${td} bg-inherit text-left font-medium`}>{d?.ketua}</td>
                   <Td kiri>{d?.aktivitas?.uraian}</Td>
                   <Td kiri>{d?.aktivitas?.kendala}</Td>
                   <Td kiri>{d?.aktivitas?.mitigasi}</Td>
