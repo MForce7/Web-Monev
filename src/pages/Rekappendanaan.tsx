@@ -1,5 +1,7 @@
 import { Fragment, useMemo, useState } from "react";
+import type { UserOptions } from "jspdf-autotable";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
+import Dropdown from "../components/rekapitulasi/Dropdown.tsx";
 import raw from "../data/rekappendanaan.json";
 
 /* ---------- Data: isi awal ada di src/data/rekappendanaan.json ----------
@@ -23,11 +25,12 @@ type Kegiatan = {
   /** Tulisan yang ditampilkan untuk tautan (kosong = "Folder dokumen") */
   linkLabel?: string;
 };
+type Grup = { skema: Skema; list: Kegiatan[] };
 
 const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
 
 /* ---------- Tampilan ----------
-   Font mengikuti tabel Rekapitulasi: 11px, header bold, isi normal berwarna #1b3560. */
+   Isi tabel text-xs, judul kolom text-sm bold, warna #1b3560. */
 const GRAD_BIRU = "linear-gradient(90deg, #1c3d85 0%, #2a58a5 100%)";
 const GRAD_BIRU_TUA = "linear-gradient(90deg, #14306b 0%, #1f468c 100%)";
 
@@ -36,8 +39,6 @@ const MIN_TAHUN = 3;
 /** Kolom sebelum dan sesudah kolom dana tahun */
 const KOLOM_AWAL = ["No", "Ketua Periset", "Judul", "Pusat Riset", "Jenis / Gelombang", "Jangka (Bln)"];
 const KOLOM_AKHIR = ["Total Pendanaan (Rp)", "Nomor SK", "Status / Keterangan", "Tindakan", "Upload Data Dukung"];
-/** Kolom yang tidak ikut tercetak */
-const TANPA_CETAK = ["Tindakan", "Upload Data Dukung"];
 
 const SEMUA_SKEMA = "Semua Skema";
 const SEMUA_PUSAT = "Semua Pusat Riset";
@@ -54,7 +55,12 @@ const LENCANA: Record<Skema, string> = {
 
 /** Gaya kotak isian saat mengubah baris */
 const INPUT =
-  "w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-[11px] focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30";
+  "w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs leading-snug text-[#1b3560] focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30";
+
+/** Lebar dropdown mengikuti pilihan terpanjang (satuan ch) + ruang panah di kiri-kanan */
+const lebarDropdown = (opsi: string[]) => ({
+  width: `calc(${Math.max(...opsi.map((o) => o.length))}ch + 4.75rem)`,
+});
 
 const BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 const rupiah = (n: number | null | undefined) => (typeof n === "number" ? n.toLocaleString("id-ID") : "—");
@@ -78,16 +84,156 @@ const angkaDari = (s: string) => {
 };
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Gaya cetak: hanya tabel yang tercetak (landscape), bilah alat dan kolom tindakan disembunyikan */
-function PrintStyles() {
+/* ---------- Cetak PDF (gaya sama dengan Rekap Pemantauan) ---------- */
+async function cetakPdf(opsi: {
+  grup: Grup[];
+  semua: Kegiatan[];
+  nTahun: number;
+  skema: string;
+  pusat: string;
+  cari: string;
+}) {
+  const { grup, semua, nTahun, skema, pusat, cari } = opsi;
+  // Dimuat saat dibutuhkan saja, supaya halaman tidak berat
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
+
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const lebar = doc.internal.pageSize.getWidth();
+  const tinggi = doc.internal.pageSize.getHeight();
+  const tglCetak = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  const aman = (s: string) => s.replace(/[^\w]+/g, "-");
+
+  const filter = [skema, pusat, cari.trim() ? `Pencarian: "${cari.trim()}"` : ""].filter(Boolean).join("  ·  ");
+
+  // Kop
+  doc.setFillColor(27, 63, 120);
+  doc.rect(0, 0, lebar, 22, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text("Rekap Pendanaan PRIS dan RIIM ORPA", 14, 10);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(filter, 14, 16.5);
+  doc.text(`Dicetak ${tglCetak}`, lebar - 14, 16.5, { align: "right" });
+
+  const namaFile = `Rekap-Pendanaan-${aman(skema)}-${aman(pusat)}-${new Date().toISOString().slice(0, 10)}.pdf`;
+
+  if (semua.length === 0) {
+    doc.setTextColor(27, 53, 96);
+    doc.setFontSize(10);
+    doc.text("Belum ada data pendanaan untuk filter ini.", 14, 34);
+    doc.save(namaFile);
+    return;
+  }
+
+  // Ringkasan
+  const perSkema = URUTAN_SKEMA.map((s) => `${s}: ${semua.filter((k) => k.skema === s).length}`).join("    ");
+  const totalSemua = semua.reduce((n, k) => n + k.total, 0);
+  doc.setTextColor(27, 53, 96);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text(`Kegiatan: ${semua.length}    ${perSkema}    Total pendanaan: Rp ${rupiah(totalSemua)}`, 14, 29);
+
+  // Tabel
+  const indeks = Array.from({ length: nTahun }, (_, i) => i);
+  const jmlKolom = KOLOM_AWAL.length + nTahun + 3;
+  const head = [[...KOLOM_AWAL, ...indeks.map((i) => `Dana Tahun ${i + 1} (Rp)`), "Total Pendanaan (Rp)", "Nomor SK", "Status / Keterangan"]];
+
+  const body: NonNullable<UserOptions["body"]> = [];
+  grup.forEach((g) => {
+    body.push([
+      {
+        content: NAMA_SKEMA[g.skema].toUpperCase(),
+        colSpan: jmlKolom,
+        styles: { halign: "center", fillColor: [31, 70, 140], textColor: 255, fontStyle: "bold" },
+      },
+    ]);
+    g.list.forEach((k) => {
+      body.push([
+        String(k.no),
+        k.ketua,
+        k.judul,
+        k.pusatRiset,
+        k.jenis,
+        k.jangkaBulan == null ? "—" : String(k.jangkaBulan),
+        ...indeks.map((i) => rupiah(k.dana[i])),
+        rupiah(k.total),
+        `${k.nomorSK || "—"}\n${tanggal(k.tanggalSK)}`,
+        `${k.status || "—"}${k.keterangan ? `\n${k.keterangan}` : ""}`,
+      ]);
+    });
+    const subStyle = { fillColor: [232, 239, 251] as [number, number, number], textColor: [27, 53, 96] as [number, number, number], fontStyle: "bold" as const, halign: "right" as const };
+    body.push([
+      { content: `Total ${g.skema} · ${g.list.length} kegiatan`, colSpan: KOLOM_AWAL.length, styles: subStyle },
+      ...indeks.map((i) => ({ content: rupiah(jumlah(g.list, i)), styles: subStyle })),
+      { content: rupiah(g.list.reduce((n, k) => n + k.total, 0)), styles: subStyle },
+      { content: "", colSpan: 2, styles: subStyle },
+    ]);
+  });
+
+  if (grup.length > 1) {
+    const totStyle = { fillColor: [27, 63, 120] as [number, number, number], textColor: 255 as const, fontStyle: "bold" as const, halign: "right" as const };
+    body.push([
+      { content: `Total seluruhnya · ${semua.length} kegiatan`, colSpan: KOLOM_AWAL.length, styles: totStyle },
+      ...indeks.map((i) => ({ content: rupiah(jumlah(semua, i)), styles: totStyle })),
+      { content: rupiah(totalSemua), styles: totStyle },
+      { content: "", colSpan: 2, styles: totStyle },
+    ]);
+  }
+
+  // Lebar kolom angka dikunci; Ketua, Judul, Pusat Riset, dan Status menyesuaikan sisanya
+  const kolomStyle: NonNullable<UserOptions["columnStyles"]> = {
+    0: { cellWidth: 8, halign: "center" },
+    4: { cellWidth: 18, halign: "center" },
+    5: { cellWidth: 11, halign: "center" },
+  };
+  indeks.forEach((i) => (kolomStyle[6 + i] = { cellWidth: 19, halign: "right" }));
+  kolomStyle[6 + nTahun] = { cellWidth: 21, halign: "right" };
+  kolomStyle[7 + nTahun] = { cellWidth: 25 };
+
+  autoTable(doc, {
+    startY: 33,
+    head,
+    body,
+    margin: { left: 8, right: 8, bottom: 14 },
+    styles: { fontSize: 6.5, cellPadding: 1.5, lineColor: [219, 230, 247], lineWidth: 0.2, textColor: [27, 53, 96], valign: "top" },
+    headStyles: { fillColor: [27, 63, 120], textColor: 255, halign: "center", valign: "middle", fontSize: 7 },
+    alternateRowStyles: { fillColor: [245, 248, 253] },
+    columnStyles: kolomStyle,
+    rowPageBreak: "avoid",
+  });
+
+  // Nomor halaman
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 130, 150);
+    doc.text(`Halaman ${i} dari ${n}`, lebar - 14, tinggi - 8, { align: "right" });
+  }
+
+  doc.save(namaFile);
+}
+
+/** Gaya dropdown kecil.
+    .dd-kecil memperkecil tombol komponen Dropdown bersama (font 12px, satu baris)
+    dan memberi ruang untuk panah di kanan, tanpa mengubah file Dropdown-nya.
+    Teks yang terlalu panjang (hanya di layar sempit) dipotong dengan titik-titik. */
+function GayaDropdown() {
   return (
     <style>{`
-      @media print {
-        body * { visibility: hidden; }
-        .rp-print, .rp-print * { visibility: visible; }
-        .rp-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: 0 !important; }
-        .no-print { display: none !important; }
-        @page { size: A4 landscape; margin: 10mm; }
+      .dd-kecil button[aria-haspopup="listbox"] {
+        display: block !important;
+        font-size: 12px !important;
+        line-height: 2.25rem !important;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-left: 2.25rem !important;
+        padding-right: 2.25rem !important;
       }
     `}</style>
   );
@@ -103,6 +249,7 @@ function RekapPendanaanTable({ onSave }: Props) {
   const [skema, setSkema] = useState(SEMUA_SKEMA);
   const [pusat, setPusat] = useState(SEMUA_PUSAT);
   const [cari, setCari] = useState("");
+  const [mencetak, setMencetak] = useState(false);
   /** Baris yang sedang diubah + salinan kerjanya */
   const [edit, setEdit] = useState<number | null>(null);
   const [draft, setDraft] = useState<Kegiatan | null>(null);
@@ -122,6 +269,8 @@ function RekapPendanaanTable({ onSave }: Props) {
   );
 
   const daftarPusat = useMemo(() => Array.from(new Set(rows.map((k) => k.pusatRiset).filter(Boolean))), [rows]);
+  const opsiSkema = useMemo(() => [SEMUA_SKEMA, ...URUTAN_SKEMA], []);
+  const opsiPusat = useMemo(() => [SEMUA_PUSAT, ...daftarPusat], [daftarPusat]);
 
   const tampil = useMemo(() => {
     const q = cari.trim().toLowerCase();
@@ -133,7 +282,21 @@ function RekapPendanaanTable({ onSave }: Props) {
       );
   }, [rows, skema, pusat, cari]);
 
-  const grup = URUTAN_SKEMA.map((s) => ({ skema: s, list: tampil.filter((k) => k.skema === s) })).filter((g) => g.list.length > 0);
+  const grup: Grup[] = URUTAN_SKEMA.map((s) => ({ skema: s, list: tampil.filter((k) => k.skema === s) })).filter((g) => g.list.length > 0);
+
+  /* ----- cetak PDF ----- */
+  const cetak = async () => {
+    if (mencetak) return;
+    setMencetak(true);
+    try {
+      await cetakPdf({ grup, semua: tampil, nTahun, skema, pusat, cari });
+    } catch (err) {
+      console.error(err);
+      alert("PDF gagal dibuat. Coba lagi.");
+    } finally {
+      setMencetak(false);
+    }
+  };
 
   /* ----- ubah / simpan / hapus ----- */
   const mulaiUbah = (k: Kegiatan) => {
@@ -204,7 +367,7 @@ function RekapPendanaanTable({ onSave }: Props) {
 
   /** Kolom upload: dipakai baris biasa maupun baris yang sedang diubah */
   const selUpload = (k: Kegiatan) => (
-    <td className={`${td} border-r-0 min-w-[220px] no-print`} onClick={(e) => e.stopPropagation()}>
+    <td className={`${td} border-r-0 min-w-[220px]`} onClick={(e) => e.stopPropagation()}>
       <label
         className="inline-block cursor-pointer rounded-full px-3.5 py-1 text-[11px] font-bold text-white shadow-md transition hover:brightness-110"
         style={{ background: GRAD_BIRU }}
@@ -263,62 +426,50 @@ function RekapPendanaanTable({ onSave }: Props) {
   );
 
   return (
-    <div className="rp-print bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 overflow-hidden w-full max-w-full min-w-0">
-      <PrintStyles />
+    // Tanpa overflow-hidden di sini supaya daftar dropdown tidak terpotong; sudut bulat dipasang di header dan tabel
+    <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
+      <GayaDropdown />
 
-      <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3 no-print">
-        <h3 className="font-bold text-[#1b3560] text-base min-w-0">
+      <div className="p-4 bg-slate-50 border-b border-slate-200 rounded-t-3xl flex flex-wrap items-center gap-3">
+        {/* Judul mengisi sisa ruang di kiri */}
+        <h3 className="font-bold text-[#1b3560] text-sm min-w-[220px] flex-1">
           Rekap Pendanaan PRIS dan RIIM ORPA
-          <span className="ml-2 text-xs font-semibold text-slate-500">{rows.length} kegiatan</span>
+          <span className="ml-2 text-xs font-normal text-slate-500">{rows.length} kegiatan</span>
         </h3>
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        {/* Pencarian, dropdown, dan cetak selalu menempel di kanan */}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <input
             type="search"
             value={cari}
             onChange={(e) => setCari(e.target.value)}
             placeholder="Cari ketua, judul, nomor SK..."
-            className="w-64 max-w-full px-4 py-1.5 border border-slate-300 rounded-full text-xs focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30"
+            className="h-9 w-52 max-w-full px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
           />
-          <select
-            value={skema}
-            onChange={(e) => setSkema(e.target.value)}
-            className="px-4 py-1.5 border border-slate-300 rounded-full text-xs bg-white focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30"
-          >
-            <option>{SEMUA_SKEMA}</option>
-            {URUTAN_SKEMA.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
-          <select
-            value={pusat}
-            onChange={(e) => setPusat(e.target.value)}
-            className="px-4 py-1.5 border border-slate-300 rounded-full text-xs bg-white focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30"
-          >
-            <option>{SEMUA_PUSAT}</option>
-            {daftarPusat.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
+          <div className="dd-kecil max-w-full" style={lebarDropdown(opsiSkema)}>
+            <Dropdown label="Semua Skema" options={opsiSkema} value={skema} onChange={setSkema} />
+          </div>
+          <div className="dd-kecil max-w-full" style={lebarDropdown(opsiPusat)}>
+            <Dropdown label="Semua Pusat Riset" options={opsiPusat} value={pusat} onChange={setPusat} />
+          </div>
           <button
             type="button"
-            onClick={() => window.print()}
-            className="px-4 py-1.5 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition"
+            onClick={cetak}
+            disabled={mencetak}
+            title="Unduh rekap sebagai PDF"
+            className="h-9 px-4 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
             style={{ background: GRAD_BIRU }}
           >
-            Cetak Rekap
+            {mencetak ? "Membuat PDF…" : "Cetak Rekap"}
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-max min-w-full text-left text-[11px] text-[#1b3560] border-collapse">
+      <div className="overflow-x-auto rounded-b-3xl">
+        <table className="w-max min-w-full text-left text-xs leading-snug text-[#1b3560] border-collapse">
           <thead>
-            <tr className="text-white text-center font-bold" style={{ background: GRAD_BIRU }}>
+            <tr className="text-white text-center text-sm font-bold" style={{ background: GRAD_BIRU }}>
               {kolom.map((l) => (
-                <th
-                  key={l}
-                  className={`p-2.5 px-3 border-r border-white/25 last:border-r-0 whitespace-nowrap ${TANPA_CETAK.includes(l) ? "no-print" : ""}`}
-                >
+                <th key={l} className="p-3 px-3 text-sm border-r border-white/25 last:border-r-0 whitespace-nowrap">
                   {l}
                 </th>
               ))}
@@ -331,7 +482,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                 <tr>
                   <td
                     colSpan={kolom.length}
-                    className="p-2 text-white text-center font-bold uppercase tracking-wider"
+                    className="p-2 text-white text-center text-xs font-bold uppercase tracking-wider"
                     style={{ background: GRAD_BIRU_TUA }}
                   >
                     {NAMA_SKEMA[g.skema]}
@@ -407,7 +558,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                             <span className="mb-0.5 block font-bold">Keterangan</span>
                             <textarea className={INPUT} rows={3} value={d.keterangan} onChange={(e) => ubah("keterangan", e.target.value)} aria-label="Keterangan" />
                           </td>
-                          <td className={`${td} whitespace-nowrap no-print`}>
+                          <td className={`${td} whitespace-nowrap`}>
                             <button
                               type="button"
                               onClick={simpan}
@@ -442,7 +593,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                           </td>
                           {selUpload(k)}
                         </tr>
-                        <tr className="bg-[#f5f8fd] no-print">
+                        <tr className="bg-[#f5f8fd]">
                           <td className="border-b border-slate-200" />
                           <td colSpan={kolom.length - 1} className="p-3 border-b border-slate-200">
                             <div className="sticky left-3 max-w-[820px] space-y-2">
@@ -474,7 +625,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                       <td className={`${td} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
                       <td className={`${td} min-w-[150px]`}>{k.pusatRiset}</td>
                       <td className={`${td} text-center whitespace-nowrap`}>
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
                       </td>
                       <td className={`${td} text-center tabular-nums whitespace-nowrap`}>{k.jangkaBulan ?? "—"}</td>
                       {indeksTahun.map((i) => (
@@ -489,9 +640,9 @@ function RekapPendanaanTable({ onSave }: Props) {
                       </td>
                       <td className={`${td} min-w-[260px] max-w-[320px]`}>
                         <div className="whitespace-pre-line">{k.status || "—"}</div>
-                        {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[10px] text-slate-500">{k.keterangan}</div>}
+                        {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[11px] text-slate-500">{k.keterangan}</div>}
                       </td>
-                      <td className={`${td} whitespace-nowrap no-print`}>
+                      <td className={`${td} whitespace-nowrap`}>
                         <button
                           type="button"
                           onClick={() => mulaiUbah(k)}
@@ -550,7 +701,7 @@ function RekapPendanaanTable({ onSave }: Props) {
 
             {tampil.length === 0 && (
               <tr>
-                <td colSpan={kolom.length} className="p-6 text-center text-slate-500">
+                <td colSpan={kolom.length} className="p-6 text-center text-xs text-slate-500">
                   Tidak ada data yang cocok dengan pencarian.
                 </td>
               </tr>
