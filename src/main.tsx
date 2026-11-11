@@ -80,6 +80,7 @@ import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
 import KelompokRiset from './pages/kelompokriset.tsx'
 import Rekappendanaan from './pages/Rekappendanaan.tsx'
 import Importjson from './pages/importjson.tsx'
+import Formbaru from "./pages/Formbaru";
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -96,6 +97,10 @@ const router = createBrowserRouter([
           { path: '/profile', element: <Profile /> },
           { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
+          { path: '/importjson', element: <Importjson /> },
+          { path: '/rekappendanaan', element: <Rekappendanaan /> },
+          { path: '/kelompokriset', element: <KelompokRiset /> },
+          { path: '/formbaru', element: <Formbaru /> }, 
         ],
               
                   
