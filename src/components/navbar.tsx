@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import logoBrin from "../assets/logo_brin.svg";
 import userPhoto from "../assets/hero.png";
 import { supabase } from "../lib/supabase";
-import { useSession } from "../lib/useSession";
+import { useAuth } from "../lib/AuthContext";
 import { clearAvatarCache, useAvatar } from "../lib/useAvatar";
 
 const menus = [
@@ -12,6 +12,7 @@ const menus = [
 ];
 
 const adminMenus = [
+  { label: "Logbook User", href: "/admin/logbook" },
   { label: "Rekapitulasi", href: "/rekapitulasi" },
   { label: "Import Excel", href: "/importjson" },
   { label: "Rekap Pendanaan", href: "/rekappendanaan" },
@@ -32,8 +33,9 @@ function getInitials(name: string): string {
 export default function Navbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { session, loading: sessionLoading } = useSession();
+  const { session, sessionLoading, role } = useAuth();
   const user = session?.user;
+  const isAdmin = role === "admin";
   const { name, photoUrl, loading: photoLoading } = useAvatar(user?.id);
 
   const [scrolled, setScrolled] = useState(false);
@@ -44,6 +46,9 @@ export default function Navbar() {
 
   const displayName = name?.trim() || user?.email || "";
   const adminAktif = adminMenus.some((m) => pathname.startsWith(m.href));
+
+  // Menu utama: admin tidak perlu melihat "Logbook" (dia punya "Logbook User" di dropdown admin)
+  const visibleMenus = isAdmin ? menus.filter((m) => m.label !== "Logbook") : menus;
 
   // Efek scroll (tidak berubah)
   useEffect(() => {
@@ -156,7 +161,7 @@ export default function Navbar() {
       </div>
 
       <ul className="flex items-center gap-12">
-        {menus.map((menu) => (
+        {visibleMenus.map((menu) => (
           <li key={menu.href}>
             <NavLink
               to={menu.href}
@@ -171,54 +176,56 @@ export default function Navbar() {
           </li>
         ))}
 
-        {/* Admin: dropdown muncul saat kursor diarahkan (atau fokus keyboard) */}
-        <li className="group relative">
-          <button
-            type="button"
-            aria-haspopup="menu"
-            className={`flex items-center gap-1 transition-colors hover:opacity-80 focus-visible:outline-none ${
-              adminAktif ? "font-bold" : "font-normal"
-            }`}
-          >
-            Admin
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+        {/* Admin: dropdown hanya dirender kalau role === 'admin' */}
+        {isAdmin && (
+          <li className="group relative">
+            <button
+              type="button"
+              aria-haspopup="menu"
+              className={`flex items-center gap-1 transition-colors hover:opacity-80 focus-visible:outline-none ${
+                adminAktif ? "font-bold" : "font-normal"
+              }`}
             >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
+              Admin
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
 
-          {/* pt-3 menjembatani jarak supaya dropdown tidak menutup saat kursor turun */}
-          <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-            <div
-              role="menu"
-              aria-label="Menu admin"
-              className="w-52 overflow-hidden rounded-xl bg-white text-gray-800 shadow-xl ring-1 ring-black/5"
-            >
-              {adminMenus.map((m) => (
-                <NavLink
-                  key={m.href}
-                  to={m.href}
-                  role="menuitem"
-                  className={({ isActive }) =>
-                    `block px-4 py-2.5 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
-                      isActive ? "font-bold text-red-900" : ""
-                    }`
-                  }
-                >
-                  {m.label}
-                </NavLink>
-              ))}
+            {/* pt-3 menjembatani jarak supaya dropdown tidak menutup saat kursor turun */}
+            <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div
+                role="menu"
+                aria-label="Menu admin"
+                className="w-52 overflow-hidden rounded-xl bg-white text-gray-800 shadow-xl ring-1 ring-black/5"
+              >
+                {adminMenus.map((m) => (
+                  <NavLink
+                    key={m.href}
+                    to={m.href}
+                    role="menuitem"
+                    className={({ isActive }) =>
+                      `block px-4 py-2.5 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
+                        isActive ? "font-bold text-red-900" : ""
+                      }`
+                    }
+                  >
+                    {m.label}
+                  </NavLink>
+                ))}
+              </div>
             </div>
-          </div>
-        </li>
+          </li>
+        )}
       </ul>
 
       <div ref={wrapRef} className="relative">

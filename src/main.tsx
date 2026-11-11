@@ -11,29 +11,21 @@
 // import LogbookPages from './pages/logbookPages.tsx'
 // import Profile from './pages/profile.tsx'
 
-// // import MainLayout from './components/mainLayout.tsx'
-// // import ProtectedRoute from './components/protectedRoute.tsx'
-// import { AuthProvider } from './lib/AuthContext.tsx'
-// import KelompokRiset from './pages/kelompokriset.tsx'
-// import Rekappendanaan from './pages/Rekappendanaan.tsx'
-
 // import MainLayout from './components/mainLayout.tsx'
 // import ProtectedRoute from './components/protectedRoute.tsx'
+// import { AuthProvider } from './lib/AuthContext.tsx'
+// import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
+// import KelompokRiset from './pages/kelompokriset.tsx'
+// import Rekappendanaan from './pages/Rekappendanaan.tsx'
 // import Importjson from './pages/importjson.tsx'
 
 // const router = createBrowserRouter([
 //   { path: '/login', element: <LoginPage /> },
-
 //   {
 //     element: <MainLayout />,
 //     children: [
 //       { path: '/', element: <Dashboard2 /> },
 //       { path: '/dashboard', element: <Dashboard2 /> },
-
-//  { path: '/kelompokriset', element: <KelompokRiset /> },
-//       { path: '/importjson', element: <Importjson /> },
-  
-//       // Wajib login
 //       {
 //         element: <ProtectedRoute />,
 //         children: [
@@ -42,8 +34,12 @@
 //           { path: '/profile', element: <Profile /> },
 //           { path: '/tester', element: <Tester /> },
 //           { path: '/test-upload', element: <TestUpload /> },
+//           { path: '/importjson', element: <Importjson /> },
 //           { path: '/rekappendanaan', element: <Rekappendanaan /> },
+//           { path: '/kelompokriset', element: <KelompokRiset /> },
 //         ],
+              
+                  
 //       },
 //     ],
 //   },
@@ -52,10 +48,16 @@
 // createRoot(document.getElementById('root')!).render(
 //   <StrictMode>
 //     <AuthProvider>
-//       <RouterProvider router={router} />
+//       <LogbookDataProvider>
+//         <RouterProvider router={router} />
+//       </LogbookDataProvider>
 //     </AuthProvider>
 //   </StrictMode>,
 // )
+
+
+
+
 
 
 
@@ -71,15 +73,18 @@ import LoginPage from './pages/loginPage.tsx'
 import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
 import LogbookPages from './pages/logbookPages.tsx'
+import AdminLogbookPage from './pages/adminLogbookPage.tsx'
 import Profile from './pages/profile.tsx'
+// import halaman admin lain yang sudah ada / akan dibuat, contoh:
+import ImportJson from './pages/importJson.tsx'
+import RekapPendanaan from './pages/rekapPendanaan.tsx'
+import KelompokRiset from './pages/kelompokRiset.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
+import AdminRoute from './components/AdminRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
 import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
-import KelompokRiset from './pages/kelompokriset.tsx'
-import Rekappendanaan from './pages/Rekappendanaan.tsx'
-import Importjson from './pages/importjson.tsx'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -88,17 +93,27 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
+
       {
         element: <ProtectedRoute />,
         children: [
           { path: '/logbook', element: <LogbookPages /> },
-          { path: '/rekapitulasi', element: <Rekapitulasi /> },
           { path: '/profile', element: <Profile /> },
           { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
+
+          // Grup khusus admin — wajib login DAN role === 'admin'
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: '/admin/logbook', element: <AdminLogbookPage /> },
+              { path: '/rekapitulasi', element: <Rekapitulasi /> },
+              { path: '/importjson', element: <ImportJson /> },
+              { path: '/rekappendanaan', element: <RekapPendanaan /> },
+              { path: '/kelompokriset', element: <KelompokRiset /> },
+            ],
+          },
         ],
-              
-                  
       },
     ],
   },
@@ -112,4 +127,4 @@ createRoot(document.getElementById('root')!).render(
       </LogbookDataProvider>
     </AuthProvider>
   </StrictMode>,
-)
+) 
