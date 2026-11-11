@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useRef, useState, type DragEvent } from "react";
 
+import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import Badge, { WARNA_BADGE } from "../components/importjson/Badge";
 import Langkah from "../components/importjson/Langkah";
 import TombolGradasi from "../components/importjson/TombolGradasi";
@@ -374,13 +375,12 @@ export default function ImportJson() {
   /* ----- tampilan ----- */
 
   return (
-    <div className="min-h-screen w-full bg-[#f2f5fa] pt-24 font-sans text-[#1b3560]">
+    <div
+      className="mt-20 min-h-screen w-full bg-[#f2f5fa] font-sans text-[#1b3560]"
+      translate="no"
+    >
       <main className="min-w-0">
-        <div className="flex h-[66px] items-center gap-4 bg-[#1f4e8c] px-6 text-xl font-bold text-white sm:px-9">
-          <span>ORPA</span>
-          <span aria-hidden="true" className="h-[26px] w-px bg-white/60" />
-          <span className="truncate">Badan Riset dan Inovasi Nasional</span>
-        </div>
+        <InstansiBar />
 
         <div className="flex flex-col gap-5 px-4 py-6 sm:px-9">
           <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">

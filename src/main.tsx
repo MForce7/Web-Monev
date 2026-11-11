@@ -4,11 +4,10 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import Dashboard2 from './pages/dashboard_v2.tsx'
-import Tester from './pages/tester.tsx'
 import LoginPage from './pages/loginPage.tsx'
 import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
-import LogbookPages from './pages/logbookPages.tsx'
+import LogbookPages from './pages/LogbookPages.tsx'
 import Profile from './pages/profile.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
@@ -33,7 +32,6 @@ const router = createBrowserRouter([
           { path: '/logbook', element: <LogbookPages /> },
           { path: '/rekapitulasi', element: <Rekapitulasi /> },
           { path: '/profile', element: <Profile /> },
-          { path: '/tester', element: <Tester /> },
           { path: '/test-upload', element: <TestUpload /> },
           { path: '/importjson', element: <Importjson /> },
           { path: '/rekappendanaan', element: <Rekappendanaan /> },
