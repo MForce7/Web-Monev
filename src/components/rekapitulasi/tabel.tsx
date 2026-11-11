@@ -29,6 +29,7 @@ type RekapJson = {
 const json = rekapOutput as unknown as RekapJson;
 
 /* ---------- Kolom ---------- */
+const NOMOR = "No";
 const NAMA_KETUA = "Nama Ketua Tim";
 const kemajuan = ["Uraian Kemajuan Aktivitas", "Kendala Ditemui", "Mitigasi / Rencana Tindak Lanjut", "Data Dukung Progres"];
 const output = ["Jenis Output", "Judul Output", "Status", "Presentase Progress (%)", "Output Data Dukung"];
@@ -97,61 +98,69 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
       <div className="isolate w-full overflow-hidden rounded-2xl border border-[#dbe6f7] [clip-path:inset(0_round_1rem)]">
-        <table className="w-full min-w-[1130px] border-separate border-spacing-0 bg-white">
-          <colgroup>
-            <col style={{ width: 180 }} />
-            {kolom.map((label) => (
-              <col key={label} style={label === "Presentase Progress (%)" ? { width: 90 } : undefined} />
-            ))}
-          </colgroup>
-
-          {/* SATU gradasi mengalir di seluruh baris judul, sama dengan header sidebar */}
-          <thead style={{ background: GRAD_CARD }}>
-            <tr>
-              <th rowSpan={2} className={`${th} bg-[#1b3f78] text-left`}>
-                {NAMA_KETUA}
-              </th>
-              <th colSpan={kemajuan.length} className={`${th} uppercase`}>
-                Kemajuan Aktivitas / Kegiatan
-              </th>
-              <th colSpan={output.length} className={`${th} uppercase`}>
-                Output Presentase Progres
-              </th>
-            </tr>
-            <tr>
+        {/* Area geser: supaya kolom paling kanan (Output Data Dukung) tidak terpotong */}
+        <div className="overflow-x-auto [scrollbar-color:#2a5aa8_#eaf0fa] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-[#eaf0fa] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#2a5aa8]">
+          <table className="w-full min-w-[1186px] border-separate border-spacing-0 bg-white">
+            <colgroup>
+              <col style={{ width: 56 }} />
+              <col style={{ width: 180 }} />
               {kolom.map((label) => (
-                <th key={label} className={`${th} bg-white/10`}>
-                  {label}
-                </th>
+                <col key={label} style={label === "Presentase Progress (%)" ? { width: 90 } : undefined} />
               ))}
-            </tr>
-          </thead>
+            </colgroup>
 
-          <tbody>
-            {Array.from({ length: jumlahBaris }).map((_, i) => {
-              const d = data[i];
-              return (
-                <tr
-                  key={d ? `${d.bulan}-${i}` : `kosong-${i}`}
-                  className={`h-[47px] transition-colors hover:bg-[#eaf0fa] [&:last-child>td]:border-b-0 ${
-                    i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"
-                  }`}
-                >
-                  <td className={`${td} bg-inherit text-left font-medium`}>{d?.ketua}</td>
-                  <Td kiri>{d?.aktivitas?.uraian}</Td>
-                  <Td kiri>{d?.aktivitas?.kendala}</Td>
-                  <Td kiri>{d?.aktivitas?.mitigasi}</Td>
-                  <Td>{d && <DaftarLink links={d.aktivitas?.dataDukung} />}</Td>
-                  <Td>{d?.output?.jenis}</Td>
-                  <Td kiri>{d?.output?.judul}</Td>
-                  <Td>{d?.output?.status}</Td>
-                  <Td>{d ? `${d.output?.progres ?? 0}%` : null}</Td>
-                  <Td>{d && <DaftarLink links={d.output?.dataDukung} />}</Td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+            {/* SATU gradasi mengalir di seluruh baris judul, sama dengan header sidebar */}
+            <thead style={{ background: GRAD_CARD }}>
+              <tr>
+                <th rowSpan={2} className={`${th} bg-[#1b3f78]`}>
+                  {NOMOR}
+                </th>
+                <th rowSpan={2} className={`${th} bg-[#1b3f78] text-left`}>
+                  {NAMA_KETUA}
+                </th>
+                <th colSpan={kemajuan.length} className={`${th} uppercase`}>
+                  Kemajuan Aktivitas / Kegiatan
+                </th>
+                <th colSpan={output.length} className={`${th} uppercase`}>
+                  Output Presentase Progres
+                </th>
+              </tr>
+              <tr>
+                {kolom.map((label) => (
+                  <th key={label} className={`${th} bg-white/10`}>
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {Array.from({ length: jumlahBaris }).map((_, i) => {
+                const d = data[i];
+                return (
+                  <tr
+                    key={d ? `${d.bulan}-${i}` : `kosong-${i}`}
+                    className={`h-[47px] transition-colors hover:bg-[#eaf0fa] [&:last-child>td]:border-b-0 ${
+                      i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"
+                    }`}
+                  >
+                    <Td>{d ? i + 1 : null}</Td>
+                    <td className={`${td} bg-inherit text-left font-medium`}>{d?.ketua}</td>
+                    <Td kiri>{d?.aktivitas?.uraian}</Td>
+                    <Td kiri>{d?.aktivitas?.kendala}</Td>
+                    <Td kiri>{d?.aktivitas?.mitigasi}</Td>
+                    <Td>{d && <DaftarLink links={d.aktivitas?.dataDukung} />}</Td>
+                    <Td>{d?.output?.jenis}</Td>
+                    <Td kiri>{d?.output?.judul}</Td>
+                    <Td>{d?.output?.status}</Td>
+                    <Td>{d ? `${d.output?.progres ?? 0}%` : null}</Td>
+                    <Td>{d && <DaftarLink links={d.output?.dataDukung} />}</Td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
