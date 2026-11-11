@@ -306,7 +306,7 @@ export default function Formbaru() {
           {/* ───── Kolom kiri: form / hasil ───── */}
           <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
             <div className="border-b border-[#dbe6f7] px-6 py-4">
-              <h2 className="text-xl font-extrabold">Tambah periset baru</h2>
+              <h2 className="text-xl font-extrabold">Form Periset</h2>
               <p className="text-[13px] text-slate-500">
                 Isi data periset dan aktivitasnya. Setelah disimpan, periset ini langsung punya
                 logbook baru dengan 12 bulan yang masih kosong.
