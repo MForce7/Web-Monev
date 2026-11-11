@@ -1,0 +1,28 @@
+{
+  "unitKerja": [
+    {
+      "nama": "Pusat Riset Antariksa",
+      "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa"
+    },
+    {
+      "nama": "Pusat Riset Teknologi Penerbangan",
+      "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa"
+    },
+    {
+      "nama": "Pusat Riset Teknologi Roket",
+      "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa"
+    },
+    {
+      "nama": "Pusat Riset Teknologi Satelit",
+      "satuanKerja": "Organisasi Riset Penerbangan dan Antariksa"
+    },
+    {
+      "nama": "Pusat Riset Teknologi Manufaktur Mesin Produksi",
+      "satuanKerja": "Organisasi Riset Energi dan Manufaktur"
+    },
+    {
+      "nama": "Pusat Riset Fotonika",
+      "satuanKerja": "Organisasi Riset Nanoteknologi dan Material"
+    }
+  ]
+}
