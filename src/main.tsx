@@ -7,11 +7,17 @@ import Dashboard2 from './pages/dashboard_v2.tsx'
 import LoginPage from './pages/loginPage.tsx'
 import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
-import LogbookPages from './pages/LogbookPages.tsx'
+import LogbookPages from './pages/logbookPages.tsx'
+import AdminLogbookPage from './pages/adminLogbookPage.tsx'
 import Profile from './pages/profile.tsx'
+// import halaman admin lain yang sudah ada / akan dibuat, contoh:
+import ImportJson from './pages/importJson.tsx'
+import RekapPendanaan from './pages/rekapPendanaan.tsx'
+import KelompokRiset from './pages/kelompokRiset.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
+import AdminRoute from './components/AdminRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
 import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
 import KelompokRiset from './pages/kelompokriset.tsx'
@@ -26,18 +32,25 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
+
       {
         element: <ProtectedRoute />,
         children: [
           { path: '/logbook', element: <LogbookPages /> },
-          { path: '/rekapitulasi', element: <Rekapitulasi /> },
           { path: '/profile', element: <Profile /> },
           { path: '/test-upload', element: <TestUpload /> },
-          { path: '/importjson', element: <Importjson /> },
-          { path: '/rekappendanaan', element: <Rekappendanaan /> },
-          { path: '/kelompokriset', element: <KelompokRiset /> },
-          // Form Periset: dibuka dari menu Admin
-          { path: '/formbaru', element: <Formbaru /> },
+
+          // Grup khusus admin — wajib login DAN role === 'admin'
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: '/admin/logbook', element: <AdminLogbookPage /> },
+              { path: '/rekapitulasi', element: <Rekapitulasi /> },
+              { path: '/importjson', element: <ImportJson /> },
+              { path: '/rekappendanaan', element: <RekapPendanaan /> },
+              { path: '/kelompokriset', element: <KelompokRiset /> },
+            ],
+          },
         ],
       },
     ],
@@ -52,4 +65,4 @@ createRoot(document.getElementById('root')!).render(
       </LogbookDataProvider>
     </AuthProvider>
   </StrictMode>,
-)
+) 
