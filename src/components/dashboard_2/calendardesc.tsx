@@ -1,5 +1,6 @@
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { formatDate, type Agenda } from "./calendarbox";
+import { createAgenda, deleteAgenda as deleteAgendaApi, updateAgenda } from "../../lib/supabaseAgendaData";
 
 type FormState = {
   name: string;
@@ -19,14 +20,9 @@ const EMPTY_FORM: FormState = {
   description: "",
 };
 
-// "09:30" -> "09.30"
 const formatTime = (time: string) => time.replace(":", ".");
 
 const BAR_GRADIENT = "linear-gradient(to bottom, #F22838, #FFB322)";
-
-/* ------------------------------------------------------------------ */
-/* Ikon kecil                                                          */
-/* ------------------------------------------------------------------ */
 
 function PlusCircle() {
   return (
@@ -84,24 +80,23 @@ function TrashCircle() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Komponen kecil                                                      */
-/* ------------------------------------------------------------------ */
-
 function PillButton({
   children,
   onClick,
   type = "button",
+  disabled,
 }: {
   children: ReactNode;
   onClick?: () => void;
   type?: "button" | "submit";
+  disabled?: boolean;
 }) {
   return (
     <button
       type={type}
       onClick={onClick}
-      className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#8B0303] shadow-[0_2px_5px_rgba(0,0,0,0.25)] transition hover:bg-[#FFF3F3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F22838]"
+      disabled={disabled}
+      className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#8B0303] shadow-[0_2px_5px_rgba(0,0,0,0.25)] transition hover:bg-[#FFF3F3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F22838] disabled:opacity-60"
     >
       {children}
     </button>
@@ -145,10 +140,6 @@ function AgendaRows({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Komponen utama                                                      */
-/* ------------------------------------------------------------------ */
-
 type CalendarDescProps = {
   selectedDate: string;
   byDate: Record<string, Agenda[]>;
@@ -156,6 +147,8 @@ type CalendarDescProps = {
   setActiveId: (id: string | null) => void;
   setAgendas: Dispatch<SetStateAction<Agenda[]>>;
   onPickAgenda: (agenda: Agenda) => void;
+  /** Hanya admin yang bisa tambah/edit/hapus agenda */
+  isAdmin: boolean;
 };
 
 export default function CalendarDesc({
@@ -165,10 +158,12 @@ export default function CalendarDesc({
   setActiveId,
   setAgendas,
   onPickAgenda,
+  isAdmin,
 }: CalendarDescProps) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
@@ -179,12 +174,10 @@ export default function CalendarDesc({
   });
   const [editError, setEditError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
-
-  /* ---------- turunan data ---------- */
+  const [deleting, setDeleting] = useState(false);
 
   const selectedAgendas = byDate[selectedDate] ?? [];
 
-  // agenda pada tanggal setelah tanggal yang dipilih
   const upcomingGroups = Object.keys(byDate)
     .filter((d) => d > selectedDate)
     .sort()
@@ -193,22 +186,28 @@ export default function CalendarDesc({
   const activeAgenda =
     selectedAgendas.find((a) => a.id === activeId) ?? selectedAgendas[0] ?? null;
 
-  // keluar dari mode edit kalau agenda yang aktif berganti
   useEffect(() => {
     setEditing(false);
     setEditError("");
     setConfirmDelete(false);
   }, [activeAgenda?.id]);
 
-  /* ---------- hapus & edit ---------- */
+  /* ---------- hapus & edit (admin saja) ---------- */
 
-  const deleteAgenda = () => {
+  const handleDelete = async () => {
     if (!activeAgenda) return;
     const id = activeAgenda.id;
-    // TODO: hapus di API / database di sini
-    setAgendas((prev) => prev.filter((a) => a.id !== id));
-    setActiveId(null);
-    setConfirmDelete(false);
+    setDeleting(true);
+    try {
+      await deleteAgendaApi(id);
+      setAgendas((prev) => prev.filter((a) => a.id !== id));
+      setActiveId(null);
+      setConfirmDelete(false);
+    } catch (err) {
+      setEditError((err as Error).message);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const startEdit = () => {
@@ -228,32 +227,32 @@ export default function CalendarDesc({
     setEditError("");
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!activeAgenda) return;
     if (!draft.name.trim()) {
       setEditError("Judul agenda wajib diisi.");
       return;
     }
     const id = activeAgenda.id;
-    // TODO: kirim perubahan ke API / database di sini
-    setAgendas((prev) =>
-      prev.map((a) =>
-        a.id === id
-          ? {
-              ...a,
-              name: draft.name.trim(),
-              place: draft.place.trim(),
-              zoomLink: draft.zoomLink.trim(),
-              description: draft.description.trim(),
-            }
-          : a
-      )
-    );
-    setEditing(false);
+    setSaving(true);
     setEditError("");
+    try {
+      const updated = await updateAgenda(id, {
+        name: draft.name.trim(),
+        place: draft.place.trim(),
+        zoomLink: draft.zoomLink.trim(),
+        description: draft.description.trim(),
+      });
+      setAgendas((prev) => prev.map((a) => (a.id === id ? updated : a)));
+      setEditing(false);
+    } catch (err) {
+      setEditError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  /* ---------- form tambah agenda ---------- */
+  /* ---------- form tambah agenda (admin saja) ---------- */
 
   const openForm = () => {
     setForm(EMPTY_FORM);
@@ -275,7 +274,6 @@ export default function CalendarDesc({
   const setField = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
-  // Waktu: hanya angka, maksimal 2 digit, dibatasi 00-23 / 00-59
   const setTimePart = (field: "hour" | "minute", raw: string, max: number) => {
     let v = raw.replace(/\D/g, "").slice(0, 2);
     if (v !== "" && Number(v) > max) v = String(max);
@@ -285,7 +283,7 @@ export default function CalendarDesc({
   const padTimePart = (field: "hour" | "minute") =>
     setForm((f) => (f[field].length === 1 ? { ...f, [field]: "0" + f[field] } : f));
 
-  const handleSave = (e: { preventDefault: () => void }) => {
+  const handleSave = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -297,26 +295,30 @@ export default function CalendarDesc({
       return;
     }
 
-    const newAgenda: Agenda = {
-      id: `agenda-${Date.now()}`,
-      date: selectedDate,
-      time: `${form.hour}:${form.minute}`,
-      name: form.name.trim(),
-      place: form.place.trim(),
-      zoomLink: form.zoomLink.trim(),
-      description: form.description.trim(),
-    };
+    setSaving(true);
+    setFormError("");
 
-    // TODO: kirim newAgenda ke API / database di sini
-    setAgendas((prev) => [...prev, newAgenda]);
-    setActiveId(newAgenda.id);
-    closeForm();
+    try {
+      const newAgenda = await createAgenda({
+        date: selectedDate,
+        time: `${form.hour}:${form.minute}`,
+        name: form.name.trim(),
+        place: form.place.trim(),
+        zoomLink: form.zoomLink.trim(),
+        description: form.description.trim(),
+      });
+      setAgendas((prev) => [...prev, newAgenda]);
+      setActiveId(newAgenda.id);
+      closeForm();
+    } catch (err) {
+      setFormError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputCls =
     "w-full rounded-lg bg-[#FADADA] px-3 py-1.5 text-sm text-[#353535] outline-none focus-visible:ring-2 focus-visible:ring-[#F22838]";
-
-  /* ---------- tampilan ---------- */
 
   return (
     <div className="relative">
@@ -324,9 +326,7 @@ export default function CalendarDesc({
         aria-label="Agenda"
         className="grid gap-6 rounded-3xl bg-white px-7 py-8 shadow-[3px_5px_8px_rgba(0,0,0,0.25)] md:h-[400px] md:grid-cols-[minmax(0,1fr)_2px_minmax(0,1fr)] lg:absolute lg:inset-0 lg:h-auto"
       >
-        {/* daftar agenda */}
         <div className="max-h-[330px] min-h-0 space-y-4 overflow-y-auto pr-1 md:h-full md:max-h-none">
-          {/* tanggal terpilih (ada agenda / tidak ada agenda) */}
           <div className="rounded-2xl bg-[#FADADA] px-4 py-3">
             <h3 className="text-lg font-bold leading-6">{formatDate(selectedDate)}</h3>
 
@@ -340,15 +340,16 @@ export default function CalendarDesc({
               />
             )}
 
-            <div className="mt-1 flex justify-end">
-              <PillButton onClick={openForm}>
-                <PlusCircle />
-                Tambah Agenda
-              </PillButton>
-            </div>
+            {isAdmin && (
+              <div className="mt-1 flex justify-end">
+                <PillButton onClick={openForm}>
+                  <PlusCircle />
+                  Tambah Agenda
+                </PillButton>
+              </div>
+            )}
           </div>
 
-          {/* agenda setelah tanggal terpilih */}
           {upcomingGroups.map((g) => (
             <div key={g.date} className="px-4">
               <h3 className="text-lg font-bold leading-6">{formatDate(g.date)}</h3>
@@ -357,10 +358,8 @@ export default function CalendarDesc({
           ))}
         </div>
 
-        {/* garis pemisah */}
         <div aria-hidden="true" className="h-[2px] bg-[#F22838] md:h-auto" />
 
-        {/* detail agenda */}
         <div className="flex min-h-0 flex-col text-sm leading-5 md:h-full md:overflow-y-auto md:pr-1">
           {editing ? (
             <div className="space-y-2">
@@ -416,9 +415,9 @@ export default function CalendarDesc({
                   >
                     Batal
                   </button>
-                  <PillButton onClick={saveEdit}>
+                  <PillButton onClick={saveEdit} disabled={saving}>
                     <CheckCircle />
-                    Simpan
+                    {saving ? "Menyimpan..." : "Simpan"}
                   </PillButton>
                 </div>
               </div>
@@ -427,15 +426,15 @@ export default function CalendarDesc({
             <>
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-lg font-bold leading-6">{activeAgenda?.name}</h3>
-                {activeAgenda &&
+                {isAdmin && activeAgenda &&
                   (confirmDelete ? (
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       <span className="text-xs font-semibold text-[#BF1818]">
                         Hapus agenda ini?
                       </span>
-                      <PillButton onClick={deleteAgenda}>
+                      <PillButton onClick={handleDelete} disabled={deleting}>
                         <TrashCircle />
-                        Ya, hapus
+                        {deleting ? "Menghapus..." : "Ya, hapus"}
                       </PillButton>
                       <button
                         type="button"
@@ -485,8 +484,7 @@ export default function CalendarDesc({
         </div>
       </section>
 
-      {/* ================= POP UP TAMBAH AGENDA ================= */}
-      {showForm && (
+      {showForm && isAdmin && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 p-4"
           onMouseDown={(e) => {
@@ -593,9 +591,9 @@ export default function CalendarDesc({
                 >
                   Batal
                 </button>
-                <PillButton type="submit">
+                <PillButton type="submit" disabled={saving}>
                   <CheckCircle />
-                  Simpan
+                  {saving ? "Menyimpan..." : "Simpan"}
                 </PillButton>
               </div>
             </div>

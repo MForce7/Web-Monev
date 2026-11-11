@@ -20,9 +20,9 @@ import ProtectedRoute from './components/protectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
 import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
-import KelompokRiset from './pages/kelompokriset.tsx'
-import Rekappendanaan from './pages/Rekappendanaan.tsx'
-import Importjson from './pages/importjson.tsx'
+// import KelompokRiset from './pages/kelompokriset.tsx'
+// import Rekappendanaan from './pages/Rekappendanaan.tsx'
+// import Importjson from './pages/importjson.tsx'
 import Formbaru from './pages/Formbaru.tsx'
 
 const router = createBrowserRouter([
@@ -49,6 +49,7 @@ const router = createBrowserRouter([
               { path: '/importjson', element: <ImportJson /> },
               { path: '/rekappendanaan', element: <RekapPendanaan /> },
               { path: '/kelompokriset', element: <KelompokRiset /> },
+              { path: '/formbaru', element: <Formbaru /> },
             ],
           },
         ],
