@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import TombolGradasi from "../components/importjson/TombolGradasi";
 
@@ -11,6 +11,12 @@ import {
   pilihAktif,
   simpanLogbook,
 } from "../lib/logbookStore";
+import {
+  deleteActivitiesInDb,
+  deleteActivityInDb,
+  fetchAllResearchers,
+  type PerisetRingkas,
+} from "../lib/supabaseLogbookData";
 import type { EntriLogbook } from "../lib/validasiLogbook";
 import { STATUS_PELAKSANAAN, emptyMonth, type HeaderData } from "../types/monev";
 
@@ -71,6 +77,12 @@ type Aktivitas = {
   skemaLain: string;
 };
 
+/** Yang sedang menunggu konfirmasi hapus */
+type TargetHapus =
+  | { sumber: "browser"; nama: string; jumlah: number }
+  | { sumber: "db"; tipe: "periset"; nama: string; aktivitas: { id: string; judul: string }[] }
+  | { sumber: "db"; tipe: "aktivitas"; id: string; judul: string; nama: string };
+
 const IDENTITAS_AWAL: Identitas = { nama: "", email: "", unit: "", unitLain: "", satuan: "" };
 
 function Field({
@@ -89,7 +101,7 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={id} className="mb-1 block text-[13px] font-bold">
         {label}
         {wajib && <span className="text-[#991b1b]"> *</span>}
@@ -108,15 +120,96 @@ function Field({
 
 function Seksi({ n, judul, children }: { n: number; judul: string; children: ReactNode }) {
   return (
-    <section className="border-b border-[#dbe6f7] px-6 py-5 last:border-b-0">
+    <section className="border-b border-[#dbe6f7] px-4 py-4 last:border-b-0 sm:px-6 sm:py-5">
       <h3 className="mb-4 flex items-center gap-2 text-base font-extrabold">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1f4e8c] text-xs text-white">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1f4e8c] text-xs text-white">
           {n}
         </span>
         {judul}
       </h3>
       <div className="grid gap-4">{children}</div>
     </section>
+  );
+}
+
+/** Pop-up konfirmasi: di HP naik dari bawah, di layar lebar di tengah. Esc / klik latar = batal. */
+function ModalKonfirmasi({
+  judul,
+  children,
+  menghapus,
+  galat,
+  onYa,
+  onBatal,
+}: {
+  judul: string;
+  children: ReactNode;
+  menghapus: boolean;
+  galat: string;
+  onYa: () => void;
+  onBatal: () => void;
+}) {
+  useEffect(() => {
+    const tekan = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !menghapus) onBatal();
+    };
+    window.addEventListener("keydown", tekan);
+    return () => window.removeEventListener("keydown", tekan);
+  }, [menghapus, onBatal]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/50 p-0 sm:items-center sm:p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !menghapus) onBatal();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="judul-modal-hapus"
+        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl"
+      >
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fee2e2]">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#991b1b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 id="judul-modal-hapus" className="text-base font-extrabold text-[#1b3560] [overflow-wrap:anywhere]">
+              {judul}
+            </h3>
+            <div className="mt-1.5 space-y-2 text-sm text-slate-600">{children}</div>
+          </div>
+        </div>
+
+        {galat && (
+          <p role="alert" className="mt-3 rounded-lg bg-[#fee2e2] px-3 py-2 text-xs font-semibold text-[#991b1b] [overflow-wrap:anywhere]">
+            {galat}
+          </p>
+        )}
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            autoFocus
+            disabled={menghapus}
+            onClick={onBatal}
+            className="rounded-full border border-[#9db8e0] px-5 py-2.5 text-[13px] font-bold text-[#1f4e8c] hover:bg-[#f5f8fd] disabled:opacity-60"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            disabled={menghapus}
+            onClick={onYa}
+            className="rounded-full bg-[#dc2626] px-5 py-2.5 text-[13px] font-bold text-white hover:bg-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {menghapus ? "Menghapus…" : "Ya, hapus"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -151,7 +244,34 @@ export default function Formbaru() {
   const [berhasil, setBerhasil] = useState<{ nama: string; jumlah: number } | null>(null);
   const [versi, setVersi] = useState(0);
 
-  // `versi` sengaja jadi pemicu muat ulang daftar setelah menyimpan
+  // Pop-up hapus (dipakai untuk periset di browser maupun di database)
+  const [target, setTarget] = useState<TargetHapus | null>(null);
+  const [menghapus, setMenghapus] = useState(false);
+  const [galatModal, setGalatModal] = useState("");
+
+  // Daftar periset yang sudah ada di database
+  const [dbList, setDbList] = useState<PerisetRingkas[]>([]);
+  const [dbMemuat, setDbMemuat] = useState(true);
+  const [dbGalat, setDbGalat] = useState("");
+  const [cari, setCari] = useState("");
+
+  const muatDb = useCallback(async () => {
+    setDbMemuat(true);
+    setDbGalat("");
+    try {
+      setDbList(await fetchAllResearchers());
+    } catch (err) {
+      setDbGalat((err as Error).message);
+    } finally {
+      setDbMemuat(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void muatDb();
+  }, [muatDb]);
+
+  // `versi` sengaja jadi pemicu muat ulang daftar setelah menyimpan / menghapus
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const tersimpan = useMemo(() => daftarLogbook(), [versi]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -274,6 +394,52 @@ export default function Formbaru() {
     setVersi((v) => v + 1);
   };
 
+  /** Hapus semua logbook milik satu periset di penyimpanan browser (dikenali dari nama ketua) */
+  const hapusDiBrowser = (nama: string) => {
+    const sisa = daftarLogbook().filter((x) => kecil(x.header.namaKetua) !== kecil(nama));
+    // kalau yang dihapus sedang aktif, pindahkan aktif ke periset pertama yang tersisa
+    const aktifBaru = kecil(aktifNama) === kecil(nama) ? (sisa[0]?.header.namaKetua ?? "") : aktifNama;
+
+    if (!simpanLogbook(sisa, aktifBaru)) {
+      throw new Error("Gagal menghapus: penyimpanan browser diblokir atau tidak merespons.");
+    }
+    // layar sukses periset yang baru dihapus tidak boleh menawarkan "Buka Logbook" lagi
+    if (berhasil && kecil(berhasil.nama) === kecil(nama)) setBerhasil(null);
+    setVersi((v) => v + 1);
+  };
+
+  const bukaModal = (t: TargetHapus) => {
+    setGalatModal("");
+    setTarget(t);
+  };
+  const tutupModal = useCallback(() => {
+    setTarget(null);
+    setGalatModal("");
+  }, []);
+
+  const konfirmasiYa = async () => {
+    if (!target) return;
+    setMenghapus(true);
+    setGalatModal("");
+    try {
+      if (target.sumber === "browser") {
+        hapusDiBrowser(target.nama);
+      } else if (target.tipe === "aktivitas") {
+        await deleteActivityInDb(target.id);
+      } else {
+        await deleteActivitiesInDb(target.aktivitas.map((a) => a.id));
+      }
+      if (target.sumber === "db") await muatDb();
+      setTarget(null);
+    } catch (err) {
+      setGalatModal((err as Error).message);
+      // hapus periset bisa berhasil sebagian: segarkan daftar supaya tampilan sesuai kenyataan
+      if (target.sumber === "db") void muatDb();
+    } finally {
+      setMenghapus(false);
+    }
+  };
+
   const reset = () => {
     setIden(IDENTITAS_AWAL);
     setAktivitas([aktivitasBaru()]);
@@ -288,25 +454,97 @@ export default function Formbaru() {
       .map((t) => `${t.jumlah} ${t.jenis}`)
       .join(", ") || "–";
 
+  /* ----- daftar periset di database (dengan pencarian) ----- */
+
+  const q = kecil(cari);
+  const dbTampil = q
+    ? dbList.filter(
+        (p) =>
+          kecil(p.nama).includes(q) ||
+          kecil(p.unitKerja).includes(q) ||
+          p.aktivitas.some((a) => kecil(a.judul).includes(q))
+      )
+    : dbList;
+
+  /** Isi pop-up sesuai apa yang akan dihapus */
+  const isiModal = () => {
+    if (!target) return null;
+
+    if (target.sumber === "browser") {
+      return {
+        judul: `Yakin ingin menghapus ${target.nama}?`,
+        isi: (
+          <p>
+            {target.jumlah > 1
+              ? `${target.jumlah} logbook periset ini akan terhapus dari browser dan tidak bisa dikembalikan.`
+              : "Logbook periset ini akan terhapus dari browser dan tidak bisa dikembalikan."}
+          </p>
+        ),
+      };
+    }
+
+    if (target.tipe === "aktivitas") {
+      return {
+        judul: "Yakin ingin menghapus aktivitas ini?",
+        isi: (
+          <>
+            <p className="rounded-lg bg-[#f5f8fd] px-3 py-2 font-semibold text-[#1b3560] [overflow-wrap:anywhere]">
+              {target.judul || "(tanpa judul)"}
+            </p>
+            <p>
+              Milik <b>{target.nama || "periset"}</b>. Target output dan seluruh log bulanannya ikut
+              terhapus permanen dari database dan tidak bisa dikembalikan.
+            </p>
+          </>
+        ),
+      };
+    }
+
+    const tampil = target.aktivitas.slice(0, 5);
+    const sisa = target.aktivitas.length - tampil.length;
+    return {
+      judul: `Yakin ingin menghapus periset ${target.nama || "ini"}?`,
+      isi: (
+        <>
+          <p>
+            <b>{target.aktivitas.length} aktivitas</b> beserta log bulanannya akan terhapus permanen
+            dari database dan tidak bisa dikembalikan:
+          </p>
+          <ul className="list-disc space-y-0.5 pl-5 text-[13px] text-[#1b3560]">
+            {tampil.map((a) => (
+              <li key={a.id} className="[overflow-wrap:anywhere]">
+                {a.judul || "(tanpa judul)"}
+              </li>
+            ))}
+          </ul>
+          {sisa > 0 && <p className="text-xs">dan {sisa} aktivitas lainnya.</p>}
+          <p className="text-xs">Akun login periset tidak ikut terhapus.</p>
+        </>
+      ),
+    };
+  };
+
+  const modal = isiModal();
+
   /* ----- tampilan ----- */
 
   return (
-    <div className="min-h-screen w-full bg-[#f2f5fa] pt-24 font-sans text-[#1b3560]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f2f5fa] pt-20 font-sans text-[#1b3560] sm:pt-24">
       <main className="min-w-0">
         <div
-          className="flex h-[66px] items-center gap-4 px-6 text-xl font-bold text-white shadow-[0_6px_14px_rgba(0,0,0,0.12)] sm:px-9"
+          className="flex min-h-[56px] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-base font-bold text-white shadow-[0_6px_14px_rgba(0,0,0,0.12)] sm:min-h-[66px] sm:px-9 sm:text-xl"
           style={{ background: "linear-gradient(90deg, #f0283c 0%, #ff5a6a 100%)" }}
         >
           <span>ORPA</span>
-          <span aria-hidden="true" className="h-[26px] w-px bg-white/60" />
-          <span className="truncate">Badan Riset dan Inovasi Nasional</span>
+          <span aria-hidden="true" className="hidden h-[26px] w-px bg-white/60 sm:block" />
+          <span className="min-w-0 sm:truncate">Badan Riset dan Inovasi Nasional</span>
         </div>
 
-        <div className="grid items-start gap-5 px-4 py-6 sm:px-9 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid items-start gap-4 px-3 py-4 sm:gap-5 sm:px-9 sm:py-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
           {/* ───── Kolom kiri: form / hasil ───── */}
-          <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
-            <div className="border-b border-[#dbe6f7] px-6 py-4">
-              <h2 className="text-xl font-extrabold">Form Periset</h2>
+          <section className="min-w-0 overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
+            <div className="border-b border-[#dbe6f7] px-4 py-4 sm:px-6">
+              <h2 className="text-lg font-extrabold sm:text-xl">Form Periset</h2>
               <p className="text-[13px] text-slate-500">
                 Isi data periset dan aktivitasnya. Setelah disimpan, periset ini langsung punya
                 logbook baru dengan 12 bulan yang masih kosong.
@@ -314,7 +552,7 @@ export default function Formbaru() {
             </div>
 
             {berhasil ? (
-              <div className="px-6 py-10 text-center">
+              <div className="px-4 py-8 text-center sm:px-6 sm:py-10">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#dcfce7]">
                   <svg
                     viewBox="0 0 24 24"
@@ -329,7 +567,7 @@ export default function Formbaru() {
                     <path d="M5 12l5 5 9-10" />
                   </svg>
                 </div>
-                <p className="text-lg font-extrabold">
+                <p className="text-lg font-extrabold [overflow-wrap:anywhere]">
                   {berhasil.jumlah > 1
                     ? `${berhasil.jumlah} logbook ${berhasil.nama} sudah dibuat`
                     : `Logbook ${berhasil.nama} sudah dibuat`}
@@ -337,7 +575,7 @@ export default function Formbaru() {
                 <p className="mt-1 text-sm text-slate-500">
                   Isi progres bulanannya di halaman Logbook.
                 </p>
-                <div className="mt-5 flex flex-wrap justify-center gap-3">
+                <div className="mt-5 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
                   <TombolGradasi besar onClick={() => bukaLogbook(berhasil.nama)}>
                     Buka Logbook {berhasil.nama}
                   </TombolGradasi>
@@ -447,7 +685,7 @@ export default function Formbaru() {
                 {/* ── 2 & 3. Aktivitas, output, dan pendanaan (bisa lebih dari satu) ── */}
                 {aktivitas.map((a, i) => (
                   <div key={a.id} className="border-t-4 border-[#eaf0fa]">
-                    <div className="flex items-center justify-between gap-3 bg-[#eaf0fa] px-6 py-2.5">
+                    <div className="flex items-center justify-between gap-3 bg-[#eaf0fa] px-4 py-2.5 sm:px-6">
                       <h3 className="text-sm font-extrabold">
                         Aktivitas {i + 1}
                         {aktivitas.length > 1 && (
@@ -458,7 +696,7 @@ export default function Formbaru() {
                         <button
                           type="button"
                           onClick={() => hapusAkt(a.id)}
-                          className="rounded-full px-3 py-1 text-xs font-bold text-[#991b1b] hover:bg-[#fee2e2]"
+                          className="shrink-0 rounded-full px-3 py-1 text-xs font-bold text-[#991b1b] hover:bg-[#fee2e2]"
                         >
                           Hapus aktivitas
                         </button>
@@ -524,7 +762,7 @@ export default function Formbaru() {
                               onChange={(e) =>
                                 ubahAkt(a.id, { progres: batas(Number(e.target.value), 0, 100) })
                               }
-                              className={`${kelasInput()} !w-20 text-center`}
+                              className={`${kelasInput()} !w-20 shrink-0 text-center`}
                             />
                           </div>
                         </Field>
@@ -545,12 +783,12 @@ export default function Formbaru() {
                         </p>
                         <div className="grid gap-2">
                           {a.targets.map((t, ti) => (
-                            <div key={t.id} className="flex flex-wrap items-center gap-2">
+                            <div key={t.id} className="flex items-center gap-2">
                               <select
                                 aria-label={`Jenis target ${ti + 1} aktivitas ${i + 1}`}
                                 value={t.jenis}
                                 onChange={(e) => ubahTarget(a.id, t.id, { jenis: e.target.value })}
-                                className={`${kelasInput(tampilAkt(a.id, "target"))} min-w-[180px] flex-1`}
+                                className={`${kelasInput(tampilAkt(a.id, "target"))} min-w-0 flex-1`}
                               >
                                 <option value="">Pilih jenis output…</option>
                                 {OPSI_JENIS.map((j) => (
@@ -567,13 +805,13 @@ export default function Formbaru() {
                                 onChange={(e) =>
                                   ubahTarget(a.id, t.id, { jumlah: batas(Number(e.target.value), 1, 999) })
                                 }
-                                className={`${kelasInput()} !w-24 text-center`}
+                                className={`${kelasInput()} !w-16 shrink-0 text-center sm:!w-24`}
                               />
                               <button
                                 type="button"
                                 onClick={() => hapusTarget(a.id, t.id)}
                                 aria-label={`Hapus target ${ti + 1} aktivitas ${i + 1}`}
-                                className="rounded-full px-3 py-1.5 text-sm font-bold text-[#991b1b] hover:bg-[#fee2e2]"
+                                className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-[#991b1b] hover:bg-[#fee2e2]"
                               >
                                 ×
                               </button>
@@ -666,7 +904,7 @@ export default function Formbaru() {
                 ))}
 
                 {/* ── Tambah aktivitas ── */}
-                <div className="border-t border-[#dbe6f7] px-6 py-4">
+                <div className="border-t border-[#dbe6f7] px-4 py-4 sm:px-6">
                   <button
                     type="button"
                     onClick={tambahAkt}
@@ -687,17 +925,17 @@ export default function Formbaru() {
                 {pesan && (
                   <p
                     role="alert"
-                    className="mx-6 mb-3 rounded-xl bg-[#fee2e2] px-4 py-2 text-sm font-semibold text-[#991b1b]"
+                    className="mx-4 mb-3 rounded-xl bg-[#fee2e2] px-4 py-2 text-sm font-semibold text-[#991b1b] sm:mx-6"
                   >
                     {pesan}
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#dbe6f7] bg-[#f5f8fd] px-6 py-4">
+                <div className="flex flex-col gap-3 border-t border-[#dbe6f7] bg-[#f5f8fd] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                   <span className="text-xs text-slate-500">
                     <span className="text-[#991b1b]">*</span> wajib diisi
                   </span>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center">
                     <button
                       type="button"
                       onClick={reset}
@@ -715,7 +953,7 @@ export default function Formbaru() {
           </section>
 
           {/* ───── Kolom kanan: pratinjau & daftar ───── */}
-          <aside className="grid gap-5">
+          <aside className="grid min-w-0 gap-4 sm:gap-5">
             {!berhasil && (
               <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
                 <div className="bg-[#1f4e8c] px-5 py-3 text-sm font-bold text-white">
@@ -765,6 +1003,106 @@ export default function Formbaru() {
               </section>
             )}
 
+            {/* ── Periset terdaftar (database): dikelompokkan per periset, tiap aktivitas bisa dihapus ── */}
+            <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
+              <div className="flex items-center justify-between gap-2 bg-[#1f4e8c] px-5 py-3 text-sm font-bold text-white">
+                <span>Periset terdaftar</span>
+                <span className="rounded-full bg-white px-2 py-0.5 text-xs text-[#1b3560]">{dbList.length}</span>
+              </div>
+
+              <div className="border-b border-[#e5edf8] px-4 py-3">
+                <input
+                  type="search"
+                  value={cari}
+                  onChange={(e) => setCari(e.target.value)}
+                  placeholder="Cari nama, unit, atau judul aktivitas…"
+                  aria-label="Cari periset"
+                  className={kelasInput()}
+                />
+              </div>
+
+              {dbGalat && (
+                <div role="alert" className="border-b border-[#fecaca] bg-[#fee2e2] px-5 py-2 text-xs font-semibold text-[#991b1b]">
+                  <p className="[overflow-wrap:anywhere]">Gagal memuat daftar: {dbGalat}</p>
+                  <button type="button" onClick={() => void muatDb()} className="mt-1 underline">
+                    Coba lagi
+                  </button>
+                </div>
+              )}
+
+              {dbMemuat ? (
+                <p className="px-5 py-4 text-xs text-slate-500">Memuat daftar periset…</p>
+              ) : dbTampil.length === 0 ? (
+                <p className="px-5 py-4 text-xs text-slate-500">
+                  {dbList.length === 0 ? "Belum ada periset di database." : "Tidak ada yang cocok dengan pencarian."}
+                </p>
+              ) : (
+                <ul className="max-h-[480px] divide-y divide-[#e5edf8] overflow-y-auto">
+                  {dbTampil.map((p) => (
+                    <li key={p.id} className="px-4 py-3">
+                      <div className="flex items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] font-extrabold [overflow-wrap:anywhere]">
+                            {p.nama || "(tanpa nama)"}
+                          </p>
+                          <p className="text-xs text-slate-500 [overflow-wrap:anywhere]">
+                            {p.unitKerja || "Tanpa unit kerja"} · {p.aktivitas.length} aktivitas
+                          </p>
+                        </div>
+                        {p.aktivitas.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              bukaModal({
+                                sumber: "db",
+                                tipe: "periset",
+                                nama: p.nama,
+                                aktivitas: p.aktivitas.map((a) => ({ id: a.id, judul: a.judul })),
+                              })
+                            }
+                            aria-label={`Hapus periset ${p.nama}`}
+                            className="shrink-0 rounded-full border border-[#fecaca] px-3 py-1 text-xs font-bold text-[#991b1b] hover:bg-[#fee2e2]"
+                          >
+                            Hapus periset
+                          </button>
+                        )}
+                      </div>
+
+                      {p.aktivitas.length === 0 ? (
+                        <p className="mt-2 text-xs italic text-slate-400">Belum ada aktivitas.</p>
+                      ) : (
+                        <ul className="mt-2 space-y-1.5">
+                          {p.aktivitas.map((a) => (
+                            <li key={a.id} className="flex items-start gap-2 rounded-lg bg-[#f5f8fd] px-3 py-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="line-clamp-3 text-[13px] font-semibold [overflow-wrap:anywhere]">
+                                  {a.judul || "(tanpa judul)"}
+                                </p>
+                                <p className="text-[11px] text-slate-500">
+                                  {a.status || "Status belum diisi"} · {a.progres}%
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  bukaModal({ sumber: "db", tipe: "aktivitas", id: a.id, judul: a.judul, nama: p.nama })
+                                }
+                                aria-label={`Hapus aktivitas ${a.judul}`}
+                                className="shrink-0 rounded-full px-3 py-1 text-xs font-bold text-[#991b1b] hover:bg-[#fee2e2]"
+                              >
+                                Hapus
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {/* ── Periset tersimpan di browser (logbook yang dibuat lewat form ini) ── */}
             <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
               <div className="flex items-center justify-between bg-[#eaf0fa] px-5 py-3 text-sm font-bold">
                 <span>Periset tersimpan</span>
@@ -778,13 +1116,14 @@ export default function Formbaru() {
                 <ul className="max-h-[320px] divide-y divide-[#e5edf8] overflow-y-auto">
                   {tersimpan.map((e, i) => {
                     const nama = e.header.namaKetua;
+                    const jumlahLogbook = tersimpan.filter((x) => kecil(x.header.namaKetua) === kecil(nama)).length;
                     return (
-                      <li key={`${nama}-${i}`} className="flex items-center gap-2 px-5 py-2.5">
+                      <li key={`${nama}-${i}`} className="flex items-center gap-1 px-5 py-2.5">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] font-bold">{nama}</p>
                           <p className="truncate text-xs text-slate-500">
                             {e.header.unitKerja || "Tanpa unit kerja"}
-                            {nama === aktifNama && (
+                            {kecil(nama) === kecil(aktifNama) && (
                               <span className="ml-1.5 font-bold text-[#166534]">· aktif</span>
                             )}
                           </p>
@@ -796,6 +1135,14 @@ export default function Formbaru() {
                         >
                           Buka
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => bukaModal({ sumber: "browser", nama, jumlah: jumlahLogbook })}
+                          aria-label={`Hapus periset ${nama} dari browser`}
+                          className="shrink-0 rounded-full px-3 py-1 text-xs font-bold text-[#991b1b] hover:bg-[#fee2e2]"
+                        >
+                          Hapus
+                        </button>
                       </li>
                     );
                   })}
@@ -805,6 +1152,18 @@ export default function Formbaru() {
           </aside>
         </div>
       </main>
+
+      {modal && (
+        <ModalKonfirmasi
+          judul={modal.judul}
+          menghapus={menghapus}
+          galat={galatModal}
+          onYa={() => void konfirmasiYa()}
+          onBatal={tutupModal}
+        >
+          {modal.isi}
+        </ModalKonfirmasi>
+      )}
     </div>
   );
 }

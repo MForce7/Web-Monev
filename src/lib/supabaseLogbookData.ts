@@ -261,3 +261,108 @@ export async function fetchProfileWithActivities(userId: string): Promise<Profil
     activities: (data.activities ?? []).map(toActivityEntry),
   }
 }
+
+/* ═════════ Daftar & hapus periset (dipakai halaman Formbaru) ═════════ */
+
+export interface AktivitasRingkas {
+  id: string
+  judul: string
+  status: string
+  progres: number
+}
+
+export interface PerisetRingkas {
+  id: string
+  nama: string
+  unitKerja: string
+  aktivitas: AktivitasRingkas[]
+}
+
+interface ResearcherRow {
+  id: string
+  full_name: string | null
+  unit_kerja: string | null
+  activities:
+    | {
+        id: string
+        nama_ketua: string | null
+        judul_aktivitas: string | null
+        status_pelaksanaan: string | null
+        progres_total: number | null
+      }[]
+    | null
+}
+
+/**
+ * Ambil semua periset beserta judul aktivitasnya (query ringan, tanpa log bulanan).
+ * Catatan: yang terlihat tergantung aturan akses (RLS) di Supabase. Kalau RLS hanya mengizinkan
+ * baca data sendiri, daftar ini hanya berisi akun yang sedang login.
+ */
+export async function fetchAllResearchers(): Promise<PerisetRingkas[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(
+      `id, full_name, unit_kerja,
+       activities ( id, nama_ketua, judul_aktivitas, status_pelaksanaan, progres_total )`,
+    )
+    .order('full_name', { ascending: true })
+
+  if (error) throw new Error(error.message)
+
+  const rows = (data ?? []) as unknown as ResearcherRow[]
+  return rows.map((r) => {
+    const aktivitas = (r.activities ?? []).map((a) => ({
+      id: a.id,
+      judul: a.judul_aktivitas ?? '',
+      status: a.status_pelaksanaan ?? '',
+      progres: a.progres_total ?? 0,
+    }))
+    return {
+      id: r.id,
+      nama: r.full_name || r.activities?.[0]?.nama_ketua || '',
+      unitKerja: r.unit_kerja ?? '',
+      aktivitas,
+    }
+  })
+}
+
+const PESAN_TIDAK_TERHAPUS =
+  'Tidak ada data yang terhapus. Kemungkinan akun ini tidak diizinkan menghapus (aturan akses/RLS di Supabase), atau aktivitasnya sudah tidak ada.'
+
+/**
+ * Hapus satu aktivitas.
+ * Dicoba langsung dulu. Kalau database menolak karena masih ada data turunan (error 23503, foreign key),
+ * target_outputs dan monthly_reports aktivitas itu dihapus dulu lalu dicoba lagi.
+ * Hasil penghapusan diperiksa lewat .select('id'): RLS yang menolak tidak memberi error, hanya 0 baris.
+ */
+export async function deleteActivityInDb(activityId: string): Promise<void> {
+  let res = await supabase.from('activities').delete().eq('id', activityId).select('id')
+
+  if (res.error?.code === '23503') {
+    const t = await supabase.from('target_outputs').delete().eq('activity_id', activityId)
+    if (t.error) throw new Error(t.error.message)
+
+    const m = await supabase.from('monthly_reports').delete().eq('activity_id', activityId)
+    if (m.error) throw new Error(m.error.message)
+
+    res = await supabase.from('activities').delete().eq('id', activityId).select('id')
+  }
+
+  if (res.error) throw new Error(res.error.message)
+  if (!res.data || res.data.length === 0) throw new Error(PESAN_TIDAK_TERHAPUS)
+}
+
+/** Hapus beberapa aktivitas satu per satu (dipakai untuk "hapus periset"). */
+export async function deleteActivitiesInDb(activityIds: string[]): Promise<void> {
+  let selesai = 0
+  for (const id of activityIds) {
+    try {
+      await deleteActivityInDb(id)
+      selesai += 1
+    } catch (err) {
+      throw new Error(
+        `${selesai} dari ${activityIds.length} aktivitas sudah terhapus, lalu gagal: ${(err as Error).message}`,
+      )
+    }
+  }
+}

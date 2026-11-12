@@ -21,7 +21,7 @@ const PRINT_CSS = `
 `
 export const PrintStyles = () => <style>{PRINT_CSS}</style>
 
-/** Baris label + isi di tabel header */
+/** Baris label + isi di tabel header. Di HP (<640px) label dan isi ditumpuk atas-bawah. */
 export function Row({ label, children, last = false, alignTop = false }: {
   label: string
   children: ReactNode
@@ -29,11 +29,11 @@ export function Row({ label, children, last = false, alignTop = false }: {
   alignTop?: boolean
 }) {
   return (
-    <tr className={last ? '' : 'border-b border-slate-100'}>
-      <td className={`w-[28%] py-2 px-4 font-medium text-slate-500 bg-slate-50/50 ${WRAP} ${alignTop ? 'align-top' : ''}`}>
+    <tr className={`max-sm:block ${last ? '' : 'border-b border-slate-100'}`}>
+      <td className={`w-[28%] py-2 px-4 font-medium text-slate-500 bg-slate-50/50 max-sm:block max-sm:w-full max-sm:pb-1 max-sm:text-xs ${WRAP} ${alignTop ? 'align-top' : ''}`}>
         {label}
       </td>
-      <td className={`min-w-0 py-2 px-4 ${WRAP}`}>{children}</td>
+      <td className={`min-w-0 py-2 px-4 max-sm:block max-sm:w-full max-sm:pt-1 ${WRAP}`}>{children}</td>
     </tr>
   )
 }
