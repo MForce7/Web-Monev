@@ -20,7 +20,22 @@ export default function TriwulanStat({ statData }: DashboardProps) {
   // data otomatis menyesuaikan triwulan yang aktif
   const view = useMemo(() => {
     const current = statData.triwulan[triwulan];
-    return current ? buildDashboardView(statData.kategori, current) : null;
+    if (!current) return null;
+
+    const built = buildDashboardView(statData.kategori, current);
+
+    // series bertipe readonly tuple (as const), sedangkan OrpaChartsData
+    // meminta string[] yang mutable, jadi disalin ke array biasa
+    return {
+      ...built,
+      orpaCharts: {
+        ...built.orpaCharts,
+        targetVsRealisasi: {
+          ...built.orpaCharts.targetVsRealisasi,
+          series: [...built.orpaCharts.targetVsRealisasi.series],
+        },
+      },
+    };
   }, [statData, triwulan]);
 
   useEffect(() => {

@@ -61,11 +61,12 @@ export default function Rekapitulasi() {
   const pakaiBulan = menu !== "Pemantauan"; // Pemantauan: hanya pilih pusat riset
 
   return (
-    <div className="flex mt-20 min-h-screen w-full flex-col bg-[#f2f5fa] overflow-hidden" translate="no">
+    <div className="mt-20 flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-[#f2f5fa]" translate="no">
       <style>{CSS_TEMA}</style>
-      <div className="flex flex-1">
+      {/* HP: sidebar di atas (menumpuk), tablet ke atas: sidebar di kiri */}
+      <div className="flex min-w-0 flex-1 flex-col md:flex-row">
         <Sidebar active={menu} onChange={setMenu} warna={WARNA_SIDEBAR} />
-        <main className="flex-1 min-w-0">
+        <main className="min-w-0 flex-1">
           {/* Bilah instansi: gradasi sama dengan header sidebar */}
           <div
             style={{ background: HEADER }}
@@ -74,8 +75,7 @@ export default function Rekapitulasi() {
             <InstansiBar />
           </div>
 
-          {/* Padding dirapatkan: sebelumnya p-6 md:p-8 */}
-          <div className="px-4 pt-3 pb-4 md:px-6 md:pt-4">
+          <div className="min-w-0 px-3 pb-4 pt-3 sm:px-4 md:px-6 md:pt-4">
             {Logbook && (
               <div
                 className={`mx-auto mb-3 grid w-full grid-cols-1 gap-3 ${
@@ -86,7 +86,7 @@ export default function Rekapitulasi() {
                 <DropdownPusatRiset value={pusatRiset} onChange={setPusatRiset} />
               </div>
             )}
-            <div className="tabel-biru">
+            <div className="tabel-biru min-w-0">
               {Logbook ? (
                 <Logbook bulan={pakaiBulan ? bulan : null} pusatRiset={pusatRiset} />
               ) : Output ? (

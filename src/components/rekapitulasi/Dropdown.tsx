@@ -36,26 +36,26 @@ export default function Dropdown({
   const ref = useRef<HTMLDivElement>(null);
   const listId = useId();
 
-  // Tutup kalau klik di luar atau tekan Escape
+  // Tutup kalau tap/klik di luar atau tekan Escape (pointerdown mencakup mouse dan layar sentuh)
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
-    document.addEventListener("mousedown", onDown);
+    document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
 
   return (
     // Wrapper menjaga tinggi tetap 36px, panel melebar ke bawah tanpa menggeser isi halaman
-    <div ref={ref} className="relative h-9">
+    <div ref={ref} className="relative h-9 min-w-0">
       <div className="absolute inset-x-0 top-0 z-30 overflow-hidden rounded-[1.1rem] border border-[#dbe6f7] bg-white shadow-[0_4px_12px_rgba(27,63,120,0.14)]">
         <button
           type="button"
@@ -63,14 +63,14 @@ export default function Dropdown({
           aria-expanded={open}
           aria-controls={listId}
           onClick={() => setOpen((o) => !o)}
-          className="relative flex h-9 w-full items-center justify-center px-10 text-sm font-bold text-[#1b3560] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a5aa8]/30"
+          className="relative flex h-9 w-full items-center justify-center truncate px-10 text-sm font-bold text-[#1b3560] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a5aa8]/30"
         >
-          {value ?? label}
+          <span className="truncate">{value ?? label}</span>
           <Chevron open={open} />
         </button>
 
         {open && (
-          <ul id={listId} role="listbox" aria-label={label} className="max-h-72 overflow-y-auto">
+          <ul id={listId} role="listbox" aria-label={label} className="max-h-72 overflow-y-auto overscroll-contain">
             {options.map((opt) => {
               const dipilih = opt === value;
               return (
@@ -81,7 +81,7 @@ export default function Dropdown({
                       onChange(opt);
                       setOpen(false);
                     }}
-                    className={`w-full border-t border-[#dbe6f7] py-1.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] ${
+                    className={`w-full border-t border-[#dbe6f7] py-2.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] sm:py-1.5 ${
                       dipilih ? "bg-[#dbe6f7]" : ""
                     }`}
                   >
