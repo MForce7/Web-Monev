@@ -123,6 +123,8 @@ export const JENIS_OUTPUT = [
   'KI (Kekayaan Intelektual)',
   'Model',
   'Naskah Kebijakan',
+  'Paten',
+  'Hak Cipta',
 ] as const
 
 export const STATUS_PELAKSANAAN = [

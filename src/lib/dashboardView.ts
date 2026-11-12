@@ -15,6 +15,7 @@ function toOrpaCharts(kategori: Kategori[], d: TriwulanData) {
     targetVsRealisasi: {
       max: d.orpa.chartMax,
       series: ORPA_SERIES,
+      labels: d.pusatRiset.map((p) => p.nama), // ⬅️ nama unit kerja, sejajar urutan dengan groups
       groups: d.pusatRiset.map((p) =>
         ORPA_SERIES.map((s) => p.targetVsRealisasi[s] ?? EMPTY)
       ),
