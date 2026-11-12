@@ -7,20 +7,20 @@ import Dashboard2 from './pages/dashboard_v2.tsx'
 import LoginPage from './pages/loginPage.tsx'
 import TestUpload from './pages/TestUpload.tsx'
 import Rekapitulasi from './pages/rekapitulasi.tsx'
-import LogbookPages from './pages/logbookPages.tsx'
+import LogbookPages from './pages/LogbookPages.tsx'
 import AdminLogbookPage from './pages/adminLogbookPage.tsx'
 import Profile from './pages/profile.tsx'
 // import halaman admin lain yang sudah ada / akan dibuat, contoh:
-import ImportJson from './pages/importJson.tsx'
-import RekapPendanaan from './pages/rekapPendanaan.tsx'
-import KelompokRiset from './pages/kelompokRiset.tsx'
+import ImportJson from './pages/importjson.tsx'
+import RekapPendanaan from './pages/Rekappendanaan.tsx'
+import KelompokRiset from './pages/kelompokriset.tsx'
 
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
 import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
-import KelompokRiset from './pages/kelompokriset.tsx'
+import Kelompokriset from './pages/kelompokriset.tsx'
 import Rekappendanaan from './pages/Rekappendanaan.tsx'
 import Importjson from './pages/importjson.tsx'
 import Formbaru from './pages/Formbaru.tsx'
@@ -46,9 +46,10 @@ const router = createBrowserRouter([
             children: [
               { path: '/admin/logbook', element: <AdminLogbookPage /> },
               { path: '/rekapitulasi', element: <Rekapitulasi /> },
-              { path: '/importjson', element: <ImportJson /> },
-              { path: '/rekappendanaan', element: <RekapPendanaan /> },
-              { path: '/kelompokriset', element: <KelompokRiset /> },
+              { path: '/importjson', element: <Importjson /> },
+              { path: '/rekappendanaan', element: <Rekappendanaan /> },
+              { path: '/kelompokriset', element: <Kelompokriset /> },
+              { path: '/formbaru', element: <Formbaru /> },
             ],
           },
         ],
