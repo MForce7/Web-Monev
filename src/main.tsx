@@ -23,6 +23,11 @@ import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
 import Kelompokriset from './pages/kelompokriset.tsx'
 import Rekappendanaan from './pages/Rekappendanaan.tsx'
 import Importjson from './pages/importjson.tsx'
+
+// import KelompokRiset from './pages/kelompokriset.tsx'
+// import Rekappendanaan from './pages/Rekappendanaan.tsx'
+// import Importjson from './pages/importjson.tsx'
+
 import Formbaru from './pages/Formbaru.tsx'
 
 const router = createBrowserRouter([
@@ -46,9 +51,9 @@ const router = createBrowserRouter([
             children: [
               { path: '/admin/logbook', element: <AdminLogbookPage /> },
               { path: '/rekapitulasi', element: <Rekapitulasi /> },
-              { path: '/importjson', element: <Importjson /> },
-              { path: '/rekappendanaan', element: <Rekappendanaan /> },
-              { path: '/kelompokriset', element: <Kelompokriset /> },
+              { path: '/importjson', element: <ImportJson /> },
+              { path: '/rekappendanaan', element: <RekapPendanaan /> },
+              { path: '/kelompokriset', element: <KelompokRiset /> },
               { path: '/formbaru', element: <Formbaru /> },
             ],
           },

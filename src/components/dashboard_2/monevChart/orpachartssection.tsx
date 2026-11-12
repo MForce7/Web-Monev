@@ -15,6 +15,7 @@ export type OrpaChartsData = {
   targetVsRealisasi: {
     max: number;
     series: string[]; // urutan key kategori untuk tiap batang dalam satu grup
+    labels: string[]; // ⬅️ nama unit kerja per grup, sejajar urutan dengan groups
     groups: { target: number; realisasi: number }[][];
   };
   komposisi: {

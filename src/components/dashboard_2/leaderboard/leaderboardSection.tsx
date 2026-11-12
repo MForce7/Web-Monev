@@ -55,11 +55,14 @@ function Daftar({
       tabIndex={hidden ? -1 : 0}
     >
       {items.map((item, i) => (
-        <li key={`${item.nama}-${i}`} className="flex items-center gap-4 border-b border-gray-200 px-5 py-3 last:border-b-0">
+        <li
+          key={`${item.nama}-${i}`}
+          className="flex items-center gap-3 border-b border-gray-200 px-3 py-3 last:border-b-0 sm:gap-4 sm:px-5"
+        >
           <span className="flex w-7 shrink-0 justify-center text-sm font-bold text-gray-800">
             {crownColors && i < 3 ? <Crown color={crownColors[i % crownColors.length]} /> : `${i + 1}.`}
           </span>
-          <span className="truncate text-sm font-bold text-gray-900">{item.nama}</span>
+          <span className="min-w-0 flex-1 truncate text-sm font-bold text-gray-900">{item.nama}</span>
           <span className="shrink-0 text-sm font-bold text-[#f25c5c]">{item.persen}%</span>
         </li>
       ))}
@@ -83,16 +86,16 @@ export default function LeaderboardSection({
 
   const isTertinggi = urutan === "tertinggi";
   const navClass =
-    "rounded-full bg-white/70 p-2 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/70";
+    "shrink-0 rounded-full bg-white/70 p-2 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/70";
 
   return (
-    <section className="w-screen bg-[#f22a3a] px-4 py-8 md:px-8" translate="no">
+    <section className="w-full bg-[#f22a3a] px-4 py-6 sm:py-8 md:px-8" translate="no">
       <div className="mx-auto max-w-3xl">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <button type="button" aria-label="Sebelumnya" onClick={onPrev} disabled={isTertinggi} className={navClass}>
             <Arrow dir="left" />
           </button>
-          <h3 className="px-2 text-center text-base font-bold text-white md:text-xl">
+          <h3 className="min-w-0 px-1 text-center text-sm font-bold leading-snug text-white sm:text-base md:text-xl">
             {isTertinggi ? titleTertinggi : titleTerendah}
           </h3>
           <button type="button" aria-label="Berikutnya" onClick={onNext} disabled={!isTertinggi} className={navClass}>

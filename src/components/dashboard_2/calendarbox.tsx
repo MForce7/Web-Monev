@@ -100,7 +100,7 @@ export default function CalendarBox({
   return (
     <section
       aria-label="Kalender"
-      className="rounded-3xl bg-white px-7 py-6 shadow-[3px_5px_8px_rgba(0,0,0,0.25)]"
+      className="mx-auto w-full max-w-md rounded-3xl bg-white px-4 py-5 shadow-[3px_5px_8px_rgba(0,0,0,0.25)] sm:px-7 sm:py-6 lg:mx-0 lg:max-w-none"
     >
       <div ref={monthPickerRef} className="relative">
         <div className="flex items-center justify-between">
@@ -109,7 +109,7 @@ export default function CalendarBox({
               type="button"
               onClick={() => onShiftMonth(-1)}
               aria-label="Bulan sebelumnya"
-              className="rounded px-1 text-lg leading-none text-[#8B0303] hover:bg-[#FADADA]"
+              className="rounded px-2 py-1 text-xl leading-none text-[#8B0303] hover:bg-[#FADADA]"
             >
               ‹
             </button>
@@ -119,7 +119,7 @@ export default function CalendarBox({
               aria-haspopup="true"
               aria-expanded={showMonthPicker}
               aria-label="Pilih bulan dan tahun"
-              className="min-w-[6.5rem] rounded-lg px-2 py-0.5 text-center text-base font-bold hover:bg-[#FADADA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F22838]"
+              className="min-w-[6.5rem] rounded-lg px-2 py-1 text-center text-base font-bold hover:bg-[#FADADA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F22838]"
             >
               {MONTHS[viewMonth]}
             </button>
@@ -127,7 +127,7 @@ export default function CalendarBox({
               type="button"
               onClick={() => onShiftMonth(1)}
               aria-label="Bulan berikutnya"
-              className="rounded px-1 text-lg leading-none text-[#8B0303] hover:bg-[#FADADA]"
+              className="rounded px-2 py-1 text-xl leading-none text-[#8B0303] hover:bg-[#FADADA]"
             >
               ›
             </button>
@@ -146,7 +146,7 @@ export default function CalendarBox({
                 type="button"
                 onClick={() => onChangeYear(-1)}
                 aria-label="Tahun sebelumnya"
-                className="rounded px-2 text-lg leading-none text-[#8B0303] hover:bg-[#FADADA]"
+                className="rounded px-3 py-1 text-xl leading-none text-[#8B0303] hover:bg-[#FADADA]"
               >
                 ‹
               </button>
@@ -155,7 +155,7 @@ export default function CalendarBox({
                 type="button"
                 onClick={() => onChangeYear(1)}
                 aria-label="Tahun berikutnya"
-                className="rounded px-2 text-lg leading-none text-[#8B0303] hover:bg-[#FADADA]"
+                className="rounded px-3 py-1 text-xl leading-none text-[#8B0303] hover:bg-[#FADADA]"
               >
                 ›
               </button>
@@ -170,7 +170,7 @@ export default function CalendarBox({
                     setShowMonthPicker(false);
                   }}
                   aria-pressed={i === viewMonth}
-                  className={`rounded-lg px-1 py-1.5 text-xs font-bold transition hover:bg-[#FADADA] ${
+                  className={`rounded-lg px-1 py-2 text-xs font-bold transition hover:bg-[#FADADA] sm:py-1.5 ${
                     i === viewMonth ? "bg-[#FADADA] text-[#8B0303]" : "text-[#353535]"
                   }`}
                 >
@@ -209,7 +209,7 @@ export default function CalendarBox({
                 onClick={() => onPickDate(key)}
                 aria-pressed={isSelected}
                 aria-label={formatDate(key)}
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-[17px] font-bold transition hover:bg-[#E9E9E9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F22838] ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-base font-bold transition hover:bg-[#E9E9E9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F22838] sm:h-8 sm:w-8 sm:text-[17px] ${
                   isSelected ? "bg-[#D9D9D9]" : ""
                 } ${isPast ? "text-[#A3A3A3]" : ""}`}
               >

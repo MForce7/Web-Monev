@@ -28,37 +28,37 @@ export default function TriwulanStat({ statData }: DashboardProps) {
   }, [triwulan]);
 
   return (
-    <div className="min-h-screen w-[80%] flex flex-col items-center overflow-hidden">
-        <div className="flex flex-col items-center gap-6 py-8 px-4 w-full max-w-360">
+    <div className="flex min-h-dvh w-full flex-col items-center overflow-hidden sm:w-[92%] lg:w-[80%]">
+      <div className="flex w-full max-w-360 flex-col items-center gap-6 px-4 py-6 sm:py-8">
         <TriwulanNav value={triwulan} onChange={setTriwulan} options={TRIWULAN_OPTIONS} />
 
         {!view ? (
-            <p className="mt-10 text-[20px] font-semibold text-[#737373]">
+          <p className="mt-10 text-center text-base font-semibold text-[#737373] sm:text-[20px]">
             Data Triwulan {triwulan} belum tersedia.
-            </p>
+          </p>
         ) : (
-            <div
+          <div
             key={triwulan}
-            className="flex w-full flex-col items-center gap-6 animate-triwulan-in"
-            >
+            className="flex w-full animate-triwulan-in flex-col items-center gap-6"
+          >
             <MetricCard data={view.metrics} />
             <OrpaChartsSection data={view.orpaCharts} />
 
-            <div className="mx-auto mt-31.25 max-w-245 text-center">
-                <h2 className="m-0 text-[32px] font-bold leading-10 text-[#353535]">
+            <div className="mx-auto mt-10 max-w-245 text-center sm:mt-20 lg:mt-31.25">
+              <h2 className="m-0 text-2xl font-bold leading-8 text-[#353535] sm:text-[32px] sm:leading-10">
                 Komposisi Capaian Kinerja Pusat Riset
-                </h2>
-                <p className="mx-0 mb-0 mt-3.75 text-[24px] font-semibold leading-7 text-[#737373]">
+              </h2>
+              <p className="mb-0 mt-3 text-base font-semibold leading-6 text-[#737373] sm:text-xl lg:mt-3.75 lg:text-[24px] lg:leading-7">
                 Diagram berikut menampilkan proporsi dan perbandingan realisasi capaian kinerja
-                <br />
+                <br className="hidden md:block" />{" "}
                 dari setiap Pusat Riset pada periode ini.
-                </p>
+              </p>
             </div>
 
             <PrChart data={view.prChart} />
-            </div>
+          </div>
         )}
-        </div>
+      </div>
     </div>
-    );
+  );
 }
