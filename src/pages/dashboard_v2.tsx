@@ -4,11 +4,10 @@ import CalendarBox, { toKey, type Agenda } from "../components/dashboard_2/calen
 import CalendarDesc from "../components/dashboard_2/calendardesc";
 import TriwulanStat from "../components/dashboard_2/triwulanStat";
 import Leaderboard, { type LeaderboardData } from "../components/dashboard_2/leaderboard";
-import dashboardData from "../data/dashboardData.json";
 import type { DashboardData } from "../types/dashboard";
-import data from "../data/leaderboard.json";
 import { useAuth } from "../lib/AuthContext";
 import { fetchAgendas } from "../lib/supabaseAgendaData";
+import { fetchLeaderboardData, fetchTriwulanDashboardData } from "../lib/analyticsData";
 
 export default function DashboardV2() {
   const { role } = useAuth();
@@ -21,13 +20,21 @@ export default function DashboardV2() {
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [agendas, setAgendas] = useState<Agenda[]>([]);
-  const [agendaError, setAgendaError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   useEffect(() => {
-    fetchAgendas()
-      .then(setAgendas)
-      .catch((err: Error) => setAgendaError(err.message));
+    fetchAgendas().then(setAgendas).catch(() => {});
+
+    Promise.all([fetchTriwulanDashboardData(), fetchLeaderboardData()])
+      .then(([dash, leaderboard]) => {
+        setDashboardData(dash);
+        setLeaderboardData(leaderboard);
+      })
+      .catch((err: Error) => setLoadError(err.message));
   }, []);
 
   const byDate = useMemo(() => {
@@ -76,26 +83,24 @@ export default function DashboardV2() {
             onChangeYear={(delta) => setViewYear((y) => y + delta)}
             onPickDate={pickDate}
           />
-          {agendaError ? (
-            <div className="rounded-3xl bg-white px-7 py-8 text-sm text-red-600 shadow-[3px_5px_8px_rgba(0,0,0,0.25)]">
-              Gagal memuat agenda: {agendaError}
-            </div>
-          ) : (
-            <CalendarDesc
-              selectedDate={selectedDate}
-              byDate={byDate}
-              activeId={activeId}
-              setActiveId={setActiveId}
-              setAgendas={setAgendas}
-              onPickAgenda={pickAgenda}
-              isAdmin={isAdmin}
-            />
-          )}
+          <CalendarDesc
+            selectedDate={selectedDate}
+            byDate={byDate}
+            activeId={activeId}
+            setActiveId={setActiveId}
+            setAgendas={setAgendas}
+            onPickAgenda={pickAgenda}
+            isAdmin={isAdmin}
+          />
         </div>
       </div>
 
-      <TriwulanStat statData={dashboardData as unknown as DashboardData} />
-      <Leaderboard data={data as LeaderboardData} />
+      {loadError && (
+        <p className="px-6 py-4 text-sm text-red-600">Gagal memuat data statistik: {loadError}</p>
+      )}
+
+      {dashboardData && <TriwulanStat statData={dashboardData} />}
+      {leaderboardData && <Leaderboard data={leaderboardData} />}
     </div>
   );
 }

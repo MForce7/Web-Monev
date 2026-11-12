@@ -10,6 +10,7 @@ export type Kategori = {
 export type TargetChartData = {
   max: number;
   series: string[]; // urutan key kategori untuk tiap batang dalam satu grup
+  labels: string[]; // nama unit kerja per grup, sejajar urutan dengan groups
   groups: { target: number; realisasi: number }[][];
 };
 
@@ -21,9 +22,9 @@ interface Props {
 /** Grafik batang: target (garis putus-putus) vs realisasi (batang gradasi) */
 export default function TargetChart({ data, kategori }: Props) {
   const uid = useUid();
-  const { max, series, groups } = data;
+  const { max, series, labels, groups } = data;
 
-  const W = 420, H = 240, L = 40, R = 410, top = 52, base = 222;
+  const W = 420, H = 256, L = 40, R = 410, top = 52, base = 222;
   const y = (v: number) => base - (v / max) * (base - top);
 
   const barW = 17, gap = 1;
@@ -33,7 +34,7 @@ export default function TargetChart({ data, kategori }: Props) {
   const colorOf = (key: string) => kategori.find((k) => k.key === key)?.from ?? FALLBACK_COLOR;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Target Kepala ORPA vs Realisasi">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Target Kepala ORPA vs Realisasi per unit kerja">
       <BarDefs uid={uid} kategori={kategori} />
 
       {/* Legenda kanan atas */}
@@ -51,43 +52,60 @@ export default function TargetChart({ data, kategori }: Props) {
       ))}
       <line x1={L} x2={R} y1={base} y2={base} stroke="#555" />
 
-      {groups.map((group, gi) =>
-        group.map((b, bi) => {
-          const key = series[bi];
-          if (!key) return null; // jaga-jaga kalau data lebih panjang dari series
-          const x = L + gi * groupStep + (groupStep - groupW) / 2 + bi * (barW + gap);
-          return (
-            <g key={`${gi}-${bi}`}>
-              {b.target > 0 && (
-                <rect
-                  x={x}
-                  y={y(b.target)}
-                  width={barW}
-                  height={base - y(b.target)}
-                  fill="none"
-                  stroke={colorOf(key)}
-                  strokeDasharray="2 2"
-                />
-              )}
-              {b.realisasi > 0 && (
-                <>
-                  <rect
-                    x={x}
-                    y={y(b.realisasi)}
-                    width={barW}
-                    height={base - y(b.realisasi)}
-                    rx="1.5"
-                    fill={`url(#${uid}-${key})`}
-                  />
-                  <text x={x + barW / 2} y={y(b.realisasi) - 3} fontSize="8" fontWeight="700" textAnchor="middle" fill="#333">
-                    {b.realisasi}
-                  </text>
-                </>
-              )}
-            </g>
-          );
-        })
-      )}
+      {groups.map((group, gi) => {
+        const groupCenterX = L + gi * groupStep + groupStep / 2;
+        return (
+          <g key={gi}>
+            {group.map((b, bi) => {
+              const key = series[bi];
+              if (!key) return null; // jaga-jaga kalau data lebih panjang dari series
+              const x = L + gi * groupStep + (groupStep - groupW) / 2 + bi * (barW + gap);
+              return (
+                <g key={`${gi}-${bi}`}>
+                  {b.target > 0 && (
+                    <rect
+                      x={x}
+                      y={y(b.target)}
+                      width={barW}
+                      height={base - y(b.target)}
+                      fill="none"
+                      stroke={colorOf(key)}
+                      strokeDasharray="2 2"
+                    />
+                  )}
+                  {b.realisasi > 0 && (
+                    <>
+                      <rect
+                        x={x}
+                        y={y(b.realisasi)}
+                        width={barW}
+                        height={base - y(b.realisasi)}
+                        rx="1.5"
+                        fill={`url(#${uid}-${key})`}
+                      />
+                      <text x={x + barW / 2} y={y(b.realisasi) - 3} fontSize="8" fontWeight="700" textAnchor="middle" fill="#333">
+                        {b.realisasi}
+                      </text>
+                    </>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* Label nama unit kerja di bawah tiap grup */}
+            <text
+              x={groupCenterX}
+              y={base + 16}
+              fontSize="10"
+              fontWeight="700"
+              textAnchor="middle"
+              fill="#353535"
+            >
+              {labels[gi] ?? ""}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
