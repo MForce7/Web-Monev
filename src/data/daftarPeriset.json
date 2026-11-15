@@ -1,0 +1,84 @@
+{
+  "periset": [
+    {
+      "id": "p-001",
+      "nama": "Dr. Johan Muhamad, M.Sc.",
+      "nip": "198410082008011005",
+      "jabatan": "Peneliti Ahli Madya",
+      "keterangan": "Koordinator",
+      "pusatRiset": "Pusat Riset Antariksa",
+      "kelompokRiset": "MATAHARI DAN AKTIVITASNYA",
+      "judulRiset": "Pemetaan Aktivitas Bintik Matahari dan Dampaknya terhadap Cuaca Antariksa"
+    },
+    {
+      "id": "p-002",
+      "nama": "Tiar Dani, M.Si.",
+      "nip": "197906132006041017",
+      "jabatan": "Peneliti Ahli Madya",
+      "keterangan": "Anggota",
+      "pusatRiset": "Pusat Riset Antariksa",
+      "kelompokRiset": "MATAHARI DAN AKTIVITASNYA",
+      "judulRiset": "Analisis Variasi Siklus Matahari Jangka Panjang"
+    },
+    {
+      "id": "p-003",
+      "nama": "Asnawi, S.Si., M.Sc.",
+      "nip": "196908051999031004",
+      "jabatan": "Peneliti Ahli Madya",
+      "keterangan": "Koordinator",
+      "pusatRiset": "Pusat Riset Antariksa",
+      "kelompokRiset": "IONOSFER DAN PROPAGASI GELOMBANG RADIO",
+      "judulRiset": "Studi Gangguan Ionosfer terhadap Komunikasi Radio HF"
+    },
+    {
+      "id": "p-004",
+      "nama": "Ir. Agus Aribowo, M.Eng.",
+      "nip": "197008071989011001",
+      "jabatan": "Perekayasa Ahli Madya",
+      "keterangan": "Koordinator",
+      "pusatRiset": "Pusat Riset Teknologi Penerbangan",
+      "kelompokRiset": "AERODINAMIKA (Aerodynamics, AEDY)",
+      "judulRiset": "Optimasi Desain Aerodinamika Sayap Pesawat N219"
+    },
+    {
+      "id": "p-005",
+      "nama": "Abian Nurrohmad, S.T., M.T.",
+      "nip": "199512242018011001",
+      "jabatan": "Peneliti Ahli Madya",
+      "keterangan": "Koordinator",
+      "pusatRiset": "Pusat Riset Teknologi Penerbangan",
+      "kelompokRiset": "AEROSTRUKTUR (Aerostructure, AEST)",
+      "judulRiset": "Pengujian Fatik Struktur Komposit untuk Komponen Pesawat"
+    },
+    {
+      "id": "p-006",
+      "nama": "Ery Fitrianingsih, S.T., M.Sc., Ph.D.",
+      "nip": "197809092003122005",
+      "jabatan": "Peneliti Ahli Muda",
+      "keterangan": "Koordinator",
+      "pusatRiset": "Pusat Riset Teknologi Satelit",
+      "kelompokRiset": "LINGKUNGAN DAN DINAMIKA SATELIT",
+      "judulRiset": "Pemodelan Orbit dan Prediksi Reentry Sampah Antariksa"
+    },
+    {
+      "id": "p-007",
+      "nama": "Hogan Eighfansyah Susilo, S.T., M.T.",
+      "nip": "199508142019021001",
+      "jabatan": "Peneliti Ahli Pertama",
+      "keterangan": "Anggota",
+      "pusatRiset": "Pusat Riset Teknologi Satelit",
+      "kelompokRiset": "SISTEM KOMUNIKASI SATELIT",
+      "judulRiset": "Pengembangan Sistem Transponder Komunikasi Satelit Mikro"
+    },
+    {
+      "id": "p-008",
+      "nama": "Dr. Rika Andiarti",
+      "nip": "196701301987012000",
+      "jabatan": "Perekayasa Ahli Utama",
+      "keterangan": "Ketua",
+      "pusatRiset": "Pusat Riset Teknologi Roket",
+      "kelompokRiset": "DINAMIKA ROKET DAN KONTROL (ROCKET DYNAMICS & CONTROL)",
+      "judulRiset": "Pengembangan Sistem Kendali Terbang Roket Sonda RX-450"
+    }
+  ]
+}
