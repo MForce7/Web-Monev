@@ -1,0 +1,20 @@
+{
+  "pusatRiset": [
+    {
+      "nama": "Pusat Riset Antariksa",
+      "kelompok": ["MATAHARI DAN AKTIVITASNYA", "IONOSFER DAN PROPAGASI GELOMBANG RADIO", "ASTRONOMI DAN OBSERVATORIUM", "DINAMIKA LINGKUNGAN ANTARIKSA"]
+    },
+    {
+      "nama": "Pusat Riset Teknologi Penerbangan",
+      "kelompok": ["AERODINAMIKA (Aerodynamics, AEDY)", "AEROSTRUKTUR (Aerostructure, AEST)", "SISTEM DAN APLIKASI DRONE (Drone System and Application, DSA)"]
+    },
+    {
+      "nama": "Pusat Riset Teknologi Satelit",
+      "kelompok": ["LINGKUNGAN DAN DINAMIKA SATELIT", "SISTEM KOMUNIKASI SATELIT", "SISTEM RUAS BUMI DAN OPERASIONAL SATELIT"]
+    },
+    {
+      "nama": "Pusat Riset Teknologi Roket",
+      "kelompok": ["DINAMIKA ROKET DAN KONTROL (ROCKET DYNAMICS & CONTROL)", "SISTEM PROPELAN (PROPELLANT SYSTEM)", "PROPULSI MAJU (ADVANCED PROPULSION)"]
+    }
+  ]
+}

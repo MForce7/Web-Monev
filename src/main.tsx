@@ -15,6 +15,8 @@ import ImportJson from './pages/importJson.tsx'
 import RekapPendanaan from './pages/rekapPendanaan.tsx'
 import KelompokRiset from './pages/kelompokRiset.tsx'
 
+import DaftarPeristPage from './pages/daftarPeriset.tsx'
+
 import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
@@ -32,6 +34,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Dashboard2 /> },
       { path: '/dashboard', element: <Dashboard2 /> },
+      { path: '/daftar-periset', element: <DaftarPeristPage /> },
 
       {
         element: <ProtectedRoute />,
