@@ -1,0 +1,433 @@
+{
+  "pusatRiset": [
+    {
+      "nama": "Pusat Riset Antariksa",
+      "kelompok": [
+        {
+          "nama": "MATAHARI DAN AKTIVITASNYA",
+          "anggota": [
+            { "nama": "Dr. Johan Muhamad, M.Sc.", "nip": "198410082008011005", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Tiar Dani, M.Si.", "nip": "197906132006041017", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Rasdewita Kesumaningrum, M.Si.", "nip": "198105092005012005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Santi Sulistiani, S.Si., M.Si.", "nip": "198207182005012005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Ayu Dyah Pangestu, S.Si., M.Si.", "nip": "199611272019022001", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Ir. Nanang Widodo, M.Si.", "nip": "196302101989121002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" }
+          ]
+        },
+        {
+          "nama": "IONOSFER DAN PROPAGASI GELOMBANG RADIO",
+          "anggota": [
+            { "nama": "Asnawi, S.Si., M.Sc.", "nip": "196908051999031004", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Drs. Jiyo, M.Si.", "nip": "196112151991101001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Varuliantor Dear, M.T.", "nip": "198106122008011011", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Adi Purwono, M.T.", "nip": "197807272003121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Afrizal B., S.Kom., M.Kom.", "nip": "197601012001121005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Agri Faturahman, S.Si., M.Si.", "nip": "199412302019021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Nata Miharja, ST, M.T.", "nip": "197204252005011009", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Sefria Anggarani, S.Si., M.Si.", "nip": "199003222014022004", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Faruk Afero, S.Si., M.Eng.", "nip": "199305092019021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Annis Siradj Mardiani, S.T.", "nip": "198306152009122003", "keterangan": "Anggota", "jabatan": "Analis Data Ilmiah Ahli Pertama" },
+            { "nama": "Indah Susanti, S.T.", "nip": "197702092005012005", "keterangan": "Anggota", "jabatan": "Penata Penerbitan Ilmiah Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "ASTRONOMI DAN OBSERVATORIUM",
+          "anggota": [
+            { "nama": "Prof. Dr. Thomas Djamaluddin", "nip": "196201231987031002", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Dra. Clara Yono Yatini, M.Sc.", "nip": "196403091990072001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Dr. Emanuel Sungging Mumpuni, S.Si., M.Si.", "nip": "197212242000031003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Dr. Rhorom Priyatikanto, M.Si.", "nip": "198904102014021003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Peberlin Parulian Sitompul, S.T., M.T., Ph.D.", "nip": "197802022006041003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Farahhati Mumtahana, S.Si., M.Si.", "nip": "199001122014022003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Elyyani, S.Si.", "nip": "197106151997032002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Siti Maryam, S.T.", "nip": "197306181997032002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Gerhana Puannandra Putri, S.Si.", "nip": "199009292018012002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Mulya Diana Murti, S.Si.", "nip": "199411132018012001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "M. Ferdhiansyah Noor, S.Kom.", "nip": "197501302007011001", "keterangan": "Anggota", "jabatan": "Analis Data Ilmiah Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "DINAMIKA LINGKUNGAN ANTARIKSA",
+          "anggota": [
+            { "nama": "La Ode Muhammad Musafar Kilowasid, M.Sc.", "nip": "197109301997031004", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Fitri Nuraeni, M.Si.", "nip": "198007042006042003", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Anwar Santoso, M.Si.", "nip": "197110052000031005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Mario Batubara, M.Si., Ph.D.", "nip": "198111172008011006", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Rizal Suryana, S.T., M.Sc.", "nip": "197810282006041002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Mira Juangsih, M.Si.", "nip": "198009262008012009", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Setyanto Cahyo Pranoto, M.Si.", "nip": "198009122008011008", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Visca Wellyanita, M.Si.", "nip": "198006152005012011", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Elvina Ayu Ratnasari, S.Si.", "nip": "199310272019022001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Siska Filawati, M.Si.", "nip": "199305272015022001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Moh Andi Aris Biyantoro, S.T.", "nip": "197701072009011004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Silmie Vidiya Fani, S.T., M.Kom.", "nip": "198906152014022003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Rian Pramudia Salasa, S.Kom., M.Kom.", "nip": "198703162014021004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ir. Erlansyah, M.T.", "nip": "196201231987031003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Musthofa Lathif, S.T., M.T.", "nip": "198004102008011016", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Neflia, M.Si.", "nip": "197903112005012009", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Dian Yudha Risdianto, M.T.", "nip": "198007262006041003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" }
+          ]
+        }
+      ]
+    },
+    {
+      "nama": "Pusat Riset Teknologi Penerbangan",
+      "kelompok": [
+        {
+          "nama": "AERODINAMIKA (Aerodynamics, AEDY)",
+          "anggota": [
+            { "nama": "Ir. Agus Aribowo, M.Eng.", "nip": "197008071989011001", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Arifin Rasyadi Soemaryanto, S.T.", "nip": "198808292014021005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Dana Herdiana, S.T., M.T.", "nip": "198004302009011005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Deasy Tresnoningrum, S.Si., M.T.", "nip": "198402202008012005", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dr. Fadilah Hasim, B.Eng., M.Sc.", "nip": "197007231989111001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Utama" },
+            { "nama": "Kurnia Hidayat, S.Si., M.T.", "nip": "199411212018011003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Sinung Tirtha Pinindriya, S.T., M.Eng.", "nip": "198005802010121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Zuhdhy Masfuri, S.T., M.T.", "nip": "198304292012121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "AEROSTRUKTUR (Aerostructure, AEST)",
+          "anggota": [
+            { "nama": "Abian Nurrohmad, S.T., M.T.", "nip": "199512242018011001", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Afid Nugroho, S.T., M.Eng.", "nip": "198301242009121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Dr. Dipl.Ing. Agus Bayu Utama, M.Sc.ME.", "nip": "197311051993021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Aryandi Marta, S.T., M.T.", "nip": "198803302014021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Awang Rahmadi Nuranto, S.T., M.T.", "nip": "197909262006041020", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dr. Dony Hidayat, S.T., M.T.", "nip": "198205272008011007", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Fajar Ari Wandono S.T., M.T.", "nip": "198501042010121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Ilham Akbar Adi Satriya, S.T., M.Sc.", "nip": "199610242019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Kosim Abdurohman, S.T., M.T.", "nip": "198601272014021003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Mikhael Gilang Pribadi Putra Pratama, S.T., M.T.", "nip": "199403242019031002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "M Hafid, S.T., M.T.", "nip": "199412222019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Muksin, S.Si.", "nip": "198809272018011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Nur Mufidatul Ula, S.Si., M.EngSt.", "nip": "199301282018012002", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Rian Suari Aritonang, S.T.", "nip": "198811292018011002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Riki Ardiansyah, S.T., M.T.", "nip": "198511292014021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Taufiq Satrio Nurtiasto, S.T.", "nip": "199307072018011003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Yusuf Giri Wijaya, S.Si., M.T.", "nip": "198802072018011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "DINAMIKA STRUKTURAL DAN AEROELASTISITAS (Structural Dynamics and Aeroelasticity, SDA)",
+          "anggota": [
+            { "nama": "Dr. Matza Gusto Andika, S.T., M.T.", "nip": "198507062009011002", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Drs. Agus Harno Nurdinsyah, M.Si.", "nip": "196303241990031005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Ir. Gunawan Wijiatmoko, M.Eng.", "nip": "196209281988031001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Utama" },
+            { "nama": "Dr. Ivransa Zuhdi Pane, M.Eng.", "nip": "196905251987091001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Utama" },
+            { "nama": "Ir. Karyawan, M.Eng.", "nip": "196301281988011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Dr. Khairul Jauhari, S.T., M.T.", "nip": "198105162009011002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ir. Purwadi, M.Si.", "nip": "196205161991031001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Utama" },
+            { "nama": "Widyawasta, S.T., M.T.", "nip": "196408161985031007", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Tarida Priskila Hasian Simanjuntak, S.T., M.Sc.", "nip": "199706142020122013", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "SISTEM DAN APLIKASI DRONE (Drone System and Application, DSA)",
+          "anggota": [
+            { "nama": "Drs. Gunawan Setyo Prabowo, M.T.", "nip": "196707241992031002", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Abdul Aziz, S.T., M.Kom.", "nip": "199302142018011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dr. Akhmad Farid Widodo, S.T., M.T.", "nip": "197804272005021005", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Andreas Prasetya Adi, M.Eng.", "nip": "197104071989121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Angga Septiyana, S.Si.", "nip": "199309042018011003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Apid Rustandi, S.Ds., M.Sc.", "nip": "198404092009121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Aries Asrianto Ramadian, S.T., M.T.", "nip": "198904192018011002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Drs. Ari Sugeng Budiyanta, M.Eng.", "nip": "196112121989121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Danartomo Kusumoaji, S.T., M.T.", "nip": "198209252010121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Eries Bagita Jayanti, S.Si., M.T.", "nip": "199602192018012001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Hartono, S.T., M.T.", "nip": "198912202018011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Novita Atmasari, S.Si., M.T.", "nip": "199212092018012002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Prastiyo Siswo Prajoko, S.T., M.T.", "nip": "199106052010121003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Rudi Choirul Anwar, S.Si., M.T.", "nip": "199401062018011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Try Kusuma Wardana, S.Si, M.Kom.", "nip": "199405262019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Unggul Satrio Yudhotomo, S.T., M.Han.", "nip": "197905292006041003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" }
+          ]
+        },
+        {
+          "nama": "SISTEM KOMUNIKASI DATA LINK DAN NAVIGASI PENERBANGAN (Aviation Datalink Communication and Navigation System, ADCNS)",
+          "anggota": [
+            { "nama": "Cahya Edi Santosa, M.T., Ph.D.", "nip": "197712232003121004", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Dra. Donatina Miswati Hadiyanti", "nip": "196409061989122001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Hendy Santosa, S.T., M.T., Ph.D.", "nip": "198112102008121002", "keterangan": "Anggota", "jabatan": "Asisten Ahli" },
+            { "nama": "Imas Tri Setyadewi, S.Si., M.T.", "nip": "198909182014022003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Mohammad Amanta Kumala Sakti, S.T., M.T.", "nip": "198311232009121003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Novelita Rahayu, S.ST., M.T.", "nip": "199011202018012001", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Ir. Subuh Pramono, S.T., M.T., Ph.D., IPM", "nip": "198106092003121002", "keterangan": "Anggota", "jabatan": "Lektor Kepala" },
+            { "nama": "Wahyudi, S.Kom, M.Kom.", "nip": "197412282005011005", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Yanuar Prabowo, S.T., M.T.", "nip": "198401062010121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "SISTEM MUATAN DAN PENGINDERAAN (Payload and Aerosense System, PAS)",
+          "anggota": [
+            { "nama": "Farohaji Kurniawan, S.T., M.Eng., Ph.D.", "nip": "198301222009011006", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Abdul Rohman, S.T.", "nip": "199404082018011003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Abdurrasyid Ruhiyat, SST., M.T.", "nip": "199109142018011002", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Agus Hendra Wahyudi, S.T., M.Si., Ph.D.", "nip": "197908282005011006", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Agus Wiyono, S.Si., M.T.", "nip": "198105062009011008", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Hidayati Mardikasari, S.T.", "nip": "199008172018012002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Irma Rismayanti, S.ST.", "nip": "199308092018012002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Jefri Abner Hamonangan, S.T., M.Si.", "nip": "198006172006041005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Nurul Chasanah, S.T.", "nip": "199304172020122013", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Satria Arief Aditya, S.Pd., M.Tr.T.", "nip": "198801282010121004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "MEKANIKA DAN KENDALI TERBANG (Flight Mechanic and Control, FMC)",
+          "anggota": [
+            { "nama": "Teuku Mohd Ichwanul Hakim, S.T., M.T.", "nip": "198104212006041027", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Adi Wirawan, S.Si., M.T.", "nip": "198202182009121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Agus Sawukir, S.T., M.T.", "nip": "198107242015031001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Annisa Sarah, S.Si., M.Si.", "nip": "198804072014022004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ardanto Mohammad Pramutadi, S.T., M.T.", "nip": "198711022014021004", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Muhammad Fajar, S.T., M.T.", "nip": "198503132008011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Prasetyo Ardi Probo Suseno, S.T., M.T.", "nip": "199210062018011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "SISTEM AVIONIK DAN MISI (Avionics and Mission System, AMS)",
+          "anggota": [
+            { "nama": "Dr. Fadjar Rahino Triputra, M.Eng.", "nip": "196906241988121001", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Aris Surya Yunata, S.T., M.T.", "nip": "198606302014031002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Asyaraf Hidayat, S.T.", "nip": "199704062020121006", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Irfansyah Yudhi Tanasa, S.T., M.Sc.", "nip": "198408232009011002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dr. Yomi Guno, S.Si., M.T.", "nip": "197906082008011010", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" }
+          ]
+        },
+        {
+          "nama": "AERONAUTIKA BERKELANJUTAN (Sustainable Aeronautics, SA)",
+          "anggota": [
+            { "nama": "Muhammad Ilham Adhynugraha, ST., M.T., Ph.D.", "nip": "198310282009121003", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Afdal Adha, S.T.", "nip": "199306012018021001", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Agus Suprianto, S.T., M.T.", "nip": "198611022010121004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ir. Atik Bintoro, M.T.", "nip": "196406061990031002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Chairunnisa, S.T., M.T.", "nip": "199006162018012002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dewi Habsari Budiarti, ST., M.T., Ph.D.", "nip": "198010052005022001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ilham Bagus Wiranto, S.T.", "nip": "199612212020121006", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Fadli Cahya Megawanto, S.T., M.T.", "nip": "198410132009121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Fithri Nur Purnamastuti, S.T., M.Eng.", "nip": "198310172014022001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dr. Ir. Jemie Muliadi, S.T., M.T.", "nip": "197907172006041004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Nurhadi Pramana, S.T.", "nip": "199008062014021003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Rinal Kharis, S.T, M.T.", "nip": "198808202012121002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Sherly Octavia Saraswati, S.T.", "nip": "199310222020122015", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Siti Vivi Octaviany, S.T., M.T.", "nip": "199210252019022004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" }
+          ]
+        }
+      ]
+    },
+    {
+      "nama": "Pusat Riset Teknologi Satelit",
+      "kelompok": [
+        {
+          "nama": "LINGKUNGAN DAN DINAMIKA SATELIT",
+          "anggota": [
+            { "nama": "Ery Fitrianingsih, S.T., M.Sc., Ph.D.", "nip": "197809092003122005", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Affiani Machmudah, S.T., M.Sc., Ph.D.", "nip": "198009162022212003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Suraduita Mupasanta, S.T., M.Sc.", "nip": "199401142020122012", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Adi Farmasiantoro, S.Kom.", "nip": "197907062005011004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Hasan Mayditia, S.Si., M.T.", "nip": "198405022006041008", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Dessi Marlia, S.T., M.Eng.", "nip": "198012212009012003", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" }
+          ]
+        },
+        {
+          "nama": "SISTEM ELEKTRONIKA DAYA SATELIT",
+          "anggota": [
+            { "nama": "Abdul Karim, S.T., M.T.", "nip": "197610132003121003", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Dr. Dewi Anggraeni, S.T., M.T.", "nip": "198208182008012015", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Ahmad Fauzi, S.T.", "nip": "197507052005011005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Desti Ika Suryanti, S.Si., M.T.", "nip": "198612262014022001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "SISTEM ELEKTRONIKA, KOMPUTASI DAN MEKATRONIKA SATELIT",
+          "anggota": [
+            { "nama": "Muhammad Taufik, S.T., M.T.", "nip": "199003302014021005", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Bina Pratomo, S.T., M.Si.", "nip": "197911042005011005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Deddy El Amin, S.T., M. Kom.", "nip": "198405112009011007", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Nugroho Widi Jatmiko, S.T., M.Eng.", "nip": "197812032006041001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Aditya Bayu Erwindu, S.T.", "nip": "199305282018011002", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" }
+          ]
+        },
+        {
+          "nama": "SISTEM KOMUNIKASI SATELIT",
+          "anggota": [
+            { "nama": "Eriko Nasemudin Nasser, S.T., M.Sc.", "nip": "197803152002121005", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Nayla Najati, S.T., M.T.", "nip": "198111092006042003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Aulia Haque Qonita, S.T.", "nip": "199410132018012001", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Anshari Akbar, S.T. , M.T.", "nip": "198005222006041025", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Dwiyanto, S.T., M.T.", "nip": "197602062005011007", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Rifki Ardinal, S.T.", "nip": "198610262010121002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Maulana Ali Arifin, S.T.", "nip": "199506052018011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Widya Roza, S.T., M.Sc.", "nip": "198104032006042008", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Hidayah, S.T.", "nip": "199306192020122017", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Hogan Eighfansyah Susilo, S.T., M.T.", "nip": "199508142019021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Nurul Muhtadin, S.T., M.T.", "nip": "199109262018011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Rosza Madina, S.T., M.T.", "nip": "198509222009122002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" }
+          ]
+        },
+        {
+          "nama": "SISTEM MUATAN OPTIK & SAR SATELIT",
+          "anggota": [
+            { "nama": "Patria Rachman Hakim, M.T.", "nip": "198204302010121002", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Ir. Andi Mukhtar Tahir, M.T.", "nip": "196206061989031007", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "A. Hadi Syafrudin, S.T., M.Sc.", "nip": "198011232006041003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Sartika Salaswati, S.Si.", "nip": "199012222014022004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ega Asti Anggari, S.Si.", "nip": "199406072019022001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Agung Wahyudiono, S.Pd., M.Sc.", "nip": "198502172014021003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Ahmad Maryanto, S.Si., M.T.", "nip": "196402021994031003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Rommy Hartono, S.T.", "nip": "198803292015021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Dede Ardianto, S.T.", "nip": "199201312018011002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Agus Herawan, S.Kom., M.Kom.", "nip": "198002232006041014", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Gafur Hasan Zam Bahari, S.T.", "nip": "199505042018011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Elvira Rachim, S.Kom.", "nip": "197903282006042031", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Mukhamad Fajar Amiludin, S.Tr.T.", "nip": "199504132020121013", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "SISTEM RUAS BUMI DAN OPERASIONAL SATELIT",
+          "anggota": [
+            { "nama": "Dr.-Ing. Mohammad Mukhayadi, S.T., M.Kom.", "nip": "197709172002121004", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Dr.-Ing. Wahyudi Hasbi, S.Si., M.Kom.", "nip": "197610252001121003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Rizki Permala, S.T., M.Kom.", "nip": "198504182010121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Muazam Nugroho, S.T., M.Sc.", "nip": "199010072018011003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Hidayat Gunawan, M.Eng.", "nip": "196708171987011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Ir. Dedi Irawadi", "nip": "196606121987011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Muchammad Soleh, S.T., M.Eng.", "nip": "197610212005011005", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Dicka Ariptian Rahayu, S.T.", "nip": "199508172019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "M. Arif Saifudin, S.T., M.Kom.", "nip": "197709132006041003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Satriya Utama, S.T., M.T.", "nip": "198904052015021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Nurrochman Ferdiansyah, S.Kom.", "nip": "199202202019021002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Ali Syahputra Nasution, S.T., M.T.", "nip": "198304162008011006", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Nur Salma Yusuf Hasanah, S.Si.", "nip": "199606012019022001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Futikhatun Rohmah, S.T.", "nip": "199508312018012002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Amrullah Abdul Qadir, S.T., M.Sc.", "nip": "198709052015021002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Wakhid Abdurrokhman, S.T.", "nip": "198911182019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Drs. Supriyono, M.T.", "nip": "196412101991031005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Dinari Nikken Sulastrie Sirin, S.T., M.T.", "nip": "198004292008012012", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Yuvita Dian Safitri, S.S.T., M.Eng.Sc.", "nip": "199602202018012004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Dr. Andy Indradjad, S.Si., M.Eng.", "nip": "197507012005011015", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Musyarofah, S.Si.", "nip": "198010152008012009", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Prof. Dr. Ir. Rr. Erna Sri Adiningsih, M.Si.", "nip": "196311081989012001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Chusnul Tri Judianto, S.T., M.M.", "nip": "196704151999031001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Tri Meidiansyah, S.T.", "nip": "197105102005011011", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Ir. Suhermanto, M.T.", "nip": "196001151987011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Utama" }
+          ]
+        },
+        {
+          "nama": "STRUKTUR, SISTEM THERMAL & KEANDALAN SATELIT",
+          "anggota": [
+            { "nama": "Moh. Farid Huzain, M.Eng.", "nip": "198203302009121002", "keterangan": "Koordinator", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Poki Agung Budiantoro, S.T., M.T.", "nip": "198108092008011008", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Ir. Widodo Slamet, M.T.", "nip": "196207151992031005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Rendy Kurniawan, S.T.", "nip": "199305152019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Puji Rianto, S.T.", "nip": "199205232019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Wahyu Akbar Megah, S.T.", "nip": "198702252010121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Moedji Soedjarwo, S.T.", "nip": "196008031985031007", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" }
+          ]
+        }
+      ]
+    },
+    {
+      "nama": "Pusat Riset Teknologi Roket",
+      "kelompok": [
+        {
+          "nama": "DINAMIKA ROKET DAN KONTROL (ROCKET DYNAMICS & CONTROL)",
+          "anggota": [
+            { "nama": "Dr. Rika Andiarti", "nip": "196701301987012000", "keterangan": "Ketua", "jabatan": "Perekayasa Ahli Utama" },
+            { "nama": "Dr. Herma Yudhi Irwanto, M.Eng.", "nip": "196712301987011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Dr. Larasmoyo Nugroho, S.T., M.Ds.", "nip": "197312302008011004", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Idris Eko Putro, S.T., M.Sc.AE.", "nip": "197805072003121005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Endro Artono, M.T.", "nip": "197807172005011008", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Ahmad Riyadl, S.T., M.Han.", "nip": "197810042002121000", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Dr. Effendi Dodi Arisandi, S.T., M.Si.", "nip": "197910022006041015", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Hakiki, S.T., M.Sc.", "nip": "198001242009121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Oka Sudiana, S.T., MAE.", "nip": "198307252009121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Muhammad Ridlo Erdata Nasution, S.T., M.T., Ph.D.", "nip": "198806082024031001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Ardian Wardhana, S.T.", "nip": "199310142020121010", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Nurul Fahrizatul Rohmah, S.ST.", "nip": "199608042019022001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Fikana Mahardika Cantri, S.Tr.T.", "nip": "199708172020122012", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "INSULASI TERMAL DAN MATERIAL ENERGETIK (THERMAL INSULATION & ENERGETIC MATERIAL)",
+          "anggota": [
+            { "nama": "Prof. Dr. Ir. Heri Budi Wibowo, M.T.", "nip": "196906211993031002", "keterangan": "Ketua", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Drs. Sutrisno, M.Si.", "nip": "196305261990011001", "keterangan": "Koordinator", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Dr. Kendra Hartaya, M.Si.", "nip": "196505051992031009", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Utama" },
+            { "nama": "Retno Ardianingsih, S.T., M.T.", "nip": "198301102009012010", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Luthfia Hajar Abdillah, S.T., M.T.", "nip": "198601032009012005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Hamonangan R. Sitompul, S.Si.", "nip": "199204012019021002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "SISTEM PROPELAN (PROPELLANT SYSTEM)",
+          "anggota": [
+            { "nama": "Dr. Heru Supriyatno, M.Eng.", "nip": "196805301988021001", "keterangan": "Ketua", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Ir. Henny Setyaningsih, M.Si.", "nip": "196009121985032001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Utama" },
+            { "nama": "Yudha Budiman, S.Si.", "nip": "196902051996031002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "Evie Lestariana, S.T.", "nip": "197504232002122002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Dwi Setyaningsih, S.T., M.Si.", "nip": "198105052005012016", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Wiwiek Utami Dewi, S.T., M.Si.", "nip": "198408182008012003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Mohamad Baiquni, S.T., M.Si.", "nip": "198408212009121003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Anita Pinalia, S.T., M.Si.", "nip": "198502232009122001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Haendy Busman, S.Kom.", "nip": "198806232008011001", "keterangan": "Anggota", "jabatan": "Analis Data Ilmiah Ahli Pertama" },
+            { "nama": "Rama Dwi Prayoga, S.T.", "nip": "198808092014021005", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Aprilia Fitri Yastuti, S.Si.", "nip": "199004192014022005", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Yulia Azatil Ismah, S.T.", "nip": "199007142014022006", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Ichsan Dwi Prasetyo, S.ST.", "nip": "199309052019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Maharani Inas Mahdiyyah, S.T.", "nip": "199511022020122012", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Rizky Sutrisna, S.T.", "nip": "199511202018011003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Arbela Dani Budisusilo, S.Si.", "nip": "199603122020121011", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "PROPULSI MAJU (ADVANCED PROPULSION)",
+          "anggota": [
+            { "nama": "Dr. Arif Nur Hakim, M.Eng.", "nip": "197505101994031001", "keterangan": "Ketua", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Bayu Prianto, M.Si.", "nip": "198310282006041003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Bagus Wicaksono, S.Si., M.T.", "nip": "198401312010121001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Taufiqur Rohman, S.T., M.T.", "nip": "198710212014021001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Ikhwannuary Raditya Priyadana, S.Si.", "nip": "199101302018011002", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Starida Sofia Moranova, S.T.", "nip": "199411052020122015", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Firza Fadlan Ekadj, S.T.", "nip": "199610172020121007", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "PROPULSI ROKET PADAT (SOLID ROCKET PROPULSION)",
+          "anggota": [
+            { "nama": "Dr. Bagus Hayatul Jihad, M.T.", "nip": "196807101991101001", "keterangan": "Ketua", "jabatan": "Peneliti Ahli Madya" },
+            { "nama": "Ir. Saeri, M.Si.", "nip": "196410011992031003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Ahmad Jamaludin Fitroh, M.T.", "nip": "198008052008011020", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Soleh Fajar Junjunan, S.T., M.T.", "nip": "198702182014021004", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" }
+          ]
+        },
+        {
+          "nama": "SISTEM TELEMETRI (TELEMETRY SYSTEM)",
+          "anggota": [
+            { "nama": "Ing. Anita Pascawati, S.T.", "nip": "198410022009122002", "keterangan": "Ketua", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Rachmat Ramdani, M.T.", "nip": "197210051998031004", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Sonny Dwi Harsono, S.T., M.Eng.", "nip": "198012192006041002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Kandi Rahardiyanti, S.T., M.T.", "nip": "198908302014022003", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Mirza Zulfikar Rahmat, S.T.", "nip": "198909182018011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        },
+        {
+          "nama": "STRUKTUR ROKET DAN MATERIAL (ROCKET STRUCTURE AND MATERIALS)",
+          "anggota": [
+            { "nama": "Lilis Mariani, M.Eng.", "nip": "196803191987012001", "keterangan": "Ketua", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Ir. Mujtahid, M.T.", "nip": "196509081991011001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Herry Purnomo, S.T., M.T.", "nip": "198102182006041004", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Madya" },
+            { "nama": "Hendra Gantina, S.T.", "nip": "198508162010121001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" },
+            { "nama": "Dr. Novi Andria, S.T., M.Sc.", "nip": "198511182009011003", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Muda" },
+            { "nama": "Mahfud Ibadi, S.Pd., M.T.", "nip": "198702142014021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Muda" },
+            { "nama": "M. Dito Saputra, S.T., M.Sc.", "nip": "199006292018011002", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Arief Budi Sanjaya, S.T., M.Sc.", "nip": "199203152018011001", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Haryadi Abrizal, S.T.", "nip": "199210052018011004", "keterangan": "Anggota", "jabatan": "Peneliti Ahli Pertama" },
+            { "nama": "Muhamad Hananuputra Setianto, S.T., M.T.", "nip": "199501142018011003", "keterangan": "Anggota", "jabatan": "Penelaah Teknis Kebijakan" },
+            { "nama": "Ahmedi Asraf, S.Si.", "nip": "199504022019021001", "keterangan": "Anggota", "jabatan": "Perekayasa Ahli Pertama" }
+          ]
+        }
+      ]
+    }
+  ]
+}

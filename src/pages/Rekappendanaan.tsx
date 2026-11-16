@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { UserOptions } from "jspdf-autotable";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import Dropdown from "../components/rekapitulasi/Dropdown.tsx";
@@ -30,7 +30,7 @@ type Grup = { skema: Skema; list: Kegiatan[] };
 const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
 
 /* ---------- Tampilan ----------
-   Isi tabel text-xs, judul kolom text-sm bold, warna #1b3560. */
+   Isi tabel text-xs, judul kolom text-xs (HP) / text-sm (sm ke atas) bold, warna #1b3560. */
 const GRAD_BIRU = "linear-gradient(90deg, #1c3d85 0%, #2a58a5 100%)";
 const GRAD_BIRU_TUA = "linear-gradient(90deg, #14306b 0%, #1f468c 100%)";
 
@@ -57,10 +57,11 @@ const LENCANA: Record<Skema, string> = {
 const INPUT =
   "w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs leading-snug text-[#1b3560] focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30";
 
-/** Lebar dropdown mengikuti pilihan terpanjang (satuan ch) + ruang panah di kiri-kanan */
-const lebarDropdown = (opsi: string[]) => ({
-  width: `calc(${Math.max(...opsi.map((o) => o.length))}ch + 4.75rem)`,
-});
+/** Lebar dropdown mengikuti pilihan terpanjang (satuan ch) + ruang panah di kiri-kanan.
+    Disimpan sebagai CSS variable --w; hanya dipakai dari layar sm ke atas (sm:w-[var(--w)]),
+    di HP dropdown mengikuti lebar kolom grid. */
+const lebarDropdown = (opsi: string[]) =>
+  ({ "--w": `calc(${Math.max(...opsi.map((o) => o.length))}ch + 4.75rem)` }) as CSSProperties;
 
 const BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 const rupiah = (n: number | null | undefined) => (typeof n === "number" ? n.toLocaleString("id-ID") : "—");
@@ -256,6 +257,27 @@ function RekapPendanaanTable({ onSave }: Props) {
   /** Berkas data dukung yang dipilih, per nomor kegiatan. Disimpan di memori (hilang saat halaman dimuat ulang). */
   const [berkas, setBerkas] = useState<Record<number, File[]>>({});
 
+  /** Bayangan di tepi kiri/kanan tabel: tanda masih ada isi yang bisa digeser ke samping */
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [bayangan, setBayangan] = useState({ kiri: false, kanan: false });
+  const cekScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const kiri = el.scrollLeft > 2;
+    const kanan = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+    setBayangan((b) => (b.kiri === kiri && b.kanan === kanan ? b : { kiri, kanan }));
+  }, []);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    cekScroll();
+    // Hitung ulang saat lebar layar atau lebar tabel berubah (filter, tambah tahun, dst.)
+    const ro = new ResizeObserver(cekScroll);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    return () => ro.disconnect();
+  }, [cekScroll]);
+
   /** Jumlah kolom dana tahun: minimal 3, atau sebanyak termin terpanjang di data (termasuk baris yang sedang diubah) */
   const nTahun = useMemo(
     () => Math.max(MIN_TAHUN, ...rows.map((r) => r.dana.length), draft?.dana.length ?? 0),
@@ -362,14 +384,15 @@ function RekapPendanaanTable({ onSave }: Props) {
   const hapusBerkas = (no: number, idx: number) =>
     setBerkas((b) => ({ ...b, [no]: (b[no] ?? []).filter((_, i) => i !== idx) }));
 
-  const td = "px-3 py-2 border-r border-b border-slate-200 align-top";
+  // Padding sel lebih rapat di HP, normal dari sm ke atas
+  const td = "px-2 py-1.5 sm:px-3 sm:py-2 border-r border-b border-slate-200 align-top";
   const angka = `${td} text-right tabular-nums whitespace-nowrap`;
 
   /** Kolom upload: dipakai baris biasa maupun baris yang sedang diubah */
   const selUpload = (k: Kegiatan) => (
-    <td className={`${td} border-r-0 min-w-[220px]`} onClick={(e) => e.stopPropagation()}>
+    <td className={`${td} border-r-0 min-w-[190px] sm:min-w-[220px]`} onClick={(e) => e.stopPropagation()}>
       <label
-        className="inline-block cursor-pointer rounded-full px-3.5 py-1 text-[11px] font-bold text-white shadow-md transition hover:brightness-110"
+        className="inline-block cursor-pointer rounded-full px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-white shadow-md transition hover:brightness-110"
         style={{ background: GRAD_BIRU }}
       >
         Pilih file
@@ -393,7 +416,7 @@ function RekapPendanaanTable({ onSave }: Props) {
               target="_blank"
               rel="noreferrer"
               title={k.link}
-              className="max-w-[190px] truncate text-[#2a58a5] underline"
+              className="max-w-[170px] sm:max-w-[190px] truncate text-[#2a58a5] underline"
             >
               {k.linkLabel || "Folder dokumen"}
             </a>
@@ -405,7 +428,7 @@ function RekapPendanaanTable({ onSave }: Props) {
             <button
               type="button"
               onClick={() => window.open(URL.createObjectURL(f), "_blank")}
-              className="max-w-[150px] truncate text-left text-[#2a58a5] underline"
+              className="max-w-[120px] sm:max-w-[150px] truncate text-left text-[#2a58a5] underline"
               title={`Buka ${f.name}`}
             >
               {f.name}
@@ -415,7 +438,7 @@ function RekapPendanaanTable({ onSave }: Props) {
               type="button"
               onClick={() => hapusBerkas(k.no, i)}
               aria-label={`Hapus ${f.name}`}
-              className="ml-auto shrink-0 rounded-full px-1.5 font-bold text-slate-500 hover:bg-white hover:text-red-600"
+              className="ml-auto shrink-0 rounded-full px-2 py-0.5 sm:px-1.5 sm:py-0 font-bold text-slate-500 hover:bg-white hover:text-red-600"
             >
               ×
             </button>
@@ -427,28 +450,29 @@ function RekapPendanaanTable({ onSave }: Props) {
 
   return (
     // Tanpa overflow-hidden di sini supaya daftar dropdown tidak terpotong; sudut bulat dipasang di header dan tabel
-    <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
+    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
       <GayaDropdown />
 
-      <div className="p-4 bg-slate-50 border-b border-slate-200 rounded-t-3xl flex flex-wrap items-center gap-3">
-        {/* Judul mengisi sisa ruang di kiri */}
-        <h3 className="font-bold text-[#1b3560] text-sm min-w-[220px] flex-1">
+      <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 rounded-t-2xl sm:rounded-t-3xl flex flex-wrap items-center gap-3">
+        {/* Judul: satu baris penuh di HP/tablet kecil, mengisi sisa ruang di kiri dari md ke atas */}
+        <h3 className="font-bold text-[#1b3560] text-sm w-full md:w-auto md:flex-1 md:min-w-[220px]">
           Rekap Pendanaan PRIS dan RIIM ORPA
           <span className="ml-2 text-xs font-normal text-slate-500">{rows.length} kegiatan</span>
         </h3>
-        {/* Pencarian, dropdown, dan cetak selalu menempel di kanan */}
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+        {/* HP: grid 2 kolom (search penuh, 2 dropdown berdampingan, tombol cetak penuh).
+            sm ke atas: baris fleksibel yang menempel di kanan */}
+        <div className="w-full md:w-auto md:ml-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
           <input
             type="search"
             value={cari}
             onChange={(e) => setCari(e.target.value)}
             placeholder="Cari ketua, judul, nomor SK..."
-            className="h-9 w-52 max-w-full px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
+            className="col-span-2 h-9 w-full sm:w-52 px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
           />
-          <div className="dd-kecil max-w-full" style={lebarDropdown(opsiSkema)}>
+          <div className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiSkema)}>
             <Dropdown label="Semua Skema" options={opsiSkema} value={skema} onChange={setSkema} />
           </div>
-          <div className="dd-kecil max-w-full" style={lebarDropdown(opsiPusat)}>
+          <div className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiPusat)}>
             <Dropdown label="Semua Pusat Riset" options={opsiPusat} value={pusat} onChange={setPusat} />
           </div>
           <button
@@ -456,7 +480,7 @@ function RekapPendanaanTable({ onSave }: Props) {
             onClick={cetak}
             disabled={mencetak}
             title="Unduh rekap sebagai PDF"
-            className="h-9 px-4 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+            className="col-span-2 sm:col-span-1 h-9 px-4 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
             style={{ background: GRAD_BIRU }}
           >
             {mencetak ? "Membuat PDF…" : "Cetak Rekap"}
@@ -464,12 +488,17 @@ function RekapPendanaanTable({ onSave }: Props) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-b-3xl">
+      <div className="relative">
+      <div
+        ref={scrollRef}
+        onScroll={cekScroll}
+        className="overflow-x-auto overscroll-x-contain rounded-b-2xl sm:rounded-b-3xl"
+      >
         <table className="w-max min-w-full text-left text-xs leading-snug text-[#1b3560] border-collapse">
           <thead>
-            <tr className="text-white text-center text-sm font-bold" style={{ background: GRAD_BIRU }}>
+            <tr className="text-white text-center font-bold" style={{ background: GRAD_BIRU }}>
               {kolom.map((l) => (
-                <th key={l} className="p-3 px-3 text-sm border-r border-white/25 last:border-r-0 whitespace-nowrap">
+                <th key={l} className="p-2 sm:p-3 text-xs sm:text-sm border-r border-white/25 last:border-r-0 whitespace-nowrap">
                   {l}
                 </th>
               ))}
@@ -498,20 +527,20 @@ function RekapPendanaanTable({ onSave }: Props) {
                       <Fragment key={k.no}>
                         <tr className="bg-[#f5f8fd]">
                           <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
-                          <td className={`${td} min-w-[170px]`}>
+                          <td className={`${td} min-w-[150px] sm:min-w-[170px]`}>
                             <input className={INPUT} value={d.ketua} onChange={(e) => ubah("ketua", e.target.value)} aria-label="Ketua periset" />
                           </td>
-                          <td className={`${td} min-w-[300px] max-w-[420px]`}>
+                          <td className={`${td} min-w-[220px] sm:min-w-[300px] max-w-[420px]`}>
                             <textarea className={INPUT} rows={4} value={d.judul} onChange={(e) => ubah("judul", e.target.value)} aria-label="Judul" />
                           </td>
-                          <td className={`${td} min-w-[150px]`}>
+                          <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>
                             <select className={INPUT} value={d.pusatRiset} onChange={(e) => ubah("pusatRiset", e.target.value)} aria-label="Pusat riset">
                               {(daftarPusat.includes(d.pusatRiset) ? daftarPusat : [d.pusatRiset, ...daftarPusat]).map((p) => (
                                 <option key={p}>{p}</option>
                               ))}
                             </select>
                           </td>
-                          <td className={`${td} min-w-[150px]`}>
+                          <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>
                             <select className={`${INPUT} mb-1`} value={d.skema} onChange={(e) => ubah("skema", e.target.value as Skema)} aria-label="Skema">
                               {URUTAN_SKEMA.map((s) => (
                                 <option key={s}>{s}</option>
@@ -529,7 +558,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                             />
                           </td>
                           {indeksTahun.map((i) => (
-                            <td key={i} className={`${td} min-w-[130px]`}>
+                            <td key={i} className={`${td} min-w-[120px] sm:min-w-[130px]`}>
                               <input
                                 className={`${INPUT} text-right tabular-nums`}
                                 inputMode="numeric"
@@ -542,7 +571,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                           <td className={`${angka} font-bold`} title="Dihitung otomatis dari seluruh dana tahun">
                             {rupiah(hitungTotal(d.dana))}
                           </td>
-                          <td className={`${td} min-w-[150px]`}>
+                          <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>
                             <input className={`${INPUT} mb-1`} value={d.nomorSK} onChange={(e) => ubah("nomorSK", e.target.value)} placeholder="Nomor SK" aria-label="Nomor SK" />
                             <input
                               className={INPUT}
@@ -552,7 +581,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                               aria-label="Tanggal SK"
                             />
                           </td>
-                          <td className={`${td} min-w-[260px] max-w-[320px]`}>
+                          <td className={`${td} min-w-[200px] sm:min-w-[260px] max-w-[320px]`}>
                             <span className="mb-0.5 block font-bold">Status</span>
                             <textarea className={`${INPUT} mb-2`} rows={3} value={d.status} onChange={(e) => ubah("status", e.target.value)} aria-label="Status" />
                             <span className="mb-0.5 block font-bold">Keterangan</span>
@@ -562,7 +591,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                             <button
                               type="button"
                               onClick={simpan}
-                              className="mb-1 block w-full rounded-full px-3.5 py-1 text-[11px] font-bold text-white shadow-md hover:brightness-110"
+                              className="mb-1 block w-full rounded-full px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-white shadow-md hover:brightness-110"
                               style={{ background: GRAD_BIRU }}
                             >
                               Simpan
@@ -570,14 +599,14 @@ function RekapPendanaanTable({ onSave }: Props) {
                             <button
                               type="button"
                               onClick={batalUbah}
-                              className="mb-3 block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
+                              className="mb-3 block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
                             >
                               Batal
                             </button>
                             <button
                               type="button"
                               onClick={tambahTahun}
-                              className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb]"
+                              className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb]"
                             >
                               + Tahun
                             </button>
@@ -586,7 +615,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                               onClick={kurangiTahun}
                               disabled={!bisaKurangi}
                               title={bisaKurangi ? "Hapus termin terakhir" : "Hanya bisa jika termin terakhir kosong dan lebih dari 3"}
-                              className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               − Tahun
                             </button>
@@ -595,8 +624,9 @@ function RekapPendanaanTable({ onSave }: Props) {
                         </tr>
                         <tr className="bg-[#f5f8fd]">
                           <td className="border-b border-slate-200" />
-                          <td colSpan={kolom.length - 1} className="p-3 border-b border-slate-200">
-                            <div className="sticky left-3 max-w-[820px] space-y-2">
+                          <td colSpan={kolom.length - 1} className="p-2 sm:p-3 border-b border-slate-200">
+                            {/* Lebar mengikuti layar supaya tidak melebihi viewport di HP */}
+                            <div className="sticky left-3 w-[min(820px,calc(100vw-5rem))] space-y-2">
                               <label className="block">
                                 <span className="mb-1 block font-bold">Tautan folder / dokumen</span>
                                 <input className={INPUT} value={d.link} onChange={(e) => ubah("link", e.target.value)} placeholder="https://..." />
@@ -621,9 +651,9 @@ function RekapPendanaanTable({ onSave }: Props) {
                   return (
                     <tr key={k.no} className="hover:bg-[#eef3fb] transition-colors">
                       <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
-                      <td className={`${td} min-w-[170px]`}>{k.ketua}</td>
-                      <td className={`${td} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
-                      <td className={`${td} min-w-[150px]`}>{k.pusatRiset}</td>
+                      <td className={`${td} min-w-[150px] sm:min-w-[170px]`}>{k.ketua}</td>
+                      <td className={`${td} min-w-[220px] sm:min-w-[300px] max-w-[420px]`}>{k.judul}</td>
+                      <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>{k.pusatRiset}</td>
                       <td className={`${td} text-center whitespace-nowrap`}>
                         <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
                       </td>
@@ -638,7 +668,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                         <div>{k.nomorSK || "—"}</div>
                         <div className="text-slate-500">{tanggal(k.tanggalSK)}</div>
                       </td>
-                      <td className={`${td} min-w-[260px] max-w-[320px]`}>
+                      <td className={`${td} min-w-[200px] sm:min-w-[260px] max-w-[320px]`}>
                         <div className="whitespace-pre-line">{k.status || "—"}</div>
                         {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[11px] text-slate-500">{k.keterangan}</div>}
                       </td>
@@ -647,7 +677,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                           type="button"
                           onClick={() => mulaiUbah(k)}
                           disabled={edit !== null}
-                          className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Ubah
                         </button>
@@ -655,7 +685,7 @@ function RekapPendanaanTable({ onSave }: Props) {
                           type="button"
                           onClick={() => hapus(k)}
                           disabled={edit !== null}
-                          className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-slate-600 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Hapus
                         </button>
@@ -709,6 +739,18 @@ function RekapPendanaanTable({ onSave }: Props) {
           </tbody>
         </table>
       </div>
+      {/* Bayangan penanda scroll: tetap di tepi, tidak ikut bergeser */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-5 sm:w-8 rounded-bl-2xl sm:rounded-bl-3xl transition-opacity duration-200 ${bayangan.kiri ? "opacity-100" : "opacity-0"}`}
+        style={{ background: "linear-gradient(to right, rgba(27,53,96,0.28), rgba(27,53,96,0))" }}
+      />
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-5 sm:w-8 rounded-br-2xl sm:rounded-br-3xl transition-opacity duration-200 ${bayangan.kanan ? "opacity-100" : "opacity-0"}`}
+        style={{ background: "linear-gradient(to left, rgba(27,53,96,0.28), rgba(27,53,96,0))" }}
+      />
+      </div>
     </div>
   );
 }
@@ -716,9 +758,10 @@ function RekapPendanaanTable({ onSave }: Props) {
 /* ---------- Halaman ---------- */
 export default function RekapPendanaanPage() {
   return (
-    <div className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden" translate="no">
+    // overflow-x-hidden (bukan overflow-hidden) supaya dropdown tidak terpotong; mt-16 di HP, mt-20 dari md
+    <div className="mt-16 md:mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-x-hidden" translate="no">
       <InstansiBar />
-      <div className="p-6 md:p-8">
+      <div className="p-3 sm:p-6 md:p-8">
         <RekapPendanaanTable />
       </div>
     </div>

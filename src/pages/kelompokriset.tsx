@@ -2,14 +2,18 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSPr
 import type { UserOptions } from "jspdf-autotable";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import Dropdown from "../components/rekapitulasi/Dropdown.tsx";
+import { useState } from "react";
 
-import raw from "../data/kelompokriset.json";
+// import InstansiBar from "../components/rekapitulasi/InstansiBar";
 
-/* ---------- Data: ada di src/data/kelompokriset.json ----------
-   (Draft Kepka ORPA tentang Kelompok Riset Tahun 2026). File ini hanya menampilkan. */
-type Periset = { nama: string; nip: string; keterangan: string; jabatan: string };
-type Kelompok = { nama: string; anggota: Periset[] };
-type PusatRiset = { nama: string; kelompok: Kelompok[] };
+import {
+  GayaDropdown,
+  KelompokRisetToolbar,
+  KelompokRisetTable,
+  ImportDataModal,
+  useKelompokRiset,
+  cetakPdf,
+} from "../components/kelompokRiset";
 
 /** Bentuk data setelah difilter (nomor anggota dan kelompok sudah dihitung) */
 type AnggotaTampil = Periset & { no: number };
@@ -109,73 +113,24 @@ async function cetakPdf(pusat: string, cari: string, data: PusatTampil[]) {
       });
     });
   });
+export default function KelompokRisetPage() {
+  const [mencetak, setMencetak] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
-  // Warna keterangan: pimpinan biru, anggota abu-abu
-  const WARNA_KET = {
-    pimpinan: { fill: [232, 239, 251] as [number, number, number], teks: [27, 53, 96] as [number, number, number] },
-    anggota: { fill: [241, 245, 249] as [number, number, number], teks: [27, 53, 96] as [number, number, number] },
-  };
+  const {
+    modeEdit,
 
-  autoTable(doc, {
-    startY: 33,
-    head: [KOLOM],
-    body,
-    margin: { left: 14, right: 14, bottom: 14 },
-    styles: { fontSize: 8, cellPadding: 2, lineColor: [219, 230, 247], lineWidth: 0.2, textColor: [27, 53, 96], valign: "middle" },
-    headStyles: { fillColor: [27, 63, 120], textColor: 255, halign: "center" },
-    alternateRowStyles: { fillColor: [245, 248, 253] },
-    columnStyles: {
-      0: { cellWidth: 14, halign: "center" },
-      1: { cellWidth: 55 },
-      2: { cellWidth: 68 },
-      3: { cellWidth: 42, halign: "center" },
-      4: { cellWidth: 28, halign: "center" },
-    },
-    rowPageBreak: "avoid",
-    didParseCell: (h) => {
-      if (h.section === "body" && h.column.index === 4 && typeof h.cell.raw === "string") {
-        const w = h.cell.raw === "Anggota" ? WARNA_KET.anggota : WARNA_KET.pimpinan;
-        h.cell.styles.fillColor = w.fill;
-        h.cell.styles.textColor = w.teks;
-        h.cell.styles.fontStyle = "bold";
-      }
-    },
-  });
+    pusat,
+    setPusat,
 
-  // Nomor halaman
-  const n = doc.getNumberOfPages();
-  for (let i = 1; i <= n; i++) {
-    doc.setPage(i);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(120, 130, 150);
-    doc.text(`Halaman ${i} dari ${n}`, lebar - 14, tinggi - 8, { align: "right" });
-  }
+    cari,
+    setCari,
 
-  doc.save(namaFile);
-}
+    tampil,
+    total,
 
-/** Gaya dropdown kecil.
-    .dd-kecil memperkecil tombol komponen Dropdown bersama (font 12px, satu baris)
-    dan memberi ruang untuk panah di kanan, tanpa mengubah file Dropdown-nya.
-    Teks yang terlalu panjang (hanya di layar sempit) dipotong dengan titik-titik. */
-function GayaDropdown() {
-  return (
-    <style>{`
-      .dd-kecil button[aria-haspopup="listbox"] {
-        display: block !important;
-        font-size: 12px !important;
-        line-height: 2.25rem !important;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        padding-left: 2.25rem !important;
-        padding-right: 2.25rem !important;
-      }
-    `}</style>
-  );
-}
+    opsiPusat,
+    opsiKelompok,
 
 /** Tombol panah bulat untuk menggeser tabel */
 function TombolPanah({ arah, onClick }: { arah: "kiri" | "kanan"; onClick: () => void }) {
@@ -238,47 +193,30 @@ function KelompokRisetTable() {
     }),
     [],
   );
+    mulaiEdit,
+    batalEdit,
+    simpanEdit,
 
-  /** Terapkan filter pusat riset + pencarian. Nomor anggota dihitung sebelum difilter supaya tidak bergeser. */
-  const tampil: PusatTampil[] = useMemo(() => {
-    const q = cari.trim().toLowerCase();
-    return DATA.filter((p) => pusat === SEMUA || p.nama === pusat)
-      .map((p) => ({
-        nama: p.nama,
-        kelompok: p.kelompok
-          .map((k, idx) => {
-            const semua = k.anggota.map((a, i) => ({ ...a, no: i + 1 }));
-            const cocokKelompok = k.nama.toLowerCase().includes(q);
-            return {
-              nama: k.nama,
-              no: idx + 1,
-              anggota:
-                q && !cocokKelompok
-                  ? semua.filter((a) => [a.nama, a.nip, a.jabatan].some((t) => t.toLowerCase().includes(q)))
-                  : semua,
-            };
-          })
-          .filter((k) => k.anggota.length > 0),
-      }))
-      .filter((p) => p.kelompok.length > 0);
-  }, [pusat, cari]);
+    updatePeriset,
+    tambahPeriset,
+    hapusPeriset,
+    gantiKoordinator,
+    pindahPeriset,
+  } = useKelompokRiset();
 
-  /** Cetak PDF sesuai filter yang sedang aktif */
-  const cetak = async () => {
-    if (mencetak) return;
-    setMencetak(true);
+  async function handleCetak() {
+    if (mencetak || modeEdit) return;
+
     try {
+      setMencetak(true);
       await cetakPdf(pusat, cari, tampil);
-    } catch (err) {
-      console.error(err);
-      alert("PDF gagal dibuat. Coba lagi.");
+    } catch (error) {
+      console.error("Gagal membuat PDF:", error);
+      alert("PDF gagal dibuat. Silakan coba kembali.");
     } finally {
       setMencetak(false);
     }
-  };
-
-  const td =
-    "px-3 py-2 border-r border-b border-slate-200 align-top break-words text-xs font-normal leading-snug text-[#1b3560]";
+  }
 
   return (
     // Tanpa overflow-hidden di sini supaya daftar dropdown tidak terpotong; sudut bulat dipasang di header dan isi
@@ -486,6 +424,63 @@ export default function KelompokRisetPage() {
       <InstansiBar />
       <div className="min-w-0 p-3 sm:p-6 md:p-8">
         <KelompokRisetTable />
+  async function handleImportFile(file: File) {
+    console.log("File yang akan diimport:", file);
+
+    // TODO:
+    // Hubungkan ke Supabase Edge Function.
+    // Kirim file ke Gemini untuk dikonversi menjadi JSON.
+    // Validasi hasil JSON sebelum memperbarui data.
+
+    throw new Error(
+      "Integrasi Gemini dan Supabase belum dihubungkan.",
+    );
+  }
+
+  return (
+    <div
+      className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden"
+      translate="no"
+    >
+      {/* <InstansiBar /> */}
+
+      <div className="p-6 md:p-8">
+        <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
+          <GayaDropdown />
+
+          <KelompokRisetToolbar
+            pusat={pusat}
+            setPusat={setPusat}
+            cari={cari}
+            setCari={setCari}
+            total={total}
+            opsiPusat={opsiPusat}
+            modeEdit={modeEdit}
+            mencetak={mencetak}
+            onMulaiEdit={mulaiEdit}
+            onBatalEdit={batalEdit}
+            onSimpanEdit={simpanEdit}
+            onUpdateData={() => setShowImport(true)}
+            onCetak={handleCetak}
+          />
+
+          <KelompokRisetTable
+            tampil={tampil}
+            modeEdit={modeEdit}
+            opsiKelompok={opsiKelompok}
+            onUpdate={updatePeriset}
+            onTambah={tambahPeriset}
+            onHapus={hapusPeriset}
+            onKoordinator={gantiKoordinator}
+            onPindah={pindahPeriset}
+          />
+
+          <ImportDataModal
+            open={showImport}
+            onClose={() => setShowImport(false)}
+            onImport={handleImportFile}
+          />
+        </div>
       </div>
     </div>
   );

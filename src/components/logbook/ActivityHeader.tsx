@@ -20,25 +20,20 @@ function buildDefaultMonths(): MonthData[] {
 }
 
 interface Props {
-  activityId: string   // ⬅️ tambahkan ini
+  activityId: string
   initialData: HeaderData
-  // onSave?: (updatedData: HeaderData) => void
-  onSave?: (updatedData: HeaderData) => void | Promise<void> 
+  onSave?: (updatedData: HeaderData) => void | Promise<void>
   initialMonthlyData?: MonthData[]
   onMonthlySave?: (updatedData: MonthData[]) => void
 }
 
 export default function ActivityHeader({
-  activityId,   // ⬅️ tambahkan ini
+  activityId,
   initialData,
   onSave,
   initialMonthlyData,
   onMonthlySave
 }: Props) {
-
-// debug purpose
-   console.log('[ActivityHeader] render, activityId =', activityId)
-
   const [isEditing, setIsEditing] = useState(false)
   const [saved, setSaved] = useState(initialData)
   const [draft, setDraft] = useState(initialData)
@@ -129,6 +124,8 @@ export default function ActivityHeader({
       className={`
         w-full max-w-full mx-auto min-w-0
         bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl
+        w-full mx-auto min-w-0
+        bg-white rounded-xl sm:rounded-2xl shadow-xl
         overflow-hidden border transition-all duration-300
         ${isEditing
           ? 'border-orange-300 shadow-orange-100'
@@ -139,6 +136,7 @@ export default function ActivityHeader({
       {/* HEADER BIRU TUA */}
       <div className={`
         px-4 sm:px-6 py-3 sm:py-4
+        px-4 sm:px-6 py-4
         flex flex-col sm:flex-row
         items-stretch sm:items-center
         justify-between gap-3
@@ -155,7 +153,6 @@ export default function ActivityHeader({
           </p>
         </div>
 
-
         {saveError && (
           <div className="min-w-0 break-words rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
             <i className="fa-solid fa-triangle-exclamation mr-1.5" />
@@ -169,6 +166,7 @@ export default function ActivityHeader({
             onClick={startEdit}
             className="
               w-full sm:w-auto shrink-0 justify-center
+              w-full sm:w-auto justify-center shrink-0
               bg-blue-600 hover:bg-blue-700
               text-white font-medium
               px-5 py-2.5 sm:py-2 rounded-xl
@@ -185,6 +183,7 @@ export default function ActivityHeader({
         {isEditing && (
           <span className="
             shrink-0 self-start sm:self-auto
+            self-start sm:self-auto shrink-0
             px-3 py-1.5 rounded-lg
             bg-orange-400/20 text-orange-100
             border border-orange-200/40
@@ -200,6 +199,7 @@ export default function ActivityHeader({
       <div
         className={`
           p-3 sm:p-6 md:p-8
+          p-3 sm:p-6 lg:p-8
           space-y-5 sm:space-y-6 transition-colors duration-300
           ${isEditing ? 'bg-orange-50/50' : 'bg-white'}
         `}
@@ -211,6 +211,8 @@ export default function ActivityHeader({
             table-fixed text-xs sm:text-sm
             border-collapse
           ">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full table-fixed text-sm border-collapse">
             <tbody>
               {/* INFORMASI UMUM */}
               <Safe name="InfoRows" row>
@@ -240,6 +242,7 @@ export default function ActivityHeader({
         {isEditing && (
           <div className="
             mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-slate-200
+            pt-5 border-t border-slate-200
             flex flex-col-reverse sm:flex-row
             justify-end gap-3 no-print
           ">
@@ -291,14 +294,15 @@ export default function ActivityHeader({
           {/* LOG PROGRES BULANAN */}
           <div className="w-full min-w-0 mt-0 sm:mt-2">
 
+        {/* LOG PROGRES BULANAN */}
+        <div className="bg-slate-100/80 border border-slate-200 rounded-xl sm:rounded-2xl p-2 sm:p-4">
+          <div className="w-full min-w-0">
             <MonthlyLogTable
-              activityId={activityId}   // ⬅️ tambahkan ini
+              activityId={activityId}
               initialData={monthlyData}
               onSave={onMonthlySave}
             />
-            
           </div>
-
         </div>
       </div>
     </div>

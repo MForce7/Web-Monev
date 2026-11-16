@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { clampPercent, emptyMonth, type Attachment, type MonevMonth, type MonthOutput } from '../../../types/monev'
 import { AttachmentEditor, AttachmentList } from './Attachments'
 import { defaultStatus, hasKeterangan, statusOptions, statusTone } from '../../../lib/config'
-import { CELL_INPUT, Dash, JenisOptions, PercentInput, WRAP } from '../../../lib/shared'
+import { CELL_INPUT, Dash, JenisOptions, PercentInput } from '../../../lib/shared'
 
 /** MonevMonth sudah mendukung status bebas per jenis + keterangan opsional + outputTambahan secara native */
 export type MonthData = MonevMonth
 
 const TEXT_FIELDS = ['uraian', 'kendala', 'mitigasi'] as const
-const CELL = `p-1.5 border-r border-slate-200 align-top min-w-0 whitespace-pre-line ${WRAP}`
+
+// Dasar sel. Teks panjang patah di batas kata (break-words), bukan di tengah kata.
+const CELL_BASE = 'p-1.5 border-r border-slate-200 align-top min-w-0'
+const CELL = `${CELL_BASE} whitespace-pre-line break-words`
 
 const BTN = {
   primary: 'bg-gov-700 hover:bg-gov-800 text-white font-semibold',
@@ -110,7 +113,9 @@ export default function MonthRow({ month, onSave, onClear }: Props) {
             {/* Kolom yang di-merge: hanya di baris pertama */}
             {first && (
               <>
-                <td rowSpan={span} className={`${merged} font-semibold text-slate-800`}>{data.bulan}</td>
+                <td rowSpan={span} className={`${CELL_BASE} border-b border-slate-200 font-semibold text-slate-800 whitespace-nowrap`}>
+                  {data.bulan}
+                </td>
                 {TEXT_FIELDS.map((k) => (
                   <td key={k} rowSpan={span} className={merged}>
                     <TextField editing={isEditing} multiline value={aktivitas[k]} onChange={(v) => setAktivitas({ [k]: v })} />
@@ -164,9 +169,9 @@ export default function MonthRow({ month, onSave, onClear }: Props) {
                 </div>
               ) : out.jenis && out.status ? (
                 <>
-                  <span className={`inline-block px-1.5 py-0.5 rounded-full border text-[10px] font-medium ${statusTone(out.status)}`}>{out.status}</span>
+                  <span className={`inline-block max-w-full px-2 py-0.5 rounded-full border text-[10px] font-medium leading-snug break-words ${statusTone(out.status)}`}>{out.status}</span>
                   {hasKeterangan(out.jenis) && out.keterangan && (
-                    <p className="mt-1 text-[10px] text-slate-500 whitespace-pre-line">{out.keterangan}</p>
+                    <p className="mt-1 text-[10px] text-slate-500 whitespace-pre-line break-words">{out.keterangan}</p>
                   )}
                 </>
               ) : (
@@ -191,7 +196,7 @@ export default function MonthRow({ month, onSave, onClear }: Props) {
               <Attach editing={isEditing} items={out.dataDukung} onChange={(dataDukung) => setOutputAt(i, { dataDukung })} />
             </td>
 
-            {/* Tindakan: satu set tombol per bulan */}
+            {/* Tindakan: tiga tombol bertumpuk dengan label teks */}
             {first && (
               <td rowSpan={span} className="p-1.5 align-top min-w-0 border-b border-slate-200 no-print">
                 <div className="flex flex-col gap-1">
