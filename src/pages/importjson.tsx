@@ -1,4 +1,12 @@
-import { Fragment, useMemo, useRef, useState, type DragEvent } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type DragEvent,
+} from "react";
 
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import Badge, { WARNA_BADGE } from "../components/importjson/Badge";
@@ -58,7 +66,7 @@ function Ikon({ d, lebar = 2.2 }: { d: string; lebar?: number }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="h-4 w-4"
+      className="h-4 w-4 shrink-0"
       fill="none"
       stroke="currentColor"
       strokeWidth={lebar}
@@ -147,6 +155,23 @@ function unduhTemplateJson() {
   URL.revokeObjectURL(url);
 }
 
+/** true kalau lebar layar >= minPx. Dipakai supaya hanya satu tampilan (kartu / tabel) yang dirender. */
+function useLayarLebar(minPx = 768) {
+  const [lebar, setLebar] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(`(min-width:${minPx}px)`).matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width:${minPx}px)`);
+    const ubah = () => setLebar(mq.matches);
+    ubah();
+    mq.addEventListener("change", ubah);
+    return () => mq.removeEventListener("change", ubah);
+  }, [minPx]);
+
+  return lebar;
+}
+
 /* ───────── Detail aktivitas (judul dari header.judulAktivitas) ───────── */
 
 function DetailAktivitasImport({ entri }: { entri: EntriLogbook }) {
@@ -163,14 +188,14 @@ function DetailAktivitasImport({ entri }: { entri: EntriLogbook }) {
 
   return (
     <section className="mb-4 overflow-hidden rounded-xl border border-[#dbe6f7] bg-white shadow-sm">
-      <div className="bg-[#1f4e8c] px-6 py-4 text-white">
-        <h2 className="text-lg font-bold">Detail Aktivitas &amp; Progres Kegiatan</h2>
+      <div className="bg-[#1f4e8c] px-4 py-3 text-white sm:px-6 sm:py-4">
+        <h2 className="text-base font-bold sm:text-lg">Detail Aktivitas &amp; Progres Kegiatan</h2>
         <p className="mt-1 text-xs text-blue-100">
           Informasi aktivitas dan capaian program mitra
         </p>
       </div>
 
-      <div className="border-b border-[#dbe6f7] bg-[#f5f8fd] px-6 py-3">
+      <div className="border-b border-[#dbe6f7] bg-[#f5f8fd] px-4 py-3 sm:px-6">
         <h3 className="text-sm font-bold text-[#1b3560]">Informasi</h3>
       </div>
 
@@ -178,9 +203,9 @@ function DetailAktivitasImport({ entri }: { entri: EntriLogbook }) {
         {informasi.map(([label, nilai]) => (
           <div
             key={label}
-            className="grid grid-cols-[minmax(130px,0.8fr)_minmax(0,1.5fr)] gap-3 border-b border-r border-[#e5edf8] px-6 py-4"
+            className="grid grid-cols-1 gap-0.5 border-b border-[#e5edf8] px-4 py-3 sm:grid-cols-[minmax(130px,0.8fr)_minmax(0,1.5fr)] sm:gap-3 sm:px-6 sm:py-4 md:border-r"
           >
-            <span className="text-sm font-medium text-slate-500">{label}</span>
+            <span className="text-xs font-medium text-slate-500 sm:text-sm">{label}</span>
             <span className="whitespace-pre-wrap break-words text-sm font-semibold text-[#1b3560]">
               {nilai}
             </span>
@@ -191,11 +216,48 @@ function DetailAktivitasImport({ entri }: { entri: EntriLogbook }) {
   );
 }
 
+/** Isi detail satu ketua: detail aktivitas, daftar masalah, tabel bulanan */
+function PanelDetail({
+  h,
+  kunci,
+  selesai,
+  onToggle,
+  onUbahBulanan,
+}: {
+  h: HasilEntri;
+  kunci: string;
+  selesai: Set<string>;
+  onToggle: ComponentProps<typeof DaftarMasalah>["onToggle"];
+  onUbahBulanan: (bulanan: EntriLogbook["bulanan"]) => void;
+}) {
+  return (
+    <>
+      <DetailAktivitasImport entri={h.entri} />
+
+      <div className="mb-3">
+        <DaftarMasalah nama={h.nama} masalah={h.masalah} selesai={selesai} onToggle={onToggle} />
+      </div>
+
+      {/* MonthlyLogTable sudah punya area geser + petunjuk sendiri */}
+      <div className="min-w-0">
+        <MonthlyLogTable key={kunci} initialData={h.entri.bulanan} onSave={onUbahBulanan} />
+      </div>
+    </>
+  );
+}
+
+function BadgeValidasi({ g, p }: { g: number; p: number }) {
+  if (g > 0) return <Badge warna={WARNA_GALAT}>{g} galat</Badge>;
+  if (p > 0) return <Badge warna={WARNA_BADGE.Cek}>{p} catatan</Badge>;
+  return <Badge warna={WARNA_BADGE.Siap}>Bersih</Badge>;
+}
+
 /* ───────── Halaman ───────── */
 
 export default function ImportJson() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { selesai, toggle } = useSelesai();
+  const layarLebar = useLayarLebar(768);
 
   const [files, setFiles] = useState<{ nama: string; ukuran: number }[]>([]);
   const [hasil, setHasil] = useState<HasilEntri[] | null>(null);
@@ -376,48 +438,50 @@ export default function ImportJson() {
 
   return (
     <div
-      className="mt-20 min-h-screen w-full bg-[#f2f5fa] font-sans text-[#1b3560]"
+      className="mt-20 min-h-screen w-full max-w-full overflow-x-hidden bg-[#f2f5fa] font-sans text-[#1b3560]"
       translate="no"
     >
       <main className="min-w-0">
         <InstansiBar />
 
-        <div className="flex flex-col gap-5 px-4 py-6 sm:px-9">
-          <section className="overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
+        <div className="flex min-w-0 flex-col gap-5 px-3 py-4 sm:px-6 sm:py-6 lg:px-9">
+          <section className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)] sm:rounded-[18px]">
             {/* Judul kartu */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dbe6f7] px-6 py-4">
-              <div>
-                <h2 className="text-xl font-extrabold">Import logbook dari JSON</h2>
-                <p className="text-[13px] text-slate-500">
+            <div className="flex flex-col gap-3 border-b border-[#dbe6f7] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div className="min-w-0">
+                <h2 className="text-lg font-extrabold sm:text-xl">Import logbook dari JSON</h2>
+                <p className="text-xs text-slate-500 sm:text-[13px]">
                   Excel dikonversi AI menjadi JSON (semua ketua tim, satu bulan per prompt).
                   Unggah file JSON-nya (boleh banyak sekaligus), periksa laporan, lalu simpan.
                 </p>
               </div>
-              <TombolGradasi onClick={unduhTemplateJson}>
+              <TombolGradasi onClick={unduhTemplateJson} className="w-full sm:w-auto">
                 <Ikon d={IKON.unduh} />
                 Unduh Template
               </TombolGradasi>
             </div>
 
             {/* Prompt AI */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-6 py-3 text-[13px]">
+            <div className="flex flex-col gap-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-4 py-3 text-[13px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:px-6">
               <span className="font-bold">Prompt AI untuk semua ketua, bulan</span>
-              <select
-                value={bulanPilih}
-                aria-label="Bulan yang dikonversi"
-                onChange={(e) => setBulanPilih(e.target.value)}
-                className="rounded-lg border border-[#9db8e0] bg-white px-2 py-1 text-sm font-bold text-[#1b3560] focus:outline-none focus:ring-2 focus:ring-[#2a5aa8]"
-              >
-                {BULAN.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-              <TombolGradasi onClick={() => void salinPrompt()}>
-                <Ikon d={IKON.salin} />
-                Salin Prompt AI
-              </TombolGradasi>
+              <div className="flex items-center gap-2">
+                <select
+                  value={bulanPilih}
+                  aria-label="Bulan yang dikonversi"
+                  onChange={(e) => setBulanPilih(e.target.value)}
+                  className="min-w-0 flex-1 rounded-lg border border-[#9db8e0] bg-white px-2 py-2 text-sm font-bold text-[#1b3560] focus:outline-none focus:ring-2 focus:ring-[#2a5aa8] sm:flex-none sm:py-1"
+                >
+                  {BULAN.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+                <TombolGradasi onClick={() => void salinPrompt()} className="flex-1 sm:flex-none">
+                  <Ikon d={IKON.salin} />
+                  Salin Prompt AI
+                </TombolGradasi>
+              </div>
               <span className="text-xs text-slate-500">
                 Satu sheet bulan penuh (semua ketua, semua pusat riset) sekitar 15 ribu token.
                 Bila jawaban AI terpotong, minta AI melanjutkan lalu unggah semua file JSON-nya.
@@ -425,11 +489,11 @@ export default function ImportJson() {
             </div>
 
             {/* Langkah */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-b border-[#dbe6f7] px-6 py-2.5 text-[13px] font-bold">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-b border-[#dbe6f7] px-4 py-2.5 text-xs font-bold sm:px-6 sm:text-[13px]">
               <Langkah n={1} label="Unggah file JSON" aktif={!hasil} selesai={!!hasil} />
               <span
                 aria-hidden="true"
-                className={`h-0.5 w-12 ${hasil ? "bg-[#1f4e8c]" : "bg-[#dbe6f7]"}`}
+                className={`hidden h-0.5 w-8 sm:block lg:w-12 ${hasil ? "bg-[#1f4e8c]" : "bg-[#dbe6f7]"}`}
               />
               <Langkah
                 n={2}
@@ -439,7 +503,7 @@ export default function ImportJson() {
               />
               <span
                 aria-hidden="true"
-                className={`h-0.5 w-12 ${tersimpan !== null ? "bg-[#1f4e8c]" : "bg-[#dbe6f7]"}`}
+                className={`hidden h-0.5 w-8 sm:block lg:w-12 ${tersimpan !== null ? "bg-[#1f4e8c]" : "bg-[#dbe6f7]"}`}
               />
               <Langkah
                 n={3}
@@ -457,11 +521,11 @@ export default function ImportJson() {
               }}
               onDragLeave={() => setSeret(false)}
               onDrop={onDrop}
-              className={`mx-6 mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-2xl border-2 border-dashed px-4 py-6 transition ${
+              className={`mx-3 mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-2xl border-2 border-dashed px-3 py-5 transition sm:mx-6 sm:mt-5 sm:px-4 sm:py-6 ${
                 seret ? "border-[#2a5aa8] bg-[#eaf0fa]" : "border-[#9db8e0] bg-[#f5f8fd]"
               }`}
             >
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(27,63,120,0.18)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(27,63,120,0.18)] sm:h-14 sm:w-14">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-[26px] w-[26px]"
@@ -476,17 +540,23 @@ export default function ImportJson() {
                 </svg>
               </div>
 
-              <div className="text-center sm:text-left">
-                <p className="text-base font-extrabold">
-                  Tarik dan lepas satu atau beberapa file JSON di sini
+              <div className="min-w-0 text-center sm:text-left">
+                <p className="text-sm font-extrabold sm:text-base">
+                  <span className="hidden sm:inline">Tarik dan lepas satu atau beberapa file JSON di sini</span>
+                  <span className="sm:hidden">Pilih satu atau beberapa file JSON</span>
                 </p>
-                <p className="text-[13px] text-slate-500">
+                <p className="text-xs text-slate-500 sm:text-[13px]">
                   Hasil tiap file digabung otomatis. Ketua yang sama digabung per bulan, bulan
                   yang terisi di file terbaru menggantikan bulan yang sama.
                 </p>
               </div>
 
-              <TombolGradasi besar onClick={() => inputRef.current?.click()} disabled={memuat}>
+              <TombolGradasi
+                besar
+                onClick={() => inputRef.current?.click()}
+                disabled={memuat}
+                className="w-full sm:w-auto"
+              >
                 {memuat ? "Membaca…" : "Pilih File"}
               </TombolGradasi>
 
@@ -504,7 +574,7 @@ export default function ImportJson() {
             {error && (
               <p
                 role="alert"
-                className="mx-6 mt-3 rounded-xl bg-[#fee2e2] px-4 py-2 text-sm font-semibold text-[#991b1b]"
+                className="mx-3 mt-3 break-words rounded-xl bg-[#fee2e2] px-4 py-2 text-sm font-semibold text-[#991b1b] sm:mx-6"
               >
                 {error}
               </p>
@@ -513,7 +583,7 @@ export default function ImportJson() {
             {info && (
               <p
                 role="status"
-                className="mx-6 mt-3 rounded-xl bg-[#eaf0fa] px-4 py-2 text-sm font-semibold text-[#1b3560]"
+                className="mx-3 mt-3 break-words rounded-xl bg-[#eaf0fa] px-4 py-2 text-sm font-semibold text-[#1b3560] sm:mx-6"
               >
                 {info}
               </p>
@@ -521,7 +591,7 @@ export default function ImportJson() {
 
             {/* File terpilih */}
             {hasil && (
-              <div className="mx-6 mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dbe6f7] px-4 py-2.5">
+              <div className="mx-3 mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dbe6f7] px-3 py-2.5 sm:mx-6 sm:px-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <svg viewBox="0 0 32 32" className="h-8 w-8 shrink-0" aria-hidden="true">
                     <rect width="32" height="32" rx="8" fill="#dcfce7" />
@@ -566,8 +636,8 @@ export default function ImportJson() {
             {/* Laporan validasi */}
             {hasil && (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-3 px-6 pb-2.5 pt-[18px]">
-                  <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-col gap-2 px-4 pb-2.5 pt-[18px] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:px-6">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
                     <span className="mr-1 text-base font-extrabold">Laporan validasi</span>
                     <Badge warna="bg-[#eaf0fa] text-[#1b3560]">{daftar.length} logbook</Badge>
                     <Badge warna={WARNA_BADGE.Siap}>{bersih} bersih</Badge>
@@ -575,116 +645,194 @@ export default function ImportJson() {
                     <Badge warna={WARNA_GALAT}>{galat} galat</Badge>
                   </div>
                   <span className="text-xs text-slate-500">
-                    Yang galat dilewati, yang perlu dicek tetap disimpan. Klik baris untuk
-                    melihat detail aktivitas, tabel per bulan, dan catatannya.
+                    Yang galat dilewati, yang perlu dicek tetap disimpan.{" "}
+                    <span className="md:hidden">Ketuk kartu</span>
+                    <span className="hidden md:inline">Klik baris</span> untuk melihat detail
+                    aktivitas, tabel per bulan, dan catatannya.
                   </span>
                 </div>
 
-                <div className="px-6">
-                  <div className="overflow-x-auto rounded-2xl border border-[#dbe6f7]">
-                    <table className="w-full min-w-[900px] border-separate border-spacing-0 bg-white">
-                      <thead style={{ background: GRAD }}>
-                        <tr>
-                          {KOLOM.map(([label, cls]) => (
-                            <th key={label} className={`${th} ${cls}`}>
-                              {label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
+                <div className="px-3 sm:px-6">
+                  {layarLebar ? (
+                    /* ───── Tablet / desktop: tabel ───── */
+                    <>
+                      <p className="mb-1.5 hidden items-center justify-center gap-2 rounded-md bg-[#eaf0fa] px-3 py-1.5 text-[11px] font-semibold text-[#2a5aa8] md:flex lg:hidden">
+                        Geser tabel ke samping untuk melihat semua kolom
+                        <span aria-hidden className="animate-pulse">→</span>
+                      </p>
 
-                      <tbody>
-                        {grup.map(([unit, items]) => (
-                          <Fragment key={unit}>
+                      <div className="overflow-x-auto overscroll-x-contain rounded-2xl border border-[#dbe6f7]">
+                        <table className="w-full min-w-[900px] border-separate border-spacing-0 bg-white">
+                          <thead style={{ background: GRAD }}>
                             <tr>
-                              <td
-                                colSpan={KOLOM.length}
-                                className="border-b border-[#dbe6f7] bg-[#eaf0fa] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1b3560]"
-                              >
-                                {unit}{" "}
-                                <span className="font-medium normal-case tracking-normal text-slate-500">
-                                  ({items.length} ketua)
-                                </span>
-                              </td>
+                              {KOLOM.map(([label, cls]) => (
+                                <th key={label} className={`${th} ${cls}`}>
+                                  {label}
+                                </th>
+                              ))}
                             </tr>
+                          </thead>
 
-                            {items.map(({ h, idx }, i) => {
-                              const g = jmlGalat(h);
-                              const p = peringatanBelum(h, selesai);
-                              const hd = h.entri.header;
-                              const terbuka = buka === idx;
-
-                              return (
-                                <Fragment key={idx}>
-                                  <tr
-                                    onClick={() => setBuka(terbuka ? null : idx)}
-                                    className={`cursor-pointer transition-colors hover:bg-[#eaf0fa] ${
-                                      i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"
-                                    }`}
+                          <tbody>
+                            {grup.map(([unit, items]) => (
+                              <Fragment key={unit}>
+                                <tr>
+                                  <td
+                                    colSpan={KOLOM.length}
+                                    className="border-b border-[#dbe6f7] bg-[#eaf0fa] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1b3560]"
                                   >
-                                    <td className={`${td} text-center`}>{idx + 1}</td>
-                                    <td className={`${td} font-medium ${teks}`}>{h.nama}</td>
-                                    <td className={`${td} ${teks}`}>
-                                      {hd.judulAktivitas || kosong}
-                                    </td>
-                                    <td className={`${td} ${teks}`}>
-                                      {teksTarget(h.entri) || kosong}
-                                    </td>
-                                    <td className={`${td} ${teks}`}>
-                                      {hd.statusPelaksanaan || kosong}
-                                    </td>
-                                    <td className={`${td} text-center`}>{hd.progresTotal}%</td>
-                                    <td className={`${td} text-center`}>
-                                      {h.entri.bulanan.filter(bulanAdaIsi).length} / 12
-                                    </td>
-                                    <td className={`${td} text-center`}>
-                                      {g > 0 ? (
-                                        <Badge warna={WARNA_GALAT}>{g} galat</Badge>
-                                      ) : p > 0 ? (
-                                        <Badge warna={WARNA_BADGE.Cek}>{p} catatan</Badge>
-                                      ) : (
-                                        <Badge warna={WARNA_BADGE.Siap}>Bersih</Badge>
-                                      )}
-                                    </td>
-                                  </tr>
+                                    {unit}{" "}
+                                    <span className="font-medium normal-case tracking-normal text-slate-500">
+                                      ({items.length} ketua)
+                                    </span>
+                                  </td>
+                                </tr>
 
-                                  {terbuka && (
-                                    <tr>
-                                      <td
-                                        colSpan={KOLOM.length}
-                                        className="max-w-0 border-b border-[#dbe6f7] bg-[#f5f8fd] px-4 py-3"
+                                {items.map(({ h, idx }, i) => {
+                                  const g = jmlGalat(h);
+                                  const p = peringatanBelum(h, selesai);
+                                  const hd = h.entri.header;
+                                  const terbuka = buka === idx;
+
+                                  return (
+                                    <Fragment key={idx}>
+                                      <tr
+                                        onClick={() => setBuka(terbuka ? null : idx)}
+                                        className={`cursor-pointer transition-colors hover:bg-[#eaf0fa] ${
+                                          i % 2 === 1 ? "bg-[#f5f8fd]" : "bg-white"
+                                        }`}
                                       >
-                                        <DetailAktivitasImport entri={h.entri} />
+                                        <td className={`${td} text-center`}>{idx + 1}</td>
+                                        <td className={`${td} font-medium ${teks}`}>{h.nama}</td>
+                                        <td className={`${td} ${teks}`}>
+                                          {hd.judulAktivitas || kosong}
+                                        </td>
+                                        <td className={`${td} ${teks}`}>
+                                          {teksTarget(h.entri) || kosong}
+                                        </td>
+                                        <td className={`${td} ${teks}`}>
+                                          {hd.statusPelaksanaan || kosong}
+                                        </td>
+                                        <td className={`${td} text-center`}>{hd.progresTotal}%</td>
+                                        <td className={`${td} text-center`}>
+                                          {h.entri.bulanan.filter(bulanAdaIsi).length} / 12
+                                        </td>
+                                        <td className={`${td} text-center`}>
+                                          <BadgeValidasi g={g} p={p} />
+                                        </td>
+                                      </tr>
 
-                                        <div className="mb-3">
-                                          <DaftarMasalah
-                                            nama={h.nama}
-                                            masalah={h.masalah}
-                                            selesai={selesai}
-                                            onToggle={toggle}
-                                          />
-                                        </div>
-
-                                        <div className="overflow-x-auto">
-                                          <div className="min-w-[1400px]">
-                                            <MonthlyLogTable
-                                              key={`${idx}-${files.length}`}
-                                              initialData={h.entri.bulanan}
-                                              onSave={(data) => ubahBulanan(idx, data)}
+                                      {terbuka && (
+                                        <tr>
+                                          <td
+                                            colSpan={KOLOM.length}
+                                            className="max-w-0 border-b border-[#dbe6f7] bg-[#f5f8fd] px-4 py-3"
+                                          >
+                                            <PanelDetail
+                                              h={h}
+                                              kunci={`${idx}-${files.length}`}
+                                              selesai={selesai}
+                                              onToggle={toggle}
+                                              onUbahBulanan={(data) => ubahBulanan(idx, data)}
                                             />
-                                          </div>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </Fragment>
-                              );
-                            })}
-                          </Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </Fragment>
+                                  );
+                                })}
+                              </Fragment>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  ) : (
+                    /* ───── HP: daftar kartu ───── */
+                    <div className="space-y-4">
+                      {grup.map(([unit, items]) => (
+                        <div key={unit} className="space-y-2">
+                          <p className="rounded-lg bg-[#eaf0fa] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1b3560]">
+                            {unit}{" "}
+                            <span className="font-medium normal-case tracking-normal text-slate-500">
+                              ({items.length} ketua)
+                            </span>
+                          </p>
+
+                          {items.map(({ h, idx }) => {
+                            const g = jmlGalat(h);
+                            const p = peringatanBelum(h, selesai);
+                            const hd = h.entri.header;
+                            const terbuka = buka === idx;
+
+                            return (
+                              <div
+                                key={idx}
+                                className={`overflow-hidden rounded-xl border bg-white ${
+                                  terbuka ? "border-[#2a5aa8]" : "border-[#dbe6f7]"
+                                }`}
+                              >
+                                <button
+                                  type="button"
+                                  aria-expanded={terbuka}
+                                  onClick={() => setBuka(terbuka ? null : idx)}
+                                  className="block w-full p-3 text-left transition-colors active:bg-[#eaf0fa]"
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className={`min-w-0 text-sm font-bold ${teks}`}>
+                                      {idx + 1}. {h.nama}
+                                    </p>
+                                    <span className="shrink-0">
+                                      <BadgeValidasi g={g} p={p} />
+                                    </span>
+                                  </div>
+
+                                  <dl className="mt-2 space-y-1 text-xs">
+                                    <div className="flex gap-2">
+                                      <dt className="w-24 shrink-0 text-slate-400">Judul</dt>
+                                      <dd className={`min-w-0 ${teks}`}>{hd.judulAktivitas || kosong}</dd>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <dt className="w-24 shrink-0 text-slate-400">Target</dt>
+                                      <dd className={`min-w-0 ${teks}`}>{teksTarget(h.entri) || kosong}</dd>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <dt className="w-24 shrink-0 text-slate-400">Status</dt>
+                                      <dd className={`min-w-0 ${teks}`}>{hd.statusPelaksanaan || kosong}</dd>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <dt className="w-24 shrink-0 text-slate-400">Progres</dt>
+                                      <dd className="min-w-0">{hd.progresTotal}%</dd>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <dt className="w-24 shrink-0 text-slate-400">Bulan terisi</dt>
+                                      <dd className="min-w-0">{h.entri.bulanan.filter(bulanAdaIsi).length} / 12</dd>
+                                    </div>
+                                  </dl>
+
+                                  <p className="mt-2 text-center text-[11px] font-bold text-[#2a5aa8]">
+                                    {terbuka ? "Tutup detail ▲" : "Lihat detail ▼"}
+                                  </p>
+                                </button>
+
+                                {terbuka && (
+                                  <div className="min-w-0 border-t border-[#dbe6f7] bg-[#f5f8fd] p-2">
+                                    <PanelDetail
+                                      h={h}
+                                      kunci={`${idx}-${files.length}`}
+                                      selesai={selesai}
+                                      onToggle={toggle}
+                                      onUbahBulanan={(data) => ubahBulanan(idx, data)}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -692,7 +840,7 @@ export default function ImportJson() {
             {tersimpan !== null && (
               <p
                 role="status"
-                className="mx-6 mt-4 rounded-xl bg-[#dcfce7] px-4 py-2 text-sm font-semibold text-[#166534]"
+                className="mx-3 mt-4 break-words rounded-xl bg-[#dcfce7] px-4 py-2 text-sm font-semibold text-[#166534] sm:mx-6"
               >
                 {tersimpan} logbook disimpan. Total di browser: {tersimpanDiBrowser}.{" "}
                 <a href="/logbook" className="underline">
@@ -702,17 +850,19 @@ export default function ImportJson() {
             )}
 
             {/* Footer kartu */}
-            <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-[18px]">
-              <div className="flex flex-col gap-1 text-xs text-slate-500">
-                <label className="flex cursor-pointer items-center gap-2">
+            <div className="flex flex-col gap-4 px-4 py-[18px] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:px-6">
+              <div className="flex min-w-0 flex-col gap-1 text-xs text-slate-500">
+                <label className="flex cursor-pointer items-start gap-2">
                   <input
                     type="checkbox"
                     checked={gabung}
                     onChange={(e) => setGabung(e.target.checked)}
-                    className="h-4 w-4 accent-[#1f4e8c]"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#1f4e8c]"
                   />
-                  Gabungkan dengan logbook yang sudah tersimpan (ketua yang sama digabung per
-                  bulan)
+                  <span>
+                    Gabungkan dengan logbook yang sudah tersimpan (ketua yang sama digabung per
+                    bulan)
+                  </span>
                 </label>
 
                 {tersimpanDiBrowser > 0 && (
@@ -733,7 +883,7 @@ export default function ImportJson() {
                 <button
                   type="button"
                   onClick={reset}
-                  className="rounded-full px-[18px] py-2.5 text-[13px] font-bold hover:bg-[#f5f8fd]"
+                  className="flex-1 rounded-full px-[18px] py-2.5 text-[13px] font-bold hover:bg-[#f5f8fd] sm:flex-none"
                 >
                   Batal
                 </button>
@@ -741,6 +891,7 @@ export default function ImportJson() {
                   besar
                   onClick={simpan}
                   disabled={!hasil || layak.length === 0 || tersimpan !== null}
+                  className="flex-[2] sm:flex-none"
                 >
                   <Ikon d={IKON.centang} lebar={2.6} />
                   Simpan ke Logbook
