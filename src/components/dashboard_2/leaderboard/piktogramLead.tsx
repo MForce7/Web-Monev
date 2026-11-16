@@ -36,9 +36,9 @@ function Daftar({ items, hidden }: { items: KepatuhanItem[]; hidden: boolean }) 
   return (
     <ul className="w-full shrink-0 space-y-3" aria-hidden={hidden}>
       {items.map((k) => (
-        <li key={k.nama} className="flex items-center gap-4">
-          <span className="w-12 text-sm font-bold text-gray-700">{k.nama}</span>
-          <div className="h-5 flex-1 overflow-hidden rounded-sm bg-gray-200">
+        <li key={k.nama} className="flex items-center gap-2 sm:gap-4">
+          <span className="w-11 shrink-0 text-xs font-bold text-gray-700 sm:w-12 sm:text-sm">{k.nama}</span>
+          <div className="h-5 min-w-0 flex-1 overflow-hidden rounded-sm bg-gray-200">
             <div
               className="h-full"
               style={{ width: `${k.persen}%`, background: gradientOf(k.nama) }}
@@ -48,7 +48,9 @@ function Daftar({ items, hidden }: { items: KepatuhanItem[]; hidden: boolean }) 
               aria-valuemax={100}
             />
           </div>
-          <span className="w-12 text-right text-sm font-bold text-[#f25c5c]">{k.persen}%</span>
+          <span className="w-10 shrink-0 text-right text-xs font-bold text-[#f25c5c] sm:w-12 sm:text-sm">
+            {k.persen}%
+          </span>
         </li>
       ))}
     </ul>
@@ -82,7 +84,7 @@ export default function PiktogramKepatuhan({
   const asc = useMemo(() => [...desc].reverse(), [desc]);
 
   return (
-    <div className={`rounded-xl bg-white p-5 shadow-[0_8px_20px_rgba(0,0,0,0.2)] ${className}`}>
+    <div className={`rounded-xl bg-white p-4 shadow-[0_8px_20px_rgba(0,0,0,0.2)] sm:p-5 ${className}`}>
       <div className="overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-in-out"

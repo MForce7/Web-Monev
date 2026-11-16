@@ -38,7 +38,7 @@ export default function PrChart({ data }: PrChartProps) {
   }));
 
   return (
-    <div className="mt-8 grid gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mt-6 grid w-full gap-4 text-left sm:mt-8 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((p) => (
         <Card key={p.nama} className="p-3">
           <h4 className="mb-2 text-center text-xs font-bold text-gray-800">

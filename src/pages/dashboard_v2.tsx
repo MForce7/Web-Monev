@@ -67,10 +67,10 @@ export default function DashboardV2() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center overflow-x-hidden">
+    <div className="flex min-h-dvh w-full flex-col items-center overflow-x-hidden">
       <Jumbotron />
 
-      <div className="w-full bg-[#F6F6F6] px-4 py-10 font-sans text-[#353535] sm:px-8">
+      <div className="w-full bg-[#F6F6F6] px-4 py-8 font-sans text-[#353535] sm:px-8 sm:py-10">
         <div className="mx-auto grid max-w-[1320px] items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-stretch">
           <CalendarBox
             viewYear={viewYear}

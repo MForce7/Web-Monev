@@ -31,6 +31,40 @@ function getInitials(name: string): string {
   );
 }
 
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+    </svg>
+  );
+}
+
 export default function Navbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -40,8 +74,13 @@ export default function Navbar() {
   const { name, photoUrl, loading: photoLoading } = useAvatar(user?.id);
 
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // dropdown akun
+  const [mobileOpen, setMobileOpen] = useState(false); // panel hamburger
+  const [adminOpen, setAdminOpen] = useState(false); // dropdown admin (desktop)
+  const [mobileAdminOpen, setMobileAdminOpen] = useState(false); // accordion admin (mobile)
   const [signingOut, setSigningOut] = useState(false);
+
+  const navRef = useRef<HTMLElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -51,12 +90,29 @@ export default function Navbar() {
   // Menu utama: admin tidak perlu melihat "Logbook" (dia punya "Logbook User" di dropdown admin)
   const visibleMenus = isAdmin ? menus.filter((m) => m.label !== "Logbook") : menus;
 
-  // Efek scroll (tidak berubah)
+  // Efek scroll
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Tutup semua menu saat pindah halaman
+  useEffect(() => {
+    setMobileOpen(false);
+    setAdminOpen(false);
+    setOpen(false);
+  }, [pathname]);
+
+  // Tutup panel mobile kalau layar dilebarkan ke desktop (mis. rotasi iPad)
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setMobileOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
   }, []);
 
   // Tutup dropdown akun: klik di luar atau tekan Esc
@@ -83,12 +139,38 @@ export default function Navbar() {
     };
   }, [open]);
 
+  // Tutup dropdown admin dan panel mobile: klik di luar navbar atau Esc
+  useEffect(() => {
+    if (!adminOpen && !mobileOpen) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setAdminOpen(false);
+        setMobileOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setAdminOpen(false);
+        setMobileOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [adminOpen, mobileOpen]);
+
   const handleLogout = async () => {
     setSigningOut(true);
     await supabase.auth.signOut();
     clearAvatarCache();
     setSigningOut(false);
     setOpen(false);
+    setMobileOpen(false);
     navigate("/login", { replace: true });
   };
 
@@ -126,7 +208,10 @@ export default function Navbar() {
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => !v);
+          setMobileOpen(false);
+        }}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Menu akun"
@@ -151,17 +236,20 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed inset-x-4 top-4 z-50 flex items-center justify-between rounded-xl px-6 py-3 transition-all duration-300 ${
+      ref={navRef}
+      aria-label="Navigasi utama"
+      className={`fixed inset-x-3 top-3 z-50 flex items-center justify-between rounded-xl px-4 py-3 transition-all duration-300 sm:inset-x-4 sm:top-4 sm:px-6 ${
         scrolled
           ? "bg-white text-red-900 shadow-md"
           : "bg-black/70 text-white backdrop-blur-md"
       }`}
     >
-      <div>
-        <img src={logoBrin} alt="Logo BRIN" className="h-8 w-auto" />
+      <div className="shrink-0">
+        <img src={logoBrin} alt="Logo BRIN" className="h-7 w-auto sm:h-8" />
       </div>
 
-      <ul className="flex items-center gap-12">
+      {/* ---------- Menu desktop (lg ke atas) ---------- */}
+      <ul className="hidden items-center gap-8 lg:flex xl:gap-12">
         {visibleMenus.map((menu) => (
           <li key={menu.href}>
             <NavLink
@@ -179,31 +267,34 @@ export default function Navbar() {
 
         {/* Admin: dropdown hanya dirender kalau role === 'admin' */}
         {isAdmin && (
-          <li className="group relative">
+          <li
+            className="relative"
+            onPointerEnter={(e) => {
+              if (e.pointerType === "mouse") setAdminOpen(true);
+            }}
+            onPointerLeave={(e) => {
+              if (e.pointerType === "mouse") setAdminOpen(false);
+            }}
+          >
             <button
               type="button"
               aria-haspopup="menu"
+              aria-expanded={adminOpen}
+              onClick={() => setAdminOpen((v) => !v)}
               className={`flex items-center gap-1 transition-colors hover:opacity-80 focus-visible:outline-none ${
                 adminAktif ? "font-bold" : "font-normal"
               }`}
             >
               Admin
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
+              <Chevron open={adminOpen} />
             </button>
 
             {/* pt-3 menjembatani jarak supaya dropdown tidak menutup saat kursor turun */}
-            <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div
+              className={`absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 transition duration-150 ${
+                adminOpen ? "visible opacity-100" : "invisible opacity-0"
+              }`}
+            >
               <div
                 role="menu"
                 aria-label="Menu admin"
@@ -214,6 +305,7 @@ export default function Navbar() {
                     key={m.href}
                     to={m.href}
                     role="menuitem"
+                    tabIndex={adminOpen ? 0 : -1}
                     className={({ isActive }) =>
                       `block px-4 py-2.5 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
                         isActive ? "font-bold text-red-900" : ""
@@ -229,41 +321,120 @@ export default function Navbar() {
         )}
       </ul>
 
-      <div ref={wrapRef} className="relative">
-        {renderAvatar()}
+      {/* ---------- Kanan: avatar + hamburger ---------- */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div ref={wrapRef} className="relative">
+          {renderAvatar()}
 
-        {open && user && (
-          <div
-            role="menu"
-            aria-label="Menu akun"
-            className="absolute right-0 top-full mt-3 w-60 overflow-hidden rounded-xl bg-white text-gray-800 shadow-xl ring-1 ring-black/5"
-          >
-            <div className="border-b border-gray-100 px-4 py-3">
-              <p className="truncate text-sm font-semibold text-red-900">{displayName}</p>
-              {name && <p className="truncate text-xs text-gray-500">{user.email}</p>}
+          {open && user && (
+            <div
+              role="menu"
+              aria-label="Menu akun"
+              className="absolute right-0 top-full mt-3 w-60 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-white text-gray-800 shadow-xl ring-1 ring-black/5"
+            >
+              <div className="border-b border-gray-100 px-4 py-3">
+                <p className="truncate text-sm font-semibold text-red-900">{displayName}</p>
+                {name && <p className="truncate text-xs text-gray-500">{user.email}</p>}
+              </div>
+
+              <Link
+                to="/profile"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-3 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none"
+              >
+                Buka profil
+              </Link>
+
+              <button
+                type="button"
+                role="menuitem"
+                onClick={handleLogout}
+                disabled={signingOut}
+                className="block w-full px-4 py-3 text-left text-sm text-red-700 hover:bg-red-50 focus:bg-red-50 focus:outline-none disabled:opacity-60"
+              >
+                {signingOut ? "Keluar..." : "Keluar"}
+              </button>
             </div>
+          )}
+        </div>
 
-            <Link
-              to="/profile"
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none"
-            >
-              Buka profil
-            </Link>
-
-            <button
-              type="button"
-              role="menuitem"
-              onClick={handleLogout}
-              disabled={signingOut}
-              className="block w-full px-4 py-2.5 text-left text-sm text-red-700 hover:bg-red-50 focus:bg-red-50 focus:outline-none disabled:opacity-60"
-            >
-              {signingOut ? "Keluar..." : "Keluar"}
-            </button>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => {
+            setMobileOpen((v) => !v);
+            setOpen(false);
+          }}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
+          aria-label={mobileOpen ? "Tutup menu" : "Buka menu"}
+          className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 lg:hidden"
+        >
+          <MenuIcon open={mobileOpen} />
+        </button>
       </div>
+
+      {/* ---------- Panel mobile ---------- */}
+      {mobileOpen && (
+        <div
+          id="mobile-menu"
+          className="absolute inset-x-0 top-full mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain rounded-xl bg-white py-2 text-gray-800 shadow-xl ring-1 ring-black/5 lg:hidden"
+        >
+          <ul>
+            {visibleMenus.map((menu) => (
+              <li key={menu.href}>
+                <NavLink
+                  to={menu.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `flex min-h-11 items-center px-5 py-2.5 text-base hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
+                      isActive ? "font-bold text-red-900" : ""
+                    }`
+                  }
+                >
+                  {menu.label}
+                </NavLink>
+              </li>
+            ))}
+
+            {isAdmin && (
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setMobileAdminOpen((v) => !v)}
+                  aria-expanded={mobileAdminOpen}
+                  className={`flex min-h-11 w-full items-center justify-between px-5 py-2.5 text-left text-base hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
+                    adminAktif ? "font-bold text-red-900" : ""
+                  }`}
+                >
+                  Admin
+                  <Chevron open={mobileAdminOpen} />
+                </button>
+
+                {mobileAdminOpen && (
+                  <ul className="bg-gray-50">
+                    {adminMenus.map((m) => (
+                      <li key={m.href}>
+                        <NavLink
+                          to={m.href}
+                          onClick={() => setMobileOpen(false)}
+                          className={({ isActive }) =>
+                            `flex min-h-11 items-center py-2.5 pl-9 pr-5 text-sm hover:bg-red-50 focus:bg-red-50 focus:outline-none ${
+                              isActive ? "font-bold text-red-900" : ""
+                            }`
+                          }
+                        >
+                          {m.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
     </nav>
   );
 }

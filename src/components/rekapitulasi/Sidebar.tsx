@@ -90,7 +90,7 @@ function Panah({ terbuka }: { terbuka: boolean }) {
     <svg
       aria-hidden
       viewBox="0 0 20 20"
-      className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 motion-reduce:transition-none"
+      className="pointer-events-none absolute right-1 top-1/2 h-3.5 w-3.5 -translate-y-1/2 motion-reduce:transition-none md:right-2 md:h-4 md:w-4"
       style={{
         transform: `translateY(-50%) rotate(${terbuka ? 180 : 0}deg)`,
         transition: `transform ${DURASI}ms ${EASE}`,
@@ -152,6 +152,16 @@ function GrupDropdown({
     return () => ro.disconnect();
   }, [grup.items]);
 
+  // Layar sentuh: tap di luar grup menutup daftar yang sedang terbuka
+  useEffect(() => {
+    if (!open) return;
+    const luar = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) onCloseNow();
+    };
+    document.addEventListener("pointerdown", luar);
+    return () => document.removeEventListener("pointerdown", luar);
+  }, [open, onCloseNow]);
+
   // Hover hanya berlaku untuk mouse. Di layar sentuh, dropdown dibuka dengan tap.
   const masukHover = (e: ReactPointerEvent) => {
     if (e.pointerType === "mouse") onOpen();
@@ -172,7 +182,11 @@ function GrupDropdown({
       }}
       onPointerEnter={masukHover}
       onPointerLeave={keluarHover}
-      onFocus={onOpen}
+      onFocus={() => {
+        // Di layar sentuh, fokus datang bersamaan dengan tap. Kalau ikut membuka di sini,
+        // klik berikutnya langsung menutupnya lagi, jadi hanya mouse/keyboard yang membuka lewat fokus.
+        if (jenisPenunjuk.current === "mouse") onOpen();
+      }}
       onBlur={(e: ReactFocusEvent<HTMLLIElement>) => {
         if (!wrapRef.current?.contains(e.relatedTarget as Node | null)) onClose();
       }}
@@ -206,7 +220,7 @@ function GrupDropdown({
             else if (open) onCloseNow();
             else onOpen();
           }}
-          className="relative flex h-9 w-full items-center justify-center whitespace-nowrap pl-2 pr-6 text-sm font-bold text-white"
+          className="relative flex h-9 w-full items-center justify-center whitespace-nowrap pl-1.5 pr-5 text-[11px] font-bold text-white sm:text-sm md:pl-2 md:pr-6"
           style={{ background: w.grad }}
         >
           {grup.judul}
@@ -246,7 +260,7 @@ function GrupDropdown({
                       role="menuitem"
                       aria-current={dipilih ? "page" : undefined}
                       onClick={() => onPilih(item)}
-                      className="w-full py-2 text-center text-sm font-bold transition-colors duration-200"
+                      className="w-full px-1 py-2.5 text-center text-xs font-bold transition-colors duration-200 sm:text-sm md:py-2"
                       style={{
                         color: teks,
                         background: dipilih ? w.aktif : undefined,
@@ -303,9 +317,11 @@ export default function Sidebar({ active, onChange, warna = PALET_BAWAAN }: Side
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
   return (
-    <aside className="relative z-10 w-40 shrink-0 bg-white px-3 py-5 shadow-[4px_0_10px_rgba(0,0,0,0.12)] md:w-44">
+    // HP: bilah penuh di atas konten, 3 grup berjajar. Tablet ke atas (md): kolom di kiri.
+    <aside className="relative z-10 w-full shrink-0 bg-white px-3 py-3 shadow-[0_4px_10px_rgba(0,0,0,0.12)] md:w-44 md:py-5 md:shadow-[4px_0_10px_rgba(0,0,0,0.12)]">
       <nav aria-label="Menu rekap">
-        <ul className="space-y-3">
+        {/* md:items-stretch penting: tanpa ini lebar grup jadi 0 di desktop (isinya absolute) */}
+        <ul className="grid grid-cols-3 items-start gap-2 md:flex md:flex-col md:items-stretch md:gap-3">
           {GRUP_MENU.map((g) => (
             <GrupDropdown
               key={g.id}

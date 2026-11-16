@@ -15,13 +15,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const { title, target, realisasi, color = DEFAULT_COLOR } = data;
 
   return (
-    <div className="w-56 p-4 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center font-sans">
+    <div className="flex w-full max-w-xs flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-4 font-sans shadow-lg sm:w-56">
       {/* Bagian Judul Header */}
-      <div className="text-center w-full pb-2 border-b border-gray-200">
-        <div className="font-bold text-sm tracking-wide" style={{ color }}>
+      <div className="w-full border-b border-gray-200 pb-2 text-center">
+        <div className="text-sm font-bold tracking-wide" style={{ color }}>
           {title}
         </div>
-        <div className="font-bold text-xs mt-0.5" style={{ color }}>
+        <div className="mt-0.5 text-xs font-bold" style={{ color }}>
           {subtitle}
         </div>
       </div>
@@ -31,9 +31,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         className="mt-4 flex items-baseline justify-center font-bold"
         style={{ color }}
       >
-        <span className="text-5xl tracking-tight">{realisasi}</span>
-        <span className="text-4xl mx-1 font-semibold">/</span>
-        <span className="text-3xl tracking-tight">{target}</span>
+        <span className="text-4xl tracking-tight sm:text-5xl">{realisasi}</span>
+        <span className="mx-1 text-3xl font-semibold sm:text-4xl">/</span>
+        <span className="text-2xl tracking-tight sm:text-3xl">{target}</span>
       </div>
     </div>
   );
