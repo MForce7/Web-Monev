@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../data/rekapOutput.json";
+import BilahEkspor from "./BilahEkspor.tsx";
+import { bersihkanNama, teksLink, unduhExcel, unduhPdfTabel, type Grup } from "../../lib/eksporTabel.ts";
 
 /* ---------- Tipe data (mengikuti rekapOutput.json -> "logbook") ---------- */
 type LinkDukung = { label: string; url: string };
@@ -39,6 +41,34 @@ const kolom = [...kemajuan, ...output];
 const th = "border-b border-r border-white/25 px-3 py-2 text-center text-[11px] font-bold text-white last:border-r-0";
 const td =
   "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-xs leading-snug text-[#1b3560] last:border-r-0 [overflow-wrap:break-word]";
+
+/* ---------- Ekspor (PDF dan Excel) ---------- */
+const KOLOM_EKSPOR = [NOMOR, NAMA_KETUA, ...kolom];
+const GRUP_EKSPOR: Grup = {
+  tetap: 2,
+  items: [
+    { label: "Kemajuan Aktivitas / Kegiatan", span: kemajuan.length },
+    { label: "Output Presentase Progres", span: output.length },
+  ],
+};
+const RATA_TENGAH = [0, 5, 6, 8, 9, 10];
+const LEBAR_PDF = [8, 28, 40, 30, 36, 22, 18, 34, 16, 16, 26]; // mm
+const LEBAR_XLSX = [6, 28, 40, 30, 36, 28, 20, 36, 16, 14, 30]; // karakter
+
+const barisEkspor = (data: BarisLogbook[], denganUrl: boolean) =>
+  data.map((d, i) => [
+    i + 1,
+    d.ketua ?? "",
+    d.aktivitas?.uraian ?? "",
+    d.aktivitas?.kendala ?? "",
+    d.aktivitas?.mitigasi ?? "",
+    teksLink(d.aktivitas?.dataDukung, denganUrl),
+    d.output?.jenis ?? "",
+    d.output?.judul ?? "",
+    d.output?.status ?? "",
+    `${d.output?.progres ?? 0}%`,
+    teksLink(d.output?.dataDukung, denganUrl),
+  ]);
 
 /* ---------- Ambil data ---------- */
 // Nilai kosong atau diawali "Semua" dianggap belum memilih (tidak memfilter)
@@ -132,10 +162,50 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
 
   const geser = (arah: 1 | -1) => ref.current?.scrollBy({ left: arah * 320, behavior: "smooth" });
 
+  /* ----- unduh PDF / Excel sesuai filter yang sedang aktif ----- */
+  const subjudul = [
+    pilih(menu) ? menu : "Semua menu",
+    pilih(pusatRiset) ? pusatRiset : "Semua pusat riset",
+    pilih(bulan) ? bulan : "Semua bulan",
+  ].join("  ·  ");
+  const namaFile = `Rekap-Logbook-${bersihkanNama(subjudul)}`;
+  const JUDUL = "Rekap Logbook";
+
+  const unduhPdf = () =>
+    unduhPdfTabel({
+      judul: JUDUL,
+      subjudul,
+      ringkasan: `Jumlah data: ${data.length}`,
+      namaFile,
+      kolom: KOLOM_EKSPOR,
+      grup: GRUP_EKSPOR,
+      baris: barisEkspor(data, false),
+      rataTengah: RATA_TENGAH,
+      lebarKolom: LEBAR_PDF,
+    });
+
+  const unduhXlsx = () =>
+    unduhExcel(namaFile, [
+      {
+        nama: "Rekap Logbook",
+        judul: JUDUL,
+        subjudul,
+        ringkasan: `Jumlah data: ${data.length}`,
+        kolom: KOLOM_EKSPOR,
+        grup: GRUP_EKSPOR,
+        baris: barisEkspor(data, true),
+        rataTengah: RATA_TENGAH,
+        lebarKolom: LEBAR_XLSX,
+      },
+    ]);
+
   return (
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full min-w-0 rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
       <div className="isolate w-full overflow-hidden rounded-2xl border border-[#dbe6f7] [clip-path:inset(0_round_1rem)]">
+        {/* Bilah atas: judul + tombol unduh PDF dan Excel */}
+        <BilahEkspor judul="Rekap logbook" subjudul={subjudul} onPdf={unduhPdf} onExcel={unduhXlsx} />
+
         {/* Petunjuk: hanya muncul kalau tabel memang bisa digeser */}
         {(bisaKiri || bisaKanan) && (
           <p className="flex items-center justify-center gap-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-3 py-1.5 text-center text-[11px] font-semibold text-[#2a5aa8] sm:text-xs">

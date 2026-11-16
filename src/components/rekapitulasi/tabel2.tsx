@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../data/rekapOutput.json";
+import BilahEkspor from "./BilahEkspor.tsx";
+import { bersihkanNama, teksLink, unduhExcel, unduhPdfTabel, type Grup } from "../../lib/eksporTabel.ts";
 
 /* ---------- Tipe data (sama dengan tabel logbook) ---------- */
 type LinkDukung = { label: string; url: string };
@@ -50,6 +52,33 @@ const grid = {
   gridTemplateColumns:
     "56px minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) minmax(0,0.8fr) minmax(0,1.2fr)",
 };
+
+/* ---------- Ekspor (PDF dan Excel) ---------- */
+const GRUP_EKSPOR: Grup = {
+  tetap: 2,
+  items: [
+    { label: "Kemajuan Aktivitas / Kegiatan", span: 4 },
+    { label: "Output Presentase Progres", span: 5 },
+  ],
+};
+const RATA_TENGAH = [0, 5, 6, 8, 9, 10];
+const LEBAR_PDF = [8, 28, 40, 30, 36, 22, 18, 34, 16, 16, 26]; // mm
+const LEBAR_XLSX = [6, 28, 40, 30, 36, 28, 20, 36, 16, 14, 30]; // karakter
+
+const barisEkspor = (data: BarisLogbook[], denganUrl: boolean) =>
+  data.map((d, i) => [
+    i + 1,
+    d.ketua ?? d.output?.ketua ?? "",
+    d.aktivitas?.uraian ?? "",
+    d.aktivitas?.kendala ?? "",
+    d.aktivitas?.mitigasi ?? "",
+    teksLink(d.aktivitas?.dataDukung, denganUrl),
+    d.output?.jenis ?? "",
+    d.output?.judul ?? "",
+    d.output?.status ?? "",
+    `${d.output?.progres ?? 0}%`,
+    teksLink(d.output?.dataDukung, denganUrl),
+  ]);
 
 // Baris template yang masih kosong (belum diisi) tidak ditampilkan
 const terisi = (b: BarisLogbook) =>
@@ -141,8 +170,44 @@ export default function Tabel2({ jenis }: { jenis: string }) {
 
   const geser = (arah: 1 | -1) => ref.current?.scrollBy({ left: arah * 320, behavior: "smooth" });
 
+  /* ----- unduh PDF / Excel ----- */
+  const subjudul = `Jenis output: ${jenis}`;
+  const namaFile = `Rekap-Output-${bersihkanNama(jenis)}`;
+  const JUDUL = "Rekap Output";
+
+  const unduhPdf = () =>
+    unduhPdfTabel({
+      judul: JUDUL,
+      subjudul,
+      ringkasan: `Jumlah data: ${data.length}`,
+      namaFile,
+      kolom,
+      grup: GRUP_EKSPOR,
+      baris: barisEkspor(data, false),
+      rataTengah: RATA_TENGAH,
+      lebarKolom: LEBAR_PDF,
+    });
+
+  const unduhXlsx = () =>
+    unduhExcel(namaFile, [
+      {
+        nama: "Rekap Output",
+        judul: JUDUL,
+        subjudul,
+        ringkasan: `Jumlah data: ${data.length}`,
+        kolom,
+        grup: GRUP_EKSPOR,
+        baris: barisEkspor(data, true),
+        rataTengah: RATA_TENGAH,
+        lebarKolom: LEBAR_XLSX,
+      },
+    ]);
+
   return (
     <section className="w-full min-w-0 overflow-hidden rounded-2xl bg-white shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
+      {/* Bilah atas: judul + tombol unduh PDF dan Excel */}
+      <BilahEkspor judul={`Rekap output ${jenis}`} subjudul={subjudul} onPdf={unduhPdf} onExcel={unduhXlsx} />
+
       {/* Petunjuk: hanya muncul kalau tabel memang bisa digeser */}
       {(bisaKiri || bisaKanan) && (
         <p className="flex items-center justify-center gap-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-3 py-1.5 text-center text-[11px] font-semibold text-[#2a5aa8] sm:text-xs">
