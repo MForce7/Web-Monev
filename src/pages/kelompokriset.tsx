@@ -7,15 +7,13 @@ import {
   ImportDataModal,
   useKelompokRiset,
   cetakPdf,
-  parseFileKelompokRiset,
-  SEMUA,
 } from "../components/kelompokRiset";
 
 export default function KelompokRisetPage() {
   const [mencetak, setMencetak] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
-    const {
+  const {
     modeEdit,
     pusat,
     setPusat,
@@ -29,12 +27,17 @@ export default function KelompokRisetPage() {
     mulaiEdit,
     batalEdit,
     simpanEdit,
+
+    tambahKelompok,
+    hapusKelompok,
+    ubahNamaKelompok,
+
     updatePeriset,
     tambahPeriset,
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
-    terapkanImportData,
+    // terapkanImportData dipakai di handleImportFile setelah integrasi selesai
   } = useKelompokRiset();
 
   async function handleCetak() {
@@ -57,7 +60,9 @@ export default function KelompokRisetPage() {
     // TODO:
     // Hubungkan ke Supabase Edge Function.
     // Kirim file ke Gemini untuk dikonversi menjadi JSON.
-    // Validasi hasil JSON sebelum memperbarui data.
+    // Setelah JSON diterima, panggil:
+    //   terapkanImportData(hasilJson, "ganti" | "tambah");
+    // (validasi struktur sudah dilakukan di dalam hook)
 
     throw new Error(
       "Integrasi Gemini dan Supabase belum dihubungkan.",
@@ -100,11 +105,11 @@ export default function KelompokRisetPage() {
             onPindah={pindahPeriset}
           />
 
-           <ImportDataModal
-              open={showImport}
-              onClose={() => setShowImport(false)}
-              onImport={handleImportFile}
-            />
+          <ImportDataModal
+            open={showImport}
+            onClose={() => setShowImport(false)}
+            onImport={handleImportFile}
+          />
         </div>
       </div>
     </div>
