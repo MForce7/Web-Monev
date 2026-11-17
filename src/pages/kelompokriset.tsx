@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-// import InstansiBar from "../components/rekapitulasi/InstansiBar";
-
 import {
   GayaDropdown,
   KelompokRisetToolbar,
@@ -9,36 +7,33 @@ import {
   ImportDataModal,
   useKelompokRiset,
   cetakPdf,
+  parseFileKelompokRiset,
+  SEMUA,
 } from "../components/kelompokRiset";
 
 export default function KelompokRisetPage() {
   const [mencetak, setMencetak] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
-  const {
+    const {
     modeEdit,
-
     pusat,
     setPusat,
-
     cari,
     setCari,
-
     tampil,
     total,
-
     opsiPusat,
     opsiKelompok,
-
     mulaiEdit,
     batalEdit,
     simpanEdit,
-
     updatePeriset,
     tambahPeriset,
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
+    terapkanImportData,
   } = useKelompokRiset();
 
   async function handleCetak() {
@@ -55,26 +50,16 @@ export default function KelompokRisetPage() {
     }
   }
 
-  async function handleImportFile(file: File) {
-    console.log("File yang akan diimport:", file);
-
-    // TODO:
-    // Hubungkan ke Supabase Edge Function.
-    // Kirim file ke Gemini untuk dikonversi menjadi JSON.
-    // Validasi hasil JSON sebelum memperbarui data.
-
-    throw new Error(
-      "Integrasi Gemini dan Supabase belum dihubungkan.",
-    );
-  }
+    async function handleImportFile(
+      file: File,
+      mode: "ganti" | "tambah",
+    ) {
+      const dataBaru = await parseFileKelompokRiset(file);
+      terapkanImportData(dataBaru, mode);
+    }
 
   return (
-    <div
-      className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden"
-      translate="no"
-    >
-      {/* <InstansiBar /> */}
-
+    <div className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden" translate="no">
       <div className="p-6 md:p-8">
         <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
           <GayaDropdown />
@@ -106,11 +91,11 @@ export default function KelompokRisetPage() {
             onPindah={pindahPeriset}
           />
 
-          <ImportDataModal
-            open={showImport}
-            onClose={() => setShowImport(false)}
-            onImport={handleImportFile}
-          />
+           <ImportDataModal
+              open={showImport}
+              onClose={() => setShowImport(false)}
+              onImport={handleImportFile}
+            />
         </div>
       </div>
     </div>

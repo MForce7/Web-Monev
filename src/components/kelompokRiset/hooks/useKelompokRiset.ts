@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import raw from "../../../data/kelompokriset.json";
 
@@ -7,12 +7,13 @@ import {
   SEMUA,
 } from "../constants";
 
+
 import type {
-  Kelompok,
   PusatRiset,
   PusatTampil,
   TujuanPindah,
 } from "../types";
+
 
 const DATA_AWAL: PusatRiset[] = (
   raw as { pusatRiset: PusatRiset[] }
@@ -254,6 +255,59 @@ export function useKelompokRiset() {
       return next;
     });
   }
+    // Menerapkan hasil import file (Excel/CSV) ke kelompok riset satu pusat.
+    // Menerapkan hasil import file (Excel/CSV): "ganti" menimpa seluruh
+  // data, "tambah" menggabungkan ke data yang sedang aktif.
+  function terapkanImportData(
+    dataBaru: PusatRiset[],
+    mode: "ganti" | "tambah",
+  ) {
+    const bersih = cloneData(dataBaru);
+
+    if (mode === "ganti") {
+      setDraft(bersih);
+      setModeEdit(true);
+      return;
+    }
+
+    setDraft((previous) => {
+      const basis = modeEdit ? previous : cloneData(data);
+      const next = cloneData(basis);
+
+      bersih.forEach((pusatBaru) => {
+        const pusatIndex = next.findIndex(
+          (p) => p.nama === pusatBaru.nama,
+        );
+
+        if (pusatIndex === -1) {
+          next.push(pusatBaru);
+          return;
+        }
+
+        const pusatTujuan = next[pusatIndex];
+
+        pusatBaru.kelompok.forEach((kelompokBaru) => {
+          const kelompokIndex = pusatTujuan.kelompok.findIndex(
+            (k) => k.nama === kelompokBaru.nama,
+          );
+
+          if (kelompokIndex === -1) {
+            pusatTujuan.kelompok.push(kelompokBaru);
+          } else {
+            pusatTujuan.kelompok[kelompokIndex].anggota.push(
+              ...kelompokBaru.anggota,
+            );
+          }
+        });
+      });
+
+      return next;
+    });
+
+    setModeEdit(true);
+  }
+
+
 
   // Menghitung total kelompok dan periset.
   const total = useMemo(() => {
@@ -342,7 +396,7 @@ export function useKelompokRiset() {
     return [SEMUA, ...data.map((p) => p.nama)];
   }, [data]);
 
-  return {
+    return {
     data,
     draft,
     activeData,
@@ -368,5 +422,6 @@ export function useKelompokRiset() {
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
+    terapkanImportKelompok, // <- pastikan baris ini ada
   };
 }
