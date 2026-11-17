@@ -11,12 +11,12 @@ export interface LeaderboardProps {
   className?: string;
 }
 
-export default function Leaderboard({ data, className = "mt-20" }: LeaderboardProps) {
+export default function Leaderboard({ data, className = "mt-12 sm:mt-20" }: LeaderboardProps) {
   const [urutan, setUrutan] = useState<"tertinggi" | "terendah">("tertinggi");
   const items = data["Status Kelengkapan Data"];
 
   return (
-    <div className={className}>
+    <div className={`w-full ${className}`}>
       <LeaderboardSection
         peringkat={items}
         urutan={urutan}

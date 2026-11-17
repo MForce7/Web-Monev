@@ -203,14 +203,15 @@ const th = "border-r border-white/25 px-3 py-2 text-center text-[11px] font-bold
 const td =
   "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-xs leading-snug text-[#1b3560] [overflow-wrap:break-word]";
 
-// Lebar dikunci (width + min + max) supaya posisi kolom Nama tepat di 56px dan tidak ada celah
-const kunci1 = "w-[56px] min-w-[56px] max-w-[56px]";
-const kunci2 = "w-[200px] min-w-[200px] max-w-[200px]";
+// Lebar kolom sticky dibuat responsif lewat variabel CSS (diatur di <section> di bawah):
+// HP: No 44px + Nama 120px = 164px. Tablet ke atas (md): No 56px + Nama 200px = 256px.
+// Lebar dikunci (width + min + max) supaya posisi kolom Nama tepat di sebelah kolom No dan tidak ada celah.
+const kunci1 = "w-[var(--no-w)] min-w-[var(--no-w)] max-w-[var(--no-w)]";
+const kunci2 = "w-[var(--nama-w)] min-w-[var(--nama-w)] max-w-[var(--nama-w)]";
 const stickyBody1 = `sticky left-0 z-10 ${kunci1}`;
-const stickyBody2 = `sticky left-[56px] z-10 ${kunci2}`;
+const stickyBody2 = `sticky left-[var(--no-w)] z-10 ${kunci2}`;
 const stickyHead1 = `sticky left-0 z-20 ${kunci1}`;
-const stickyHead2 = `sticky left-[56px] z-20 ${kunci2}`;
-const LEBAR_STICKY = 256; // 56px (No) + 200px (Nama Ketua Tim), dipakai untuk posisi bayangan kiri
+const stickyHead2 = `sticky left-[var(--no-w)] z-20 ${kunci2}`;
 
 // bulan tetap ada di tipe props supaya cocok dengan komponen lain, tapi tidak dipakai di sini
 type Props = { bulan?: string | null; pusatRiset: string | null };
@@ -244,7 +245,7 @@ export default function Tabel3({ pusatRiset }: Props) {
     return () => ro.disconnect();
   }, [cek]);
 
-  const geser = (arah: 1 | -1) => ref.current?.scrollBy({ left: arah * 420, behavior: "smooth" });
+  const geser = (arah: 1 | -1) => ref.current?.scrollBy({ left: arah * 320, behavior: "smooth" });
   const bisaScroll = bisaKiri || bisaKanan;
 
   // Belum memilih pusat riset = cetak semua pusat riset
@@ -263,12 +264,12 @@ export default function Tabel3({ pusatRiset }: Props) {
 
   return (
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
-    <div className="w-full rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
-      <section className="isolate w-full overflow-hidden rounded-2xl bg-white [clip-path:inset(0_round_1rem)]">
+    <div className="w-full min-w-0 rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
+      <section className="isolate w-full overflow-hidden rounded-2xl bg-white [--no-w:44px] [--nama-w:120px] [--sticky-w:164px] [clip-path:inset(0_round_1rem)] md:[--no-w:56px] md:[--nama-w:200px] md:[--sticky-w:256px]">
         {/* Bilah atas: judul + tombol Cetak */}
-        <div className="flex items-center justify-between gap-3 border-b border-[#dbe6f7] bg-white px-4 py-2">
+        <div className="flex items-center justify-between gap-3 border-b border-[#dbe6f7] bg-white px-3 py-2 sm:px-4">
           <div className="min-w-0">
-            <p className="text-sm font-bold text-[#1b3560]">Pemantauan pengisian logbook</p>
+            <p className="truncate text-sm font-bold text-[#1b3560]">Pemantauan pengisian logbook</p>
             <p className="truncate text-xs text-slate-500">{pusatRiset ?? "Semua pusat riset"}</p>
           </div>
           <button
@@ -277,7 +278,7 @@ export default function Tabel3({ pusatRiset }: Props) {
             disabled={mencetak}
             title="Unduh rekap sebagai PDF"
             style={{ background: GRAD_CARD }}
-            className="flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(27,63,120,0.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(27,63,120,0.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 sm:gap-2 sm:px-4"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M6 9V3h12v6" />
@@ -290,7 +291,7 @@ export default function Tabel3({ pusatRiset }: Props) {
 
         {/* petunjuk: hanya muncul kalau tabel memang bisa di-scroll */}
         {bisaScroll && (
-          <p className="flex items-center justify-center gap-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-3 py-1 text-xs font-semibold text-[#2a5aa8]">
+          <p className="flex items-center justify-center gap-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-3 py-1 text-center text-[11px] font-semibold text-[#2a5aa8] sm:text-xs">
             {bisaKiri && <span aria-hidden>←</span>}
             Geser tabel ke samping untuk melihat bulan lainnya
             {bisaKanan && <span aria-hidden className="animate-pulse">→</span>}
@@ -301,7 +302,7 @@ export default function Tabel3({ pusatRiset }: Props) {
           <div
             ref={ref}
             onScroll={cek}
-            className="overflow-x-auto [scrollbar-color:#2a5aa8_#eaf0fa] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-[#eaf0fa] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#2a5aa8]"
+            className="overflow-x-auto overscroll-x-contain [scrollbar-color:#2a5aa8_#eaf0fa] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-[#eaf0fa] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#2a5aa8]"
           >
             <table className="w-full border-separate border-spacing-0">
               <thead style={{ background: GRAD_CARD }}>
@@ -353,9 +354,9 @@ export default function Tabel3({ pusatRiset }: Props) {
             <>
               <div
                 className="pointer-events-none absolute inset-y-0 z-20 w-6 bg-gradient-to-r from-[#1b3f78]/10 to-transparent"
-                style={{ left: LEBAR_STICKY }}
+                style={{ left: "var(--sticky-w)" }}
               />
-              <TombolPanah arah="kiri" onClick={() => geser(-1)} style={{ left: LEBAR_STICKY + 8 }} />
+              <TombolPanah arah="kiri" onClick={() => geser(-1)} style={{ left: "calc(var(--sticky-w) + 8px)" }} />
             </>
           )}
         </div>

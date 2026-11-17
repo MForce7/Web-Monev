@@ -122,6 +122,8 @@ export default function ActivityHeader({
     <div
       id="headerCard"
       className={`
+        w-full max-w-full mx-auto min-w-0
+        bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl
         w-full mx-auto min-w-0
         bg-white rounded-xl sm:rounded-2xl shadow-xl
         overflow-hidden border transition-all duration-300
@@ -133,6 +135,7 @@ export default function ActivityHeader({
     >
       {/* HEADER BIRU TUA */}
       <div className={`
+        px-4 sm:px-6 py-3 sm:py-4
         px-4 sm:px-6 py-4
         flex flex-col sm:flex-row
         items-stretch sm:items-center
@@ -151,7 +154,7 @@ export default function ActivityHeader({
         </div>
 
         {saveError && (
-          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+          <div className="min-w-0 break-words rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
             <i className="fa-solid fa-triangle-exclamation mr-1.5" />
             Gagal menyimpan: {saveError}
           </div>
@@ -162,10 +165,11 @@ export default function ActivityHeader({
             type="button"
             onClick={startEdit}
             className="
+              w-full sm:w-auto shrink-0 justify-center
               w-full sm:w-auto justify-center shrink-0
               bg-blue-600 hover:bg-blue-700
               text-white font-medium
-              px-5 py-2 rounded-xl
+              px-5 py-2.5 sm:py-2 rounded-xl
               text-sm shadow-md transition-all
               duration-200 border border-blue-400/30
               flex items-center gap-2
@@ -178,6 +182,7 @@ export default function ActivityHeader({
 
         {isEditing && (
           <span className="
+            shrink-0 self-start sm:self-auto
             self-start sm:self-auto shrink-0
             px-3 py-1.5 rounded-lg
             bg-orange-400/20 text-orange-100
@@ -193,12 +198,19 @@ export default function ActivityHeader({
       {/* KONTEN UTAMA */}
       <div
         className={`
+          p-3 sm:p-6 md:p-8
           p-3 sm:p-6 lg:p-8
           space-y-5 sm:space-y-6 transition-colors duration-300
           ${isEditing ? 'bg-orange-50/50' : 'bg-white'}
         `}
       >
         {/* INFORMASI AKTIVITAS DAN TARGET OUTPUT */}
+        <div className="w-full max-w-full overflow-x-auto">
+          <table className="
+            w-full min-w-[320px]
+            table-fixed text-xs sm:text-sm
+            border-collapse
+          ">
         <div className="w-full overflow-x-auto">
           <table className="w-full table-fixed text-sm border-collapse">
             <tbody>
@@ -229,6 +241,7 @@ export default function ActivityHeader({
         {/* TOMBOL AKSI EDIT */}
         {isEditing && (
           <div className="
+            mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-slate-200
             pt-5 border-t border-slate-200
             flex flex-col-reverse sm:flex-row
             justify-end gap-3 no-print
@@ -268,6 +281,18 @@ export default function ActivityHeader({
             </button>
           </div>
         )}
+
+        {/* AREA TAMBAHAN / INFORMASI PENDUKUNG */}
+        <div className="
+          bg-slate-100/80
+          border border-slate-200
+          rounded-xl sm:rounded-2xl
+          min-h-25 min-w-0
+          p-2 sm:p-4 md:p-5
+        ">
+
+          {/* LOG PROGRES BULANAN */}
+          <div className="w-full min-w-0 mt-0 sm:mt-2">
 
         {/* LOG PROGRES BULANAN */}
         <div className="bg-slate-100/80 border border-slate-200 rounded-xl sm:rounded-2xl p-2 sm:p-4">

@@ -11,7 +11,7 @@ export default function MetricCardList({ data }: MetricCardListProps) {
   }
 
   return (
-    <section className="flex flex-wrap gap-6">
+    <section className="flex w-full flex-wrap justify-center gap-4 sm:gap-6">
       {data.items.map((item) => (
         <MetricCard key={item.title} data={item} />
       ))}

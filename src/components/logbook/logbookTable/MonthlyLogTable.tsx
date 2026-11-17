@@ -6,6 +6,9 @@ import { PrintStyles, WRAP } from '../shared'
 
 export type { MonthData }
 
+/** Lebar minimum tiap kolom (px): Bulan, 4 kolom aktivitas, 5 kolom output, Tindakan */
+const WIDTHS_PX = [88, 150, 120, 130, 100, 100, 130, 100, 80, 100, 100]
+const TABLE_MIN_WIDTH = WIDTHS_PX.reduce((sum, w) => sum + w, 0)
 // Urutan kolom: Bulan | Uraian | Kendala | Mitigasi | Data Dukung Progres |
 // Jenis | Judul | Status | Capaian | Data Dukung Output | Tindakan  (total 100)
 const WIDTHS = [7, 13, 11, 11, 7, 8, 11, 9, 7, 6, 10]
@@ -28,6 +31,15 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
   // Bayangan petunjuk scroll horizontal
   const scrollRef = useRef<HTMLDivElement>(null)
   const [shadow, setShadow] = useState({ left: false, right: false })
@@ -46,6 +58,26 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
+
+    updateScrollState()
+    el.addEventListener('scroll', updateScrollState, { passive: true })
+    window.addEventListener('resize', updateScrollState)
+
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateScrollState) : null
+    observer?.observe(el)
+
+    return () => {
+      el.removeEventListener('scroll', updateScrollState)
+      window.removeEventListener('resize', updateScrollState)
+      observer?.disconnect()
+    }
+  }, [updateScrollState])
+
+  const scrollByDirection = (direction: 1 | -1) => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: 'smooth' })
+  }
     updateShadow()
     const ro = new ResizeObserver(updateShadow)
     ro.observe(el)
@@ -77,6 +109,11 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
     <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden w-full max-w-full min-w-0">
       <PrintStyles />
 
+      <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center sm:gap-3 no-print">
+        <h3 className="font-bold text-slate-700 text-sm sm:text-base min-w-0">
+          <i className="fa-solid fa-calendar-days mr-2 text-gov-600" /> Log Progres Bulanan (Januari - Desember)
+        </h3>
+        <button type="button" onClick={() => window.print()} className="w-full sm:w-auto justify-center px-3 py-2 sm:py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition flex items-center gap-1.5 shrink-0">
       <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 no-print">
         <h3 className="font-bold text-slate-700 text-sm sm:text-base min-w-0">
           <i className="fa-solid fa-calendar-days mr-2 text-gov-600" /> Log Progres Bulanan (Januari - Desember)
@@ -90,6 +127,12 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
         </button>
       </div>
 
+      {/* Petunjuk geser, hanya muncul selama tabel masih bisa digeser ke kanan */}
+      {canScrollRight && (
+        <div className="flex items-center justify-center gap-2 bg-blue-50 border-b border-blue-100 px-3 py-1.5 text-[11px] font-medium text-blue-700 no-print">
+          <span>Geser tabel ke kanan untuk melihat kolom lainnya</span>
+          <i className="fa-solid fa-arrow-right animate-pulse" />
+        </div>
       {/* Petunjuk geser: hanya muncul kalau tabel memang melebihi lebar layar */}
       {scrollable && (
         <p className="px-3 py-1.5 text-[11px] text-slate-500 bg-slate-50 border-b border-slate-200 no-print">
@@ -99,12 +142,65 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
       )}
 
       {saveError && (
-        <div className="px-3 py-2 bg-red-50 border-b border-red-200 text-xs text-red-700 no-print">
+        <div className="px-3 py-2 bg-red-50 border-b border-red-200 text-xs text-red-700 break-words no-print">
           <i className="fa-solid fa-triangle-exclamation mr-1.5" />
           Gagal menyimpan: {saveError}
         </div>
       )}
 
+      <div className="relative">
+        {/* Bayangan tipis + tombol panah kiri */}
+        {canScrollLeft && (
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-5 bg-gradient-to-r from-slate-500/25 to-transparent no-print">
+            <button
+              type="button"
+              aria-label="Geser ke kiri"
+              onClick={() => scrollByDirection(-1)}
+              className="pointer-events-auto absolute left-0.5 top-16 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow ring-1 ring-slate-300 transition hover:bg-white"
+            >
+              <i className="fa-solid fa-chevron-left text-[10px]" />
+            </button>
+          </div>
+        )}
+
+        {/* Bayangan tipis + tombol panah kanan */}
+        {canScrollRight && (
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-5 bg-gradient-to-l from-slate-500/25 to-transparent no-print">
+            <button
+              type="button"
+              aria-label="Geser ke kanan"
+              onClick={() => scrollByDirection(1)}
+              className="pointer-events-auto absolute right-0.5 top-16 flex h-7 w-7 animate-pulse items-center justify-center rounded-full bg-blue-600/90 text-white shadow ring-1 ring-white transition hover:bg-blue-700"
+            >
+              <i className="fa-solid fa-chevron-right text-[10px]" />
+            </button>
+          </div>
+        )}
+
+        <div
+          ref={scrollRef}
+          className="w-full max-w-full overflow-x-auto overscroll-x-contain pb-2 print:overflow-visible print:pb-0"
+        >
+          <table
+            id="mainTable"
+            style={{ minWidth: TABLE_MIN_WIDTH }}
+            className="
+              w-full table-fixed text-left text-[11px] border-collapse
+              print:!min-w-0
+              [&_td:first-child]:whitespace-nowrap
+              [&_td:first-child]:[word-break:normal]
+              [&_td:first-child]:[overflow-wrap:normal]
+              [&_th:first-child]:whitespace-nowrap
+              [&_th:first-child]:[word-break:normal]
+              [&_th:first-child]:[overflow-wrap:normal]
+              print:[&_td:first-child]:whitespace-normal
+              print:[&_th:first-child]:whitespace-normal
+            "
+          >
+            <colgroup>
+              {WIDTHS_PX.map((w, i) => (
+                <col key={i} style={{ width: `${w}px` }} className={i === WIDTHS_PX.length - 1 ? 'no-print' : undefined} />
+              ))}
       {/* Pembungkus relatif: bayangan diletakkan di atas area scroll, tidak ikut bergeser */}
       <div className="relative">
         <div

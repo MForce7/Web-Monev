@@ -96,7 +96,7 @@ function PillButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#8B0303] shadow-[0_2px_5px_rgba(0,0,0,0.25)] transition hover:bg-[#FFF3F3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F22838] disabled:opacity-60"
+      className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#8B0303] shadow-[0_2px_5px_rgba(0,0,0,0.25)] transition hover:bg-[#FFF3F3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F22838] disabled:opacity-60 sm:px-2.5 sm:py-1 sm:text-[11px]"
     >
       {children}
     </button>
@@ -126,7 +126,7 @@ function AgendaRows({
               type="button"
               onClick={() => onPick(a)}
               aria-current={a.id === activeId ? "true" : undefined}
-              className={`flex w-full items-baseline gap-2 text-left text-sm leading-6 hover:underline ${
+              className={`flex w-full items-baseline gap-2 py-0.5 text-left text-sm leading-6 hover:underline ${
                 a.id === activeId ? "text-[#8B0303]" : "text-[#353535]"
               }`}
             >
@@ -317,14 +317,15 @@ export default function CalendarDesc({
     }
   };
 
+  // text-base (16px) di mobile supaya iOS Safari tidak auto-zoom saat fokus
   const inputCls =
-    "w-full rounded-lg bg-[#FADADA] px-3 py-1.5 text-sm text-[#353535] outline-none focus-visible:ring-2 focus-visible:ring-[#F22838]";
+    "w-full rounded-lg bg-[#FADADA] px-3 py-2 text-base text-[#353535] outline-none focus-visible:ring-2 focus-visible:ring-[#F22838] sm:py-1.5 sm:text-sm";
 
   return (
     <div className="relative">
       <section
         aria-label="Agenda"
-        className="grid gap-6 rounded-3xl bg-white px-7 py-8 shadow-[3px_5px_8px_rgba(0,0,0,0.25)] md:h-[400px] md:grid-cols-[minmax(0,1fr)_2px_minmax(0,1fr)] lg:absolute lg:inset-0 lg:h-auto"
+        className="grid gap-6 rounded-3xl bg-white px-4 py-6 shadow-[3px_5px_8px_rgba(0,0,0,0.25)] sm:px-7 sm:py-8 md:h-[400px] md:grid-cols-[minmax(0,1fr)_2px_minmax(0,1fr)] lg:absolute lg:inset-0 lg:h-auto"
       >
         <div className="max-h-[330px] min-h-0 space-y-4 overflow-y-auto pr-1 md:h-full md:max-h-none">
           <div className="rounded-2xl bg-[#FADADA] px-4 py-3">
@@ -403,7 +404,7 @@ export default function CalendarDesc({
                   className={`${inputCls} mt-1 resize-none`}
                 />
               </div>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <p role="alert" className="text-xs font-semibold text-[#BF1818]">
                   {editError}
                 </p>
@@ -411,7 +412,7 @@ export default function CalendarDesc({
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="rounded-full px-2.5 py-1 text-[11px] font-bold text-[#353535] hover:bg-[#F6F6F6]"
+                    className="rounded-full px-3 py-1.5 text-xs font-bold text-[#353535] hover:bg-[#F6F6F6] sm:px-2.5 sm:py-1 sm:text-[11px]"
                   >
                     Batal
                   </button>
@@ -424,8 +425,8 @@ export default function CalendarDesc({
             </div>
           ) : (
             <>
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-lg font-bold leading-6">{activeAgenda?.name}</h3>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h3 className="min-w-0 break-words text-lg font-bold leading-6">{activeAgenda?.name}</h3>
                 {isAdmin && activeAgenda &&
                   (confirmDelete ? (
                     <div className="flex flex-wrap items-center justify-end gap-2">
@@ -439,7 +440,7 @@ export default function CalendarDesc({
                       <button
                         type="button"
                         onClick={() => setConfirmDelete(false)}
-                        className="rounded-full px-2.5 py-1 text-[11px] font-bold text-[#353535] hover:bg-[#F6F6F6]"
+                        className="rounded-full px-3 py-1.5 text-xs font-bold text-[#353535] hover:bg-[#F6F6F6] sm:px-2.5 sm:py-1 sm:text-[11px]"
                       >
                         Batal
                       </button>
@@ -496,17 +497,17 @@ export default function CalendarDesc({
             role="dialog"
             aria-modal="true"
             aria-labelledby="judul-form-agenda"
-            className="w-full max-w-[640px] rounded-3xl bg-white px-7 pb-5 pt-6 shadow-[3px_6px_14px_rgba(0,0,0,0.3)]"
+            className="max-h-[90dvh] w-full max-w-[640px] overflow-y-auto rounded-3xl bg-white px-4 pb-5 pt-6 shadow-[3px_6px_14px_rgba(0,0,0,0.3)] sm:px-7"
           >
             <h2 id="judul-form-agenda" className="sr-only">
               Tambah agenda {formatDate(selectedDate)}
             </h2>
 
-            <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-start gap-x-2 gap-y-3 text-base font-bold">
-              <label htmlFor="f-nama" className="pt-1">
+            <div className="grid grid-cols-1 items-start gap-y-1 text-base font-bold sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:gap-x-2 sm:gap-y-3">
+              <label htmlFor="f-nama" className="pt-2 sm:pt-1">
                 Nama Agenda
               </label>
-              <span className="pt-1">:</span>
+              <span className="hidden pt-1 sm:block">:</span>
               <input
                 id="f-nama"
                 autoFocus
@@ -515,10 +516,10 @@ export default function CalendarDesc({
                 className={inputCls}
               />
 
-              <label htmlFor="f-jam" className="pt-1">
+              <label htmlFor="f-jam" className="pt-2 sm:pt-1">
                 Waktu
               </label>
-              <span className="pt-1">:</span>
+              <span className="hidden pt-1 sm:block">:</span>
               <div className="flex items-center gap-2">
                 <input
                   id="f-jam"
@@ -529,7 +530,7 @@ export default function CalendarDesc({
                   value={form.hour}
                   onChange={(e) => setTimePart("hour", e.target.value, 23)}
                   onBlur={() => padTimePart("hour")}
-                  className={`${inputCls} !w-12 text-center`}
+                  className={`${inputCls} !w-14 text-center sm:!w-12`}
                 />
                 <span>:</span>
                 <input
@@ -540,14 +541,14 @@ export default function CalendarDesc({
                   value={form.minute}
                   onChange={(e) => setTimePart("minute", e.target.value, 59)}
                   onBlur={() => padTimePart("minute")}
-                  className={`${inputCls} !w-12 text-center`}
+                  className={`${inputCls} !w-14 text-center sm:!w-12`}
                 />
               </div>
 
-              <label htmlFor="f-tempat" className="pt-1">
+              <label htmlFor="f-tempat" className="pt-2 sm:pt-1">
                 Tempat
               </label>
-              <span className="pt-1">:</span>
+              <span className="hidden pt-1 sm:block">:</span>
               <input
                 id="f-tempat"
                 value={form.place}
@@ -555,10 +556,10 @@ export default function CalendarDesc({
                 className={inputCls}
               />
 
-              <label htmlFor="f-zoom" className="pt-1">
+              <label htmlFor="f-zoom" className="pt-2 sm:pt-1">
                 Link Zoom
               </label>
-              <span className="pt-1">:</span>
+              <span className="hidden pt-1 sm:block">:</span>
               <input
                 id="f-zoom"
                 value={form.zoomLink}
@@ -566,10 +567,10 @@ export default function CalendarDesc({
                 className={inputCls}
               />
 
-              <label htmlFor="f-deskripsi" className="pt-1">
+              <label htmlFor="f-deskripsi" className="pt-2 sm:pt-1">
                 Deskripsi
               </label>
-              <span className="pt-1">:</span>
+              <span className="hidden pt-1 sm:block">:</span>
               <textarea
                 id="f-deskripsi"
                 rows={3}
@@ -579,7 +580,7 @@ export default function CalendarDesc({
               />
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <p role="alert" className="text-xs font-semibold text-[#BF1818]">
                 {formError}
               </p>
@@ -587,7 +588,7 @@ export default function CalendarDesc({
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="rounded-full px-2.5 py-1 text-[11px] font-bold text-[#353535] hover:bg-[#F6F6F6]"
+                  className="rounded-full px-3 py-1.5 text-xs font-bold text-[#353535] hover:bg-[#F6F6F6] sm:px-2.5 sm:py-1 sm:text-[11px]"
                 >
                   Batal
                 </button>
