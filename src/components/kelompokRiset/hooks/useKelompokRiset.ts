@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
-
-import raw from "../../../data/kelompokriset.json";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
-  STORAGE_KEY,
   SEMUA,
 } from "../constants";
 
+import {
+  ambilKelompokRiset,
+  simpanKelompokRiset,
+} from "../services/db";
 
 import type {
   PusatRiset,
@@ -14,47 +15,47 @@ import type {
   TujuanPindah,
 } from "../types";
 
-
-const DATA_AWAL: PusatRiset[] = (
-  raw as { pusatRiset: PusatRiset[] }
-).pusatRiset;
-
 function cloneData(data: PusatRiset[]): PusatRiset[] {
   return JSON.parse(JSON.stringify(data)) as PusatRiset[];
 }
 
-function ambilDataAwal(): PusatRiset[] {
-  if (typeof window === "undefined") {
-    return cloneData(DATA_AWAL);
-  }
-
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      return JSON.parse(saved) as PusatRiset[];
-    }
-  } catch (error) {
-    console.error("Gagal membaca localStorage:", error);
-  }
-
-  return cloneData(DATA_AWAL);
-}
-
 export function useKelompokRiset() {
-  const [data, setData] = useState<PusatRiset[]>(ambilDataAwal);
-
+  const [data, setData] = useState<PusatRiset[]>([]);
   const [draft, setDraft] = useState<PusatRiset[]>([]);
-
   const [modeEdit, setModeEdit] = useState(false);
 
-  const [pusat, setPusat] = useState(SEMUA);
+  const [memuat, setMemuat] = useState(true);
+  const [errorMuat, setErrorMuat] = useState<string | null>(null);
 
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [errorSimpan, setErrorSimpan] = useState<string | null>(null);
+
+  const [pusat, setPusat] = useState(SEMUA);
   const [cari, setCari] = useState("");
 
   const activeData = modeEdit ? draft : data;
 
-  // Simpan data ketika mode edit disimpan.
+  const muatData = useCallback(async () => {
+    try {
+      setMemuat(true);
+      setErrorMuat(null);
+
+      const hasil = await ambilKelompokRiset();
+      setData(hasil);
+    } catch (error) {
+      console.error("Gagal memuat data kelompok riset:", error);
+      setErrorMuat(
+        error instanceof Error ? error.message : "Gagal memuat data.",
+      );
+    } finally {
+      setMemuat(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    muatData();
+  }, [muatData]);
+
   function mulaiEdit() {
     setDraft(cloneData(data));
     setModeEdit(true);
@@ -65,12 +66,12 @@ export function useKelompokRiset() {
     setModeEdit(false);
   }
 
-  function simpanEdit() {
+  async function simpanEdit() {
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(draft),
-      );
+      setMenyimpan(true);
+      setErrorSimpan(null);
+
+      await simpanKelompokRiset(draft);
 
       setData(cloneData(draft));
       setDraft([]);
@@ -79,8 +80,12 @@ export function useKelompokRiset() {
       return true;
     } catch (error) {
       console.error("Gagal menyimpan data:", error);
-      alert("Data gagal disimpan ke localStorage.");
+      setErrorSimpan(
+        error instanceof Error ? error.message : "Data gagal disimpan.",
+      );
       return false;
+    } finally {
+      setMenyimpan(false);
     }
   }
 
@@ -94,7 +99,6 @@ export function useKelompokRiset() {
   ) {
     setDraft((previous) => {
       const next = cloneData(previous);
-
       const person = next[pi]?.kelompok[ki]?.anggota[ai];
 
       if (!person) return previous;
@@ -117,9 +121,7 @@ export function useKelompokRiset() {
         nama: "",
         nip: "",
         keterangan:
-          kelompok.anggota.length === 0
-            ? "Koordinator"
-            : "Anggota",
+          kelompok.anggota.length === 0 ? "Koordinator" : "Anggota",
         jabatan: "",
       });
 
@@ -128,11 +130,7 @@ export function useKelompokRiset() {
   }
 
   // Menghapus periset.
-  function hapusPeriset(
-    pi: number,
-    ki: number,
-    ai: number,
-  ) {
+  function hapusPeriset(pi: number, ki: number, ai: number) {
     const person = draft[pi]?.kelompok[ki]?.anggota[ai];
 
     if (!person) return;
@@ -151,14 +149,12 @@ export function useKelompokRiset() {
 
       const dihapus = kelompok.anggota.splice(ai, 1)[0];
 
-      // Jika koordinator dihapus, anggota pertama menjadi koordinator.
       if (
         dihapus &&
         dihapus.keterangan !== "Anggota" &&
         kelompok.anggota.length > 0
       ) {
-        kelompok.anggota[0].keterangan =
-          dihapus.keterangan;
+        kelompok.anggota[0].keterangan = dihapus.keterangan;
       }
 
       return next;
@@ -166,11 +162,7 @@ export function useKelompokRiset() {
   }
 
   // Mengganti koordinator kelompok.
-  function gantiKoordinator(
-    pi: number,
-    ki: number,
-    ai: number,
-  ) {
+  function gantiKoordinator(pi: number, ki: number, ai: number) {
     setDraft((previous) => {
       const next = cloneData(previous);
       const kelompok = next[pi]?.kelompok[ki];
@@ -182,12 +174,11 @@ export function useKelompokRiset() {
       const anggota = kelompok.anggota;
 
       const labelKoordinator =
-        anggota.find((a) => a.keterangan !== "Anggota")
-          ?.keterangan ?? "Koordinator";
+        anggota.find((a) => a.keterangan !== "Anggota")?.keterangan ??
+        "Koordinator";
 
       anggota.forEach((a, index) => {
-        a.keterangan =
-          index === ai ? labelKoordinator : "Anggota";
+        a.keterangan = index === ai ? labelKoordinator : "Anggota";
       });
 
       return next;
@@ -209,10 +200,7 @@ export function useKelompokRiset() {
 
       if (!source || !destination) return previous;
 
-      if (
-        sourcePi === tujuan.pi &&
-        sourceKi === tujuan.ki
-      ) {
+      if (sourcePi === tujuan.pi && sourceKi === tujuan.ki) {
         return previous;
       }
 
@@ -220,26 +208,14 @@ export function useKelompokRiset() {
 
       if (!person) return previous;
 
-      const isKoordinator =
-        person.keterangan !== "Anggota";
+      const isKoordinator = person.keterangan !== "Anggota";
 
-      const [movedPerson] = source.anggota.splice(
-        sourceAi,
-        1,
-      );
+      const [movedPerson] = source.anggota.splice(sourceAi, 1);
 
-      // Jika koordinator dipindahkan, anggota pertama
-      // yang tersisa menggantikannya.
-      if (
-        isKoordinator &&
-        source.anggota.length > 0
-      ) {
-        source.anggota[0].keterangan =
-          person.keterangan;
+      if (isKoordinator && source.anggota.length > 0) {
+        source.anggota[0].keterangan = person.keterangan;
       }
 
-      // Jika kelompok tujuan belum memiliki koordinator,
-      // periset yang dipindahkan menjadi koordinator.
       const hasKoordinator = destination.anggota.some(
         (a) => a.keterangan !== "Anggota",
       );
@@ -255,74 +231,103 @@ export function useKelompokRiset() {
       return next;
     });
   }
-    // Menerapkan hasil import file (Excel/CSV) ke kelompok riset satu pusat.
-    // Menerapkan hasil import file (Excel/CSV): "ganti" menimpa seluruh
-  // data, "tambah" menggabungkan ke data yang sedang aktif.
+
+  // function keTitleCase(teks: string): string {
+  //   return teks
+  //     .toLowerCase()
+  //     .split(" ")
+  //     .filter(Boolean)
+  //     .map((kata) => kata.charAt(0).toUpperCase() + kata.slice(1))
+  //     .join(" ");
+  // }
+
+  // Menerapkan hasil import file (Excel/CSV): "ganti" menimpa seluruh
+  // data, "tambah" menggabungkan ke data yang sedang aktif (periset dengan
+  // NIP yang sudah terdaftar dilewati, tidak ditambahkan dobel).
   function terapkanImportData(
     dataBaru: PusatRiset[],
     mode: "ganti" | "tambah",
-  ) {
+  ): { ditambahkan: number; dilewati: number } {
     const bersih = cloneData(dataBaru);
 
     if (mode === "ganti") {
+      const totalPeriset = bersih.reduce(
+        (n, p) => n + p.kelompok.reduce((m, k) => m + k.anggota.length, 0),
+        0,
+      );
+
       setDraft(bersih);
       setModeEdit(true);
-      return;
+
+      return { ditambahkan: totalPeriset, dilewati: 0 };
     }
 
-    setDraft((previous) => {
-      const basis = modeEdit ? previous : cloneData(data);
-      const next = cloneData(basis);
+    const basis = modeEdit ? draft : data;
+    const next = cloneData(basis);
 
-      bersih.forEach((pusatBaru) => {
-        const pusatIndex = next.findIndex(
-          (p) => p.nama === pusatBaru.nama,
+    const nipTerdaftar = new Set<string>();
+
+    next.forEach((p) =>
+      p.kelompok.forEach((k) =>
+        k.anggota.forEach((a) => {
+          const nip = a.nip.trim();
+          if (nip) nipTerdaftar.add(nip);
+        }),
+      ),
+    );
+
+    let ditambahkan = 0;
+    let dilewati = 0;
+
+    bersih.forEach((pusatBaru) => {
+      let pusatTujuan = next.find((p) => p.nama === pusatBaru.nama);
+
+      if (!pusatTujuan) {
+        pusatTujuan = { nama: pusatBaru.nama, kelompok: [] };
+        next.push(pusatTujuan);
+      }
+
+      pusatBaru.kelompok.forEach((kelompokBaru) => {
+        let kelompokTujuan = pusatTujuan!.kelompok.find(
+          (k) => k.nama === kelompokBaru.nama,
         );
 
-        if (pusatIndex === -1) {
-          next.push(pusatBaru);
-          return;
+        if (!kelompokTujuan) {
+          kelompokTujuan = { nama: kelompokBaru.nama, anggota: [] };
+          pusatTujuan!.kelompok.push(kelompokTujuan);
         }
 
-        const pusatTujuan = next[pusatIndex];
+        kelompokBaru.anggota.forEach((periset) => {
+          const nip = periset.nip.trim();
 
-        pusatBaru.kelompok.forEach((kelompokBaru) => {
-          const kelompokIndex = pusatTujuan.kelompok.findIndex(
-            (k) => k.nama === kelompokBaru.nama,
-          );
-
-          if (kelompokIndex === -1) {
-            pusatTujuan.kelompok.push(kelompokBaru);
-          } else {
-            pusatTujuan.kelompok[kelompokIndex].anggota.push(
-              ...kelompokBaru.anggota,
-            );
+          if (nip && nipTerdaftar.has(nip)) {
+            dilewati += 1;
+            return;
           }
+
+          kelompokTujuan!.anggota.push(periset);
+          ditambahkan += 1;
+
+          if (nip) nipTerdaftar.add(nip);
         });
       });
-
-      return next;
     });
 
+    setDraft(next);
     setModeEdit(true);
+
+    return { ditambahkan, dilewati };
   }
-
-
 
   // Menghitung total kelompok dan periset.
   const total = useMemo(() => {
     return {
-      kelompok: data.reduce(
-        (jumlah, p) => jumlah + p.kelompok.length,
-        0,
-      ),
-
+      kelompok: data.reduce((jumlah, p) => jumlah + p.kelompok.length, 0),
       periset: data.reduce(
         (jumlah, p) =>
           jumlah +
           p.kelompok.reduce(
-            (jumlahAnggota, k) =>
-              jumlahAnggota + k.anggota.length,
+            (jumlahAnggota, k) => jumlahAnggota + k.anggota.length,
             0,
           ),
         0,
@@ -338,29 +343,20 @@ export function useKelompokRiset() {
       .map((p, pi) => ({
         nama: p.nama,
         pi,
-
         kelompok: p.kelompok
           .map((k, ki) => {
-            const semuaAnggota = k.anggota.map(
-              (a, ai) => ({
-                ...a,
-                no: ai + 1,
-                ai,
-              }),
-            );
+            const semuaAnggota = k.anggota.map((a, ai) => ({
+              ...a,
+              no: ai + 1,
+              ai,
+            }));
 
-            const cocokKelompok =
-              k.nama.toLowerCase().includes(q);
+            const cocokKelompok = k.nama.toLowerCase().includes(q);
 
             const anggota =
               q && !cocokKelompok
                 ? semuaAnggota.filter((a) =>
-                    [
-                      a.nama,
-                      a.nip,
-                      a.jabatan,
-                      a.keterangan,
-                    ].some((value) =>
+                    [a.nama, a.nip, a.jabatan, a.keterangan].some((value) =>
                       value.toLowerCase().includes(q),
                     ),
                   )
@@ -377,8 +373,7 @@ export function useKelompokRiset() {
       }))
       .filter(
         (p) =>
-          (pusat === SEMUA || p.nama === pusat) &&
-          p.kelompok.length > 0,
+          (pusat === SEMUA || p.nama === pusat) && p.kelompok.length > 0,
       );
   }, [activeData, pusat, cari]);
 
@@ -396,11 +391,17 @@ export function useKelompokRiset() {
     return [SEMUA, ...data.map((p) => p.nama)];
   }, [data]);
 
-    return {
+  return {
     data,
     draft,
     activeData,
     modeEdit,
+
+    memuat,
+    errorMuat,
+    menyimpan,
+    errorSimpan,
+    muatUlang: muatData,
 
     pusat,
     setPusat,
@@ -422,6 +423,6 @@ export function useKelompokRiset() {
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
-    terapkanImportKelompok, // <- pastikan baris ini ada
+    terapkanImportData,
   };
 }

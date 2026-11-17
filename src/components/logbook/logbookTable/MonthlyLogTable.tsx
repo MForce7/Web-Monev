@@ -9,9 +9,6 @@ export type { MonthData }
 /** Lebar minimum tiap kolom (px): Bulan, 4 kolom aktivitas, 5 kolom output, Tindakan */
 const WIDTHS_PX = [88, 150, 120, 130, 100, 100, 130, 100, 80, 100, 100]
 const TABLE_MIN_WIDTH = WIDTHS_PX.reduce((sum, w) => sum + w, 0)
-// Urutan kolom: Bulan | Uraian | Kendala | Mitigasi | Data Dukung Progres |
-// Jenis | Judul | Status | Capaian | Data Dukung Output | Tindakan  (total 100)
-const WIDTHS = [7, 13, 11, 11, 7, 8, 11, 9, 7, 6, 10]
 
 const AKTIVITAS = ['Uraian Kemajuan Aktivitas', 'Kendala Ditemui', 'Mitigasi / Rencana Tindak Lanjut', 'Data Dukung Progres']
 const OUTPUT = ['Jenis Output', 'Judul Output', 'Status', 'Capaian (%)', 'Data Dukung Output']
@@ -40,19 +37,6 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
     if (!el) return
     setCanScrollLeft(el.scrollLeft > 4)
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
-  // Bayangan petunjuk scroll horizontal
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [shadow, setShadow] = useState({ left: false, right: false })
-  const scrollable = shadow.left || shadow.right
-
-  const updateShadow = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const maxScroll = el.scrollWidth - el.clientWidth
-    setShadow({
-      left: el.scrollLeft > 1,
-      right: el.scrollLeft < maxScroll - 1,
-    })
   }, [])
 
   useEffect(() => {
@@ -65,6 +49,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
 
     const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateScrollState) : null
     observer?.observe(el)
+    if (el.firstElementChild) observer?.observe(el.firstElementChild)
 
     return () => {
       el.removeEventListener('scroll', updateScrollState)
@@ -78,12 +63,6 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
     if (!el) return
     el.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: 'smooth' })
   }
-    updateShadow()
-    const ro = new ResizeObserver(updateShadow)
-    ro.observe(el)
-    if (el.firstElementChild) ro.observe(el.firstElementChild)
-    return () => ro.disconnect()
-  }, [updateShadow])
 
   const commit = async (i: number, next: MonthData) => {
     setSaveError(null)
@@ -109,19 +88,15 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
     <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden w-full max-w-full min-w-0">
       <PrintStyles />
 
-      <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center sm:gap-3 no-print">
-        <h3 className="font-bold text-slate-700 text-sm sm:text-base min-w-0">
-          <i className="fa-solid fa-calendar-days mr-2 text-gov-600" /> Log Progres Bulanan (Januari - Desember)
-        </h3>
-        <button type="button" onClick={() => window.print()} className="w-full sm:w-auto justify-center px-3 py-2 sm:py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition flex items-center gap-1.5 shrink-0">
       <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 no-print">
         <h3 className="font-bold text-slate-700 text-sm sm:text-base min-w-0">
           <i className="fa-solid fa-calendar-days mr-2 text-gov-600" /> Log Progres Bulanan (Januari - Desember)
         </h3>
+
         <button
           type="button"
           onClick={() => window.print()}
-          className="w-full sm:w-auto justify-center px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition flex items-center gap-1.5 shrink-0"
+          className="w-full sm:w-auto justify-center px-3 py-2 sm:py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition flex items-center gap-1.5 shrink-0"
         >
           <i className="fa-solid fa-print" /> Cetak Laporan
         </button>
@@ -133,12 +108,6 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
           <span>Geser tabel ke kanan untuk melihat kolom lainnya</span>
           <i className="fa-solid fa-arrow-right animate-pulse" />
         </div>
-      {/* Petunjuk geser: hanya muncul kalau tabel memang melebihi lebar layar */}
-      {scrollable && (
-        <p className="px-3 py-1.5 text-[11px] text-slate-500 bg-slate-50 border-b border-slate-200 no-print">
-          <i className="fa-solid fa-arrows-left-right mr-1.5" />
-          Geser tabel ke samping untuk melihat semua kolom
-        </p>
       )}
 
       {saveError && (
@@ -199,27 +168,12 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
           >
             <colgroup>
               {WIDTHS_PX.map((w, i) => (
-                <col key={i} style={{ width: `${w}px` }} className={i === WIDTHS_PX.length - 1 ? 'no-print' : undefined} />
+                <col
+                  key={i}
+                  style={{ width: `${w}px` }}
+                  className={i === WIDTHS_PX.length - 1 ? 'no-print' : undefined}
+                />
               ))}
-      {/* Pembungkus relatif: bayangan diletakkan di atas area scroll, tidak ikut bergeser */}
-      <div className="relative">
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-y-0 left-0 z-20 w-6 sm:w-8 bg-gradient-to-r from-slate-900/25 to-transparent transition-opacity duration-200 no-print ${shadow.left ? 'opacity-100' : 'opacity-0'}`}
-        />
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-y-0 right-0 z-20 w-6 sm:w-8 bg-gradient-to-l from-slate-900/25 to-transparent transition-opacity duration-200 no-print ${shadow.right ? 'opacity-100' : 'opacity-0'}`}
-        />
-
-        {/* Di layar sempit tabel di-scroll ke samping, bukan dipadatkan sampai kata terpotong */}
-        <div ref={scrollRef} onScroll={updateShadow} className="w-full overflow-x-auto overscroll-x-contain">
-          <table
-            id="mainTable"
-            className="w-full min-w-[1200px] print:min-w-0 table-fixed text-left text-[11px] border-collapse"
-          >
-            <colgroup>
-              {WIDTHS.map((w, i) => <col key={i} style={{ width: `${w}%` }} className={i === WIDTHS.length - 1 ? 'no-print' : undefined} />)}
             </colgroup>
 
             <thead>

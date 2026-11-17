@@ -22,6 +22,7 @@ type Props = {
 
   modeEdit: boolean;
   mencetak: boolean;
+  menyimpan: boolean;
 
   onMulaiEdit: () => void;
   onBatalEdit: () => void;
@@ -39,6 +40,7 @@ export default function KelompokRisetToolbar({
   opsiPusat,
   modeEdit,
   mencetak,
+  menyimpan,
   onMulaiEdit,
   onBatalEdit,
   onSimpanEdit,
@@ -90,7 +92,8 @@ export default function KelompokRisetToolbar({
             <button
               type="button"
               onClick={onBatalEdit}
-              className="h-9 px-4 border border-slate-300 bg-white text-slate-600 rounded-full text-xs font-bold hover:bg-slate-100"
+              disabled={menyimpan}
+              className="h-9 px-4 border border-slate-300 bg-white text-slate-600 rounded-full text-xs font-bold hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Batal
             </button>
@@ -98,10 +101,11 @@ export default function KelompokRisetToolbar({
             <button
               type="button"
               onClick={onSimpanEdit}
-              className="h-9 px-4 text-white rounded-full text-xs font-bold shadow-md hover:brightness-110"
+              disabled={menyimpan}
+              className="h-9 px-4 text-white rounded-full text-xs font-bold shadow-md hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: GRAD_BIRU_TUA }}
             >
-              Simpan Perubahan
+              {menyimpan ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </>
         )}
