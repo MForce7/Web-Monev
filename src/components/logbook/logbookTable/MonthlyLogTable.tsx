@@ -54,6 +54,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
 
     const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateScrollState) : null
     observer?.observe(el)
+    if (el.firstElementChild) observer?.observe(el.firstElementChild)
 
     return () => {
       el.removeEventListener('scroll', updateScrollState)
@@ -96,6 +97,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
         <h3 className="font-bold text-slate-700 text-sm sm:text-base min-w-0">
           <i className="fa-solid fa-calendar-days mr-2 text-gov-600" /> Log Progres Bulanan (Januari - Desember)
         </h3>
+
         <button
           type="button"
           onClick={() => window.print()}
@@ -172,7 +174,11 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
           >
             <colgroup>
               {WIDTHS_PX.map((w, i) => (
-                <col key={i} style={{ width: `${w}px` }} className={i === WIDTHS_PX.length - 1 ? 'no-print' : undefined} />
+                <col
+                  key={i}
+                  style={{ width: `${w}px` }}
+                  className={i === WIDTHS_PX.length - 1 ? 'no-print' : undefined}
+                />
               ))}
             </colgroup>
 

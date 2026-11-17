@@ -39,14 +39,18 @@ export default function Dropdown({
   // Tutup kalau tap/klik di luar atau tekan Escape (pointerdown mencakup mouse dan layar sentuh)
   useEffect(() => {
     if (!open) return;
+
     const onDown = (e: PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+
     return () => {
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
@@ -73,6 +77,7 @@ export default function Dropdown({
           <ul id={listId} role="listbox" aria-label={label} className="max-h-60 overflow-y-auto overscroll-contain sm:max-h-72">
             {options.map((opt) => {
               const dipilih = opt === value;
+
               return (
                 <li key={opt} role="option" aria-selected={dipilih}>
                   <button

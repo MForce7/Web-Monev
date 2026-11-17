@@ -12,6 +12,15 @@ export const HEADER_WAJIB = [
   "PUSAT RISET",
 ] as const;
 
+function keTitleCase(teks: string): string {
+  return teks
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((kata) => kata.charAt(0).toUpperCase() + kata.slice(1))
+    .join(" ");
+}
+
 function normalisasiHeader(header: unknown): string {
   return String(header ?? "")
     .trim()
@@ -117,7 +126,7 @@ export async function parseFileKelompokRiset(
     const keteranganRaw = String(baris[idxKeterangan] ?? "").trim();
     const jabatan = String(baris[idxJabatan] ?? "").trim();
 
-    const namaPusat = namaPusatRaw || pusatTerakhir;
+    const namaPusat = keTitleCase(namaPusatRaw || pusatTerakhir);
     const namaKelompok = namaKelompokRaw || kelompokTerakhir;
 
     if (!namaPusat) {

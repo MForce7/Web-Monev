@@ -20,6 +20,7 @@ type Props = {
 
   modeEdit: boolean;
   mencetak: boolean;
+  menyimpan: boolean;
 
   onMulaiEdit: () => void;
   onBatalEdit: () => void;
@@ -37,6 +38,7 @@ export default function KelompokRisetToolbar({
   opsiPusat,
   modeEdit,
   mencetak,
+  menyimpan,
   onMulaiEdit,
   onBatalEdit,
   onSimpanEdit,
@@ -82,22 +84,28 @@ export default function KelompokRisetToolbar({
             className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-[var(--w)]"
             style={lebarDd}
           >
-            <Dropdown
-              label="Semua Pusat Riset"
-              options={opsiPusat}
-              value={pusat}
-              onChange={setPusat}
-            />
-          </div>
+            Edit Data
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onBatalEdit}
+              disabled={menyimpan}
+              className="h-9 px-4 border border-slate-300 bg-white text-slate-600 rounded-full text-xs font-bold hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Batal
+            </button>
 
           {!modeEdit ? (
             <button
               type="button"
-              onClick={onMulaiEdit}
-              className={tombol}
+              onClick={onSimpanEdit}
+              disabled={menyimpan}
+              className="h-9 px-4 text-white rounded-full text-xs font-bold shadow-md hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: GRAD_BIRU_TUA }}
             >
-              Edit Data
+              {menyimpan ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           ) : (
             // Di HP, tombol Batal/Simpan ada di bar bawah layar (lihat di bawah)
