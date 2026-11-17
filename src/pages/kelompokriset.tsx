@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-// import InstansiBar from "../components/rekapitulasi/InstansiBar";
-
 import {
   GayaDropdown,
   KelompokRisetToolbar,
@@ -9,40 +7,34 @@ import {
   ImportDataModal,
   useKelompokRiset,
   cetakPdf,
+  parseFileKelompokRiset,
+  SEMUA,
 } from "../components/kelompokRiset";
 
 export default function KelompokRisetPage() {
   const [mencetak, setMencetak] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
-  const {
+    const {
     modeEdit,
-
     pusat,
     setPusat,
-
     cari,
     setCari,
-
     tampil,
     total,
-
     opsiPusat,
     opsiKelompok,
 
     mulaiEdit,
     batalEdit,
     simpanEdit,
-
-    tambahKelompok,
-    hapusKelompok,
-    ubahNamaKelompok,
-
     updatePeriset,
     tambahPeriset,
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
+    terapkanImportData,
   } = useKelompokRiset();
 
   async function handleCetak() {
@@ -73,15 +65,9 @@ export default function KelompokRisetPage() {
   }
 
   return (
-    // overflow-x-hidden (bukan overflow-hidden) supaya daftar dropdown tidak terpotong
-    <div
-      className="mt-16 md:mt-20 min-h-screen w-full max-w-full bg-[#f4f4f4] overflow-x-hidden"
-      translate="no"
-    >
-      {/* <InstansiBar /> */}
-
-      <div className="min-w-0 p-3 sm:p-6 md:p-8">
-        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
+    <div className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden" translate="no">
+      <div className="p-6 md:p-8">
+        <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
           <GayaDropdown />
 
           <KelompokRisetToolbar
@@ -114,11 +100,11 @@ export default function KelompokRisetPage() {
             onPindah={pindahPeriset}
           />
 
-          <ImportDataModal
-            open={showImport}
-            onClose={() => setShowImport(false)}
-            onImport={handleImportFile}
-          />
+           <ImportDataModal
+              open={showImport}
+              onClose={() => setShowImport(false)}
+              onImport={handleImportFile}
+            />
         </div>
       </div>
     </div>
