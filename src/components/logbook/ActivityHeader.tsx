@@ -193,7 +193,7 @@ export default function ActivityHeader({
       {/* KONTEN UTAMA */}
       <div
         className={`
-          p-3 sm:p-6 lg:p-8
+          p-3 sm:p-6 md:p-8
           space-y-5 sm:space-y-6 transition-colors duration-300
           ${isEditing ? 'bg-orange-50/50' : 'bg-white'}
         `}
@@ -273,15 +273,14 @@ export default function ActivityHeader({
           </div>
         )}
 
-        {/* AREA TAMBAHAN / INFORMASI PENDUKUNG */}
+        {/* LOG PROGRES BULANAN */}
         <div className="
           bg-slate-100/80
           border border-slate-200
           rounded-xl sm:rounded-2xl
-          min-h-25 min-w-0
+          min-w-0
           p-2 sm:p-4 md:p-5
         ">
-
           {/* LOG PROGRES BULANAN */}
           <div className="w-full min-w-0 mt-0 sm:mt-2">
             <MonthlyLogTable

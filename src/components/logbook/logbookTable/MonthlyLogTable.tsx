@@ -6,7 +6,11 @@ import { PrintStyles, WRAP } from '../shared'
 
 export type { MonthData }
 
-/** Lebar minimum tiap kolom (px): Bulan, 4 kolom aktivitas, 5 kolom output, Tindakan */
+/**
+ * Lebar minimum tiap kolom (px).
+ * Urutan kolom: Bulan | Uraian | Kendala | Mitigasi | Data Dukung Progres |
+ * Jenis | Judul | Status | Capaian | Data Dukung Output | Tindakan
+ */
 const WIDTHS_PX = [88, 150, 120, 130, 100, 100, 130, 100, 80, 100, 100]
 const TABLE_MIN_WIDTH = WIDTHS_PX.reduce((sum, w) => sum + w, 0)
 
@@ -28,6 +32,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  // Petunjuk scroll horizontal: bayangan dan tombol panah hanya muncul kalau tabel memang bisa digeser
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -146,6 +151,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
           </div>
         )}
 
+        {/* Di layar sempit tabel di-scroll ke samping, bukan dipadatkan sampai kata terpotong */}
         <div
           ref={scrollRef}
           className="w-full max-w-full overflow-x-auto overscroll-x-contain pb-2 print:overflow-visible print:pb-0"

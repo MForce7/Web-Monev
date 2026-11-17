@@ -10,6 +10,7 @@ import {
 } from "../services/db";
 
 import type {
+  Periset,
   PusatRiset,
   PusatTampil,
   TujuanPindah,
@@ -73,7 +74,7 @@ export function useKelompokRiset() {
 
       await simpanKelompokRiset(draft);
 
-      setData(cloneData(draft));
+      setData(cloneData(bersih));
       setDraft([]);
       setModeEdit(false);
 
@@ -89,12 +90,68 @@ export function useKelompokRiset() {
     }
   }
 
+  /* ---------- Kelompok riset ---------- */
+
+  // Menambah kelompok baru (kosong) di sebuah pusat riset.
+  function tambahKelompok(pi: number) {
+    setCari(""); // kelompok baru belum punya nama, jangan sampai tersaring pencarian
+    setDraft((previous) => {
+      const next = cloneData(previous);
+      const target = next[pi];
+
+      if (!target) return previous;
+
+      target.kelompok.push({ nama: "", anggota: [] });
+
+      return next;
+    });
+  }
+
+  // Menghapus kelompok beserta seluruh anggotanya (dengan konfirmasi).
+  function hapusKelompok(pi: number, ki: number) {
+    const kelompok = draft[pi]?.kelompok[ki];
+
+    if (!kelompok) return;
+
+    const jumlah = kelompok.anggota.length;
+    const pesan = jumlah
+      ? `Hapus kelompok "${kelompok.nama || "Tanpa nama"}" beserta ${jumlah} periset di dalamnya?`
+      : `Hapus kelompok "${kelompok.nama || "Tanpa nama"}"?`;
+
+    if (!window.confirm(pesan)) return;
+
+    setDraft((previous) => {
+      const next = cloneData(previous);
+
+      if (!next[pi]?.kelompok[ki]) return previous;
+
+      next[pi].kelompok.splice(ki, 1);
+
+      return next;
+    });
+  }
+
+  function ubahNamaKelompok(pi: number, ki: number, nama: string) {
+    setDraft((previous) => {
+      const next = cloneData(previous);
+      const kelompok = next[pi]?.kelompok[ki];
+
+      if (!kelompok) return previous;
+
+      kelompok.nama = nama;
+
+      return next;
+    });
+  }
+
+  /* ---------- Periset ---------- */
+
   // Mengubah properti periset.
   function updatePeriset(
     pi: number,
     ki: number,
     ai: number,
-    field: keyof import("../types").Periset,
+    field: keyof Periset,
     value: string,
   ) {
     setDraft((previous) => {
@@ -111,6 +168,7 @@ export function useKelompokRiset() {
 
   // Menambah periset ke kelompok.
   function tambahPeriset(pi: number, ki: number) {
+    setCari(""); // periset baru masih kosong, jangan sampai tersaring pencarian
     setDraft((previous) => {
       const next = cloneData(previous);
       const kelompok = next[pi]?.kelompok[ki];
@@ -135,9 +193,7 @@ export function useKelompokRiset() {
 
     if (!person) return;
 
-    const konfirmasi = window.confirm(
-      `Hapus periset "${person.nama || "Tanpa nama"}"?`,
-    );
+    const konfirmasi = window.confirm(`Hapus periset "${person.nama || "Tanpa nama"}"?`);
 
     if (!konfirmasi) return;
 
@@ -339,6 +395,10 @@ export function useKelompokRiset() {
   const tampil: PusatTampil[] = useMemo(() => {
     const q = cari.trim().toLowerCase();
 
+    // Saat mengedit tanpa pencarian, kelompok/pusat yang masih kosong tetap
+    // ditampilkan supaya bisa diisi. Di luar itu, yang kosong disembunyikan.
+    const tampilkanKosong = modeEdit && !q;
+
     return activeData
       .map((p, pi) => ({
         nama: p.nama,
@@ -369,20 +429,20 @@ export function useKelompokRiset() {
               anggota,
             };
           })
-          .filter((k) => k.anggota.length > 0),
+          .filter((k) => tampilkanKosong || k.anggota.length > 0),
       }))
       .filter(
         (p) =>
           (pusat === SEMUA || p.nama === pusat) && p.kelompok.length > 0,
       );
-  }, [activeData, pusat, cari]);
+  }, [activeData, pusat, cari, modeEdit]);
 
   // Daftar pilihan kelompok untuk fitur pindah periset.
   const opsiKelompok = useMemo(() => {
     return draft.flatMap((p, pi) =>
       p.kelompok.map((k, ki) => ({
         value: `${pi}:${ki}`,
-        label: `${p.nama} — ${k.nama}`,
+        label: `${p.nama} — ${k.nama || "(kelompok tanpa nama)"}`,
       })),
     );
   }, [draft]);
@@ -417,6 +477,10 @@ export function useKelompokRiset() {
     mulaiEdit,
     batalEdit,
     simpanEdit,
+
+    tambahKelompok,
+    hapusKelompok,
+    ubahNamaKelompok,
 
     updatePeriset,
     tambahPeriset,

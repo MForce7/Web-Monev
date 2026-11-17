@@ -33,12 +33,17 @@ export default function KelompokRisetPage() {
     mulaiEdit,
     batalEdit,
     simpanEdit,
+
+    tambahKelompok,
+    hapusKelompok,
+    ubahNamaKelompok,
+
     updatePeriset,
     tambahPeriset,
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
-    terapkanImportData,
+    // terapkanImportData dipakai di handleImportFile setelah integrasi selesai
   } = useKelompokRiset();
 
   async function handleCetak() {
@@ -126,6 +131,9 @@ export default function KelompokRisetPage() {
             tampil={tampil}
             modeEdit={modeEdit}
             opsiKelompok={opsiKelompok}
+            onTambahKelompok={tambahKelompok}
+            onHapusKelompok={hapusKelompok}
+            onUbahNamaKelompok={ubahNamaKelompok}
             onUpdate={updatePeriset}
             onTambah={tambahPeriset}
             onHapus={hapusPeriset}

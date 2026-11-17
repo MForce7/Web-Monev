@@ -4,6 +4,7 @@ import CalendarBox, { toKey, type Agenda } from "../components/dashboard_2/calen
 import CalendarDesc from "../components/dashboard_2/calendardesc";
 import TriwulanStat from "../components/dashboard_2/triwulanStat";
 import Leaderboard, { type LeaderboardData } from "../components/dashboard_2/leaderboard";
+import { Pemantauan } from "../config/Index.ts";
 import type { DashboardData } from "../types/dashboard";
 import { useAuth } from "../lib/AuthContext";
 import { fetchAgendas } from "../lib/supabaseAgendaData";
@@ -25,6 +26,9 @@ export default function DashboardV2() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Filter untuk tabel Pemantauan (hanya pusat riset, tanpa bulan)
+  const [pusatRiset, setPusatRiset] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAgendas().then(setAgendas).catch(() => {});
@@ -101,6 +105,15 @@ export default function DashboardV2() {
 
       {dashboardData && <TriwulanStat statData={dashboardData} />}
       {leaderboardData && <Leaderboard data={leaderboardData} />}
+
+      {/* Tabel Pemantauan (dipindah dari halaman Rekapitulasi) */}
+      <div className="w-full bg-[#F6F6F6] px-4 py-8 font-sans text-[#353535] sm:px-8 sm:py-10">
+        <div className="mx-auto max-w-[1320px] min-w-0">
+          <div className="min-w-0">
+            <Pemantauan bulan={null} pusatRiset={pusatRiset} onChangePusatRiset={setPusatRiset} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

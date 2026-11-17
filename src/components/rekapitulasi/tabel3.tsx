@@ -3,6 +3,9 @@ import type { CSSProperties } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../data/rekapOutput.json";
+import BilahEkspor from "./BilahEkspor";
+import { unduhExcel, type Sel as SelEkspor, type WarnaSel } from "../../lib/eksporTabel.ts";
+import DropdownPusatRiset from "./DropdownPusatRiset.tsx";
 
 const BULAN = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -56,6 +59,14 @@ const WARNA_STATUS: Record<StatusPantau, string> = {
   "Belum Lengkap": "bg-[#fef3c7] text-[#92400e]",
   Kosong: "bg-[#fee2e2] text-[#991b1b]",
 };
+
+// Warna status di file Excel (hex tanpa #), sama dengan warna di layar dan PDF
+const WARNA_XLSX: Record<string, WarnaSel> = {
+  Lengkap: { isi: "DCFCE7", teks: "166534" },
+  "Belum Lengkap": { isi: "FEF3C7", teks: "92400E" },
+  Kosong: { isi: "FEE2E2", teks: "991B1B" },
+};
+const warnaStatus = (nilai: SelEkspor) => (typeof nilai === "string" ? WARNA_XLSX[nilai] : undefined);
 
 const daftar = (v?: string[] | string | number): string[] =>
   Array.isArray(v) ? v : v === undefined || v === "" ? [] : [String(v)];
@@ -198,6 +209,67 @@ async function cetakPdf(pusatRiset: string, data: BarisPantau[]) {
   doc.save(`Rekap-Pemantauan-${namaFile}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
+/* ---------- Unduh Excel: tab "Ringkasan" (status per bulan) + tab "Rincian" (yang belum sesuai) ---------- */
+async function unduhExcelPemantauan(pusatRiset: string, data: BarisPantau[]) {
+  const total: Record<StatusPantau, number> = { Lengkap: 0, "Belum Lengkap": 0, Kosong: 0 };
+  data.forEach((d) =>
+    BULAN.forEach((b) => {
+      const s = d.bulan?.[b]?.status;
+      if (s) total[s]++;
+    })
+  );
+  const ringkasan = `Ketua tim: ${data.length}    Lengkap: ${total.Lengkap}    Belum lengkap: ${total["Belum Lengkap"]}    Kosong: ${total.Kosong}`;
+
+  const rincian: SelEkspor[][] = [];
+  data.forEach((d) =>
+    BULAN.forEach((b) => {
+      const s = d.bulan?.[b];
+      if (s?.status && s.status !== "Lengkap") {
+        rincian.push([
+          d.nama,
+          d.pusatRiset ?? "",
+          b,
+          s.status,
+          daftar(s.belumSesuai).map((x) => `• ${x}`).join("\n"),
+        ]);
+      }
+    })
+  );
+
+  await unduhExcel(`Rekap-Pemantauan-${pusatRiset.replace(/[^\w]+/g, "-")}`, [
+    {
+      nama: "Ringkasan",
+      judul: "Rekap Pemantauan Pengisian Logbook",
+      subjudul: pusatRiset,
+      ringkasan,
+      kolom: ["No", "Nama Ketua Tim", "Pusat Riset", ...BULAN],
+      baris: data.map((d, i) => [
+        i + 1,
+        d.nama,
+        d.pusatRiset ?? "",
+        ...BULAN.map((b) => d.bulan?.[b]?.status ?? "-"),
+      ]),
+      rataTengah: [0, ...BULAN.map((_, i) => i + 3)],
+      lebarKolom: [6, 34, 22, ...BULAN.map(() => 15)],
+      warnaSel: (nilai, kol) => (kol >= 3 ? warnaStatus(nilai) : undefined),
+    },
+    ...(rincian.length
+      ? [
+          {
+            nama: "Rincian",
+            judul: "Rincian yang belum sesuai",
+            subjudul: pusatRiset,
+            kolom: ["Nama Ketua Tim", "Pusat Riset", "Bulan", "Status", "Belum diisi di logbook"],
+            baris: rincian,
+            rataTengah: [1, 2, 3],
+            lebarKolom: [34, 22, 14, 16, 60],
+            warnaSel: (nilai: SelEkspor, kol: number) => (kol === 3 ? warnaStatus(nilai) : undefined),
+          },
+        ]
+      : []),
+  ]);
+}
+
 /* ---------- Tabel ---------- */
 const th = "border-r border-white/25 px-3 py-2 text-center text-[11px] font-bold text-white last:border-r-0";
 const td =
@@ -214,9 +286,14 @@ const stickyHead1 = `sticky left-0 z-20 ${kunci1}`;
 const stickyHead2 = `sticky left-[var(--no-w)] z-20 ${kunci2}`;
 
 // bulan tetap ada di tipe props supaya cocok dengan komponen lain, tapi tidak dipakai di sini
-type Props = { bulan?: string | null; pusatRiset: string | null };
+type Props = {
+  bulan?: string | null;
+  pusatRiset: string | null;
+  /** Kalau diisi, dropdown pusat riset tampil di samping tombol Cetak */
+  onChangePusatRiset?: (v: string | null) => void;
+};
 
-export default function Tabel3({ pusatRiset }: Props) {
+export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
   // "Semua Pusat Riset" (atau belum memilih) = tampilkan semua ketua tim
   const data =
     pusatRiset && pusatRiset !== "Semua Pusat Riset"
@@ -227,7 +304,6 @@ export default function Tabel3({ pusatRiset }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [bisaKiri, setBisaKiri] = useState(false);
   const [bisaKanan, setBisaKanan] = useState(false);
-  const [mencetak, setMencetak] = useState(false);
 
   const cek = useCallback(() => {
     const el = ref.current;
@@ -248,45 +324,42 @@ export default function Tabel3({ pusatRiset }: Props) {
   const geser = (arah: 1 | -1) => ref.current?.scrollBy({ left: arah * 320, behavior: "smooth" });
   const bisaScroll = bisaKiri || bisaKanan;
 
-  // Belum memilih pusat riset = cetak semua pusat riset
-  const cetak = async () => {
-    if (mencetak) return;
-    setMencetak(true);
-    try {
-      await cetakPdf(pusatRiset ?? "Semua Pusat Riset", data);
-    } catch (err) {
-      console.error(err);
-      alert("PDF gagal dibuat. Coba lagi.");
-    } finally {
-      setMencetak(false);
-    }
-  };
+  // Belum memilih pusat riset = unduh semua pusat riset
+  const namaPusat = pusatRiset ?? "Semua Pusat Riset";
 
   return (
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full min-w-0 rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
       <section className="isolate w-full overflow-hidden rounded-2xl bg-white [--no-w:44px] [--nama-w:120px] [--sticky-w:164px] [clip-path:inset(0_round_1rem)] md:[--no-w:56px] md:[--nama-w:200px] md:[--sticky-w:256px]">
-        {/* Bilah atas: judul + tombol Cetak */}
-        <div className="flex items-center justify-between gap-3 border-b border-[#dbe6f7] bg-white px-3 py-2 sm:px-4">
+        {/* Bilah atas: judul di kiri; dropdown pusat riset + tombol Cetak di kanan.
+            z-40 supaya daftar dropdown tampil di atas tabel (kolom sticky memakai z-10 sampai z-30). */}
+        <div className="relative z-40 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[#dbe6f7] bg-white px-3 py-2 sm:px-4">
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-[#1b3560]">Pemantauan pengisian logbook</p>
             <p className="truncate text-xs text-slate-500">{pusatRiset ?? "Semua pusat riset"}</p>
           </div>
-          <button
-            type="button"
-            onClick={cetak}
-            disabled={mencetak}
-            title="Unduh rekap sebagai PDF"
-            style={{ background: GRAD_CARD }}
-            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(27,63,120,0.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 sm:gap-2 sm:px-4"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 9V3h12v6" />
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-              <rect x="6" y="14" width="12" height="7" rx="1" />
-            </svg>
-            {mencetak ? "Membuat PDF…" : "Cetak"}
-          </button>
+          <div className="ml-auto flex min-w-0 items-center gap-2">
+            {onChangePusatRiset && (
+              <div className="w-44 min-w-0 sm:w-60">
+                <DropdownPusatRiset value={pusatRiset} onChange={onChangePusatRiset} />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={cetak}
+              disabled={mencetak}
+              title="Unduh rekap sebagai PDF"
+              style={{ background: GRAD_CARD }}
+              className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(27,63,120,0.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 sm:gap-2 sm:px-4"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 9V3h12v6" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="7" rx="1" />
+              </svg>
+              {mencetak ? "Membuat PDF…" : "Cetak"}
+            </button>
+          </div>
         </div>
 
         {/* petunjuk: hanya muncul kalau tabel memang bisa di-scroll */}
