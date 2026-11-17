@@ -4,13 +4,12 @@ import raw from "../../../data/kelompokriset.json";
 
 import { STORAGE_KEY, SEMUA } from "../constants";
 
-
 import type {
+  Periset,
   PusatRiset,
   PusatTampil,
   TujuanPindah,
 } from "../types";
-
 
 const DATA_AWAL: PusatRiset[] = (
   raw as { pusatRiset: PusatRiset[] }
@@ -18,6 +17,33 @@ const DATA_AWAL: PusatRiset[] = (
 
 function cloneData(data: PusatRiset[]): PusatRiset[] {
   return JSON.parse(JSON.stringify(data)) as PusatRiset[];
+}
+
+// Memastikan bentuk data sesuai PusatRiset[] sebelum dipakai.
+function dataValid(data: unknown): data is PusatRiset[] {
+  return (
+    Array.isArray(data) &&
+    data.every(
+      (p) =>
+        p &&
+        typeof p.nama === "string" &&
+        Array.isArray(p.kelompok) &&
+        p.kelompok.every(
+          (k: any) =>
+            k &&
+            typeof k.nama === "string" &&
+            Array.isArray(k.anggota) &&
+            k.anggota.every(
+              (a: any) =>
+                a &&
+                typeof a.nama === "string" &&
+                typeof a.nip === "string" &&
+                typeof a.jabatan === "string" &&
+                typeof a.keterangan === "string",
+            ),
+        ),
+    )
+  );
 }
 
 function ambilDataAwal(): PusatRiset[] {
@@ -29,7 +55,13 @@ function ambilDataAwal(): PusatRiset[] {
     const saved = localStorage.getItem(STORAGE_KEY);
 
     if (saved) {
-      return JSON.parse(saved) as PusatRiset[];
+      const parsed: unknown = JSON.parse(saved);
+
+      if (dataValid(parsed)) {
+        return parsed;
+      }
+
+      console.warn("Format data di localStorage tidak sesuai, memakai data awal.");
     }
   } catch (error) {
     console.error("Gagal membaca localStorage:", error);
@@ -297,13 +329,18 @@ export function useKelompokRiset() {
       return next;
     });
   }
-    // Menerapkan hasil import file (Excel/CSV) ke kelompok riset satu pusat.
-    // Menerapkan hasil import file (Excel/CSV): "ganti" menimpa seluruh
+
+  // Menerapkan hasil import file (Excel/CSV): "ganti" menimpa seluruh
   // data, "tambah" menggabungkan ke data yang sedang aktif.
   function terapkanImportData(
     dataBaru: PusatRiset[],
     mode: "ganti" | "tambah",
   ) {
+    if (!dataValid(dataBaru)) {
+      alert("Format data hasil import tidak valid.");
+      return;
+    }
+
     const bersih = cloneData(dataBaru);
 
     if (mode === "ganti") {
@@ -335,11 +372,18 @@ export function useKelompokRiset() {
 
           if (kelompokIndex === -1) {
             pusatTujuan.kelompok.push(kelompokBaru);
-          } else {
-            pusatTujuan.kelompok[kelompokIndex].anggota.push(
-              ...kelompokBaru.anggota,
-            );
+            return;
           }
+
+          // Lewati periset yang sudah ada (cocok berdasarkan NIP, atau nama jika NIP kosong).
+          const kelompokTujuan = pusatTujuan.kelompok[kelompokIndex];
+          const sudahAda = new Set(
+            kelompokTujuan.anggota.map((a) => a.nip || a.nama),
+          );
+
+          kelompokTujuan.anggota.push(
+            ...kelompokBaru.anggota.filter((a) => !sudahAda.has(a.nip || a.nama)),
+          );
         });
       });
 
@@ -348,8 +392,6 @@ export function useKelompokRiset() {
 
     setModeEdit(true);
   }
-
-
 
   /* ---------- Data turunan ---------- */
 
@@ -427,7 +469,7 @@ export function useKelompokRiset() {
     return [SEMUA, ...data.map((p) => p.nama)];
   }, [data]);
 
-    return {
+  return {
     data,
     draft,
     activeData,
@@ -457,6 +499,6 @@ export function useKelompokRiset() {
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
-    terapkanImportKelompok, // <- pastikan baris ini ada
+    terapkanImportData,
   };
 }
