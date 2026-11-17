@@ -40,10 +40,6 @@ export default function Dropdown({
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
-  // Tutup kalau klik/sentuh di luar atau tekan Escape
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent | TouchEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
@@ -53,12 +49,6 @@ export default function Dropdown({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("pointerdown", onDown);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("touchstart", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("touchstart", onDown);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -80,7 +70,6 @@ export default function Dropdown({
         </button>
 
         {open && (
-          <ul id={listId} role="listbox" aria-label={label} className="max-h-72 overflow-y-auto overscroll-contain">
           <ul id={listId} role="listbox" aria-label={label} className="max-h-60 sm:max-h-72 overflow-y-auto overscroll-contain">
             {options.map((opt) => {
               const dipilih = opt === value;
@@ -92,7 +81,6 @@ export default function Dropdown({
                       onChange(opt);
                       setOpen(false);
                     }}
-                    className={`w-full border-t border-[#dbe6f7] py-2.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] sm:py-1.5 ${
                     className={`w-full border-t border-[#dbe6f7] px-2 py-2.5 sm:py-1.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] ${
                       dipilih ? "bg-[#dbe6f7]" : ""
                     }`}

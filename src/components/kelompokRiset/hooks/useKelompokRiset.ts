@@ -1,22 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import raw from "../../../data/kelompokriset.json";
 
-import {
-  STORAGE_KEY,
-  SEMUA,
-} from "../constants";
+import { STORAGE_KEY, SEMUA } from "../constants";
 
-import type {
-  Kelompok,
-  PusatRiset,
-  PusatTampil,
-  TujuanPindah,
-} from "../types";
+import type { Periset, PusatRiset, PusatTampil, TujuanPindah } from "../types";
 
-const DATA_AWAL: PusatRiset[] = (
-  raw as { pusatRiset: PusatRiset[] }
-).pusatRiset;
+const DATA_AWAL: PusatRiset[] = (raw as { pusatRiset: PusatRiset[] }).pusatRiset;
 
 function cloneData(data: PusatRiset[]): PusatRiset[] {
   return JSON.parse(JSON.stringify(data)) as PusatRiset[];
@@ -42,18 +32,15 @@ function ambilDataAwal(): PusatRiset[] {
 
 export function useKelompokRiset() {
   const [data, setData] = useState<PusatRiset[]>(ambilDataAwal);
-
   const [draft, setDraft] = useState<PusatRiset[]>([]);
-
   const [modeEdit, setModeEdit] = useState(false);
-
   const [pusat, setPusat] = useState(SEMUA);
-
   const [cari, setCari] = useState("");
 
   const activeData = modeEdit ? draft : data;
 
-  // Simpan data ketika mode edit disimpan.
+  /* ---------- Mode edit ---------- */
+
   function mulaiEdit() {
     setDraft(cloneData(data));
     setModeEdit(true);
@@ -65,13 +52,38 @@ export function useKelompokRiset() {
   }
 
   function simpanEdit() {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(draft),
-      );
+    // Rapikan spasi, lalu pastikan tidak ada nama kosong sebelum disimpan
+    const bersih = cloneData(draft).map((p) => ({
+      ...p,
+      kelompok: p.kelompok.map((k) => ({
+        ...k,
+        nama: k.nama.trim(),
+        anggota: k.anggota.map((a) => ({
+          ...a,
+          nama: a.nama.trim(),
+          nip: a.nip.trim(),
+          jabatan: a.jabatan.trim(),
+        })),
+      })),
+    }));
 
-      setData(cloneData(draft));
+    for (const p of bersih) {
+      for (const k of p.kelompok) {
+        if (!k.nama) {
+          alert(`Ada kelompok riset di "${p.nama}" yang namanya masih kosong. Isi namanya atau hapus kelompok tersebut.`);
+          return false;
+        }
+        if (k.anggota.some((a) => !a.nama)) {
+          alert(`Kelompok "${k.nama}" punya periset yang namanya masih kosong. Isi namanya atau hapus periset tersebut.`);
+          return false;
+        }
+      }
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bersih));
+
+      setData(cloneData(bersih));
       setDraft([]);
       setModeEdit(false);
 
@@ -83,12 +95,68 @@ export function useKelompokRiset() {
     }
   }
 
+  /* ---------- Kelompok riset ---------- */
+
+  // Menambah kelompok baru (kosong) di sebuah pusat riset.
+  function tambahKelompok(pi: number) {
+    setCari(""); // kelompok baru belum punya nama, jangan sampai tersaring pencarian
+    setDraft((previous) => {
+      const next = cloneData(previous);
+      const target = next[pi];
+
+      if (!target) return previous;
+
+      target.kelompok.push({ nama: "", anggota: [] });
+
+      return next;
+    });
+  }
+
+  // Menghapus kelompok beserta seluruh anggotanya (dengan konfirmasi).
+  function hapusKelompok(pi: number, ki: number) {
+    const kelompok = draft[pi]?.kelompok[ki];
+
+    if (!kelompok) return;
+
+    const jumlah = kelompok.anggota.length;
+    const pesan = jumlah
+      ? `Hapus kelompok "${kelompok.nama || "Tanpa nama"}" beserta ${jumlah} periset di dalamnya?`
+      : `Hapus kelompok "${kelompok.nama || "Tanpa nama"}"?`;
+
+    if (!window.confirm(pesan)) return;
+
+    setDraft((previous) => {
+      const next = cloneData(previous);
+
+      if (!next[pi]?.kelompok[ki]) return previous;
+
+      next[pi].kelompok.splice(ki, 1);
+
+      return next;
+    });
+  }
+
+  function ubahNamaKelompok(pi: number, ki: number, nama: string) {
+    setDraft((previous) => {
+      const next = cloneData(previous);
+      const kelompok = next[pi]?.kelompok[ki];
+
+      if (!kelompok) return previous;
+
+      kelompok.nama = nama;
+
+      return next;
+    });
+  }
+
+  /* ---------- Periset ---------- */
+
   // Mengubah properti periset.
   function updatePeriset(
     pi: number,
     ki: number,
     ai: number,
-    field: keyof import("../types").Periset,
+    field: keyof Periset,
     value: string,
   ) {
     setDraft((previous) => {
@@ -106,6 +174,7 @@ export function useKelompokRiset() {
 
   // Menambah periset ke kelompok.
   function tambahPeriset(pi: number, ki: number) {
+    setCari(""); // periset baru masih kosong, jangan sampai tersaring pencarian
     setDraft((previous) => {
       const next = cloneData(previous);
       const kelompok = next[pi]?.kelompok[ki];
@@ -115,10 +184,7 @@ export function useKelompokRiset() {
       kelompok.anggota.push({
         nama: "",
         nip: "",
-        keterangan:
-          kelompok.anggota.length === 0
-            ? "Koordinator"
-            : "Anggota",
+        keterangan: kelompok.anggota.length === 0 ? "Koordinator" : "Anggota",
         jabatan: "",
       });
 
@@ -127,18 +193,12 @@ export function useKelompokRiset() {
   }
 
   // Menghapus periset.
-  function hapusPeriset(
-    pi: number,
-    ki: number,
-    ai: number,
-  ) {
+  function hapusPeriset(pi: number, ki: number, ai: number) {
     const person = draft[pi]?.kelompok[ki]?.anggota[ai];
 
     if (!person) return;
 
-    const konfirmasi = window.confirm(
-      `Hapus periset "${person.nama || "Tanpa nama"}"?`,
-    );
+    const konfirmasi = window.confirm(`Hapus periset "${person.nama || "Tanpa nama"}"?`);
 
     if (!konfirmasi) return;
 
@@ -151,13 +211,8 @@ export function useKelompokRiset() {
       const dihapus = kelompok.anggota.splice(ai, 1)[0];
 
       // Jika koordinator dihapus, anggota pertama menjadi koordinator.
-      if (
-        dihapus &&
-        dihapus.keterangan !== "Anggota" &&
-        kelompok.anggota.length > 0
-      ) {
-        kelompok.anggota[0].keterangan =
-          dihapus.keterangan;
+      if (dihapus && dihapus.keterangan !== "Anggota" && kelompok.anggota.length > 0) {
+        kelompok.anggota[0].keterangan = dihapus.keterangan;
       }
 
       return next;
@@ -165,11 +220,7 @@ export function useKelompokRiset() {
   }
 
   // Mengganti koordinator kelompok.
-  function gantiKoordinator(
-    pi: number,
-    ki: number,
-    ai: number,
-  ) {
+  function gantiKoordinator(pi: number, ki: number, ai: number) {
     setDraft((previous) => {
       const next = cloneData(previous);
       const kelompok = next[pi]?.kelompok[ki];
@@ -181,12 +232,10 @@ export function useKelompokRiset() {
       const anggota = kelompok.anggota;
 
       const labelKoordinator =
-        anggota.find((a) => a.keterangan !== "Anggota")
-          ?.keterangan ?? "Koordinator";
+        anggota.find((a) => a.keterangan !== "Anggota")?.keterangan ?? "Koordinator";
 
       anggota.forEach((a, index) => {
-        a.keterangan =
-          index === ai ? labelKoordinator : "Anggota";
+        a.keterangan = index === ai ? labelKoordinator : "Anggota";
       });
 
       return next;
@@ -208,10 +257,7 @@ export function useKelompokRiset() {
 
       if (!source || !destination) return previous;
 
-      if (
-        sourcePi === tujuan.pi &&
-        sourceKi === tujuan.ki
-      ) {
+      if (sourcePi === tujuan.pi && sourceKi === tujuan.ki) {
         return previous;
       }
 
@@ -219,29 +265,18 @@ export function useKelompokRiset() {
 
       if (!person) return previous;
 
-      const isKoordinator =
-        person.keterangan !== "Anggota";
+      const isKoordinator = person.keterangan !== "Anggota";
 
-      const [movedPerson] = source.anggota.splice(
-        sourceAi,
-        1,
-      );
+      const [movedPerson] = source.anggota.splice(sourceAi, 1);
 
-      // Jika koordinator dipindahkan, anggota pertama
-      // yang tersisa menggantikannya.
-      if (
-        isKoordinator &&
-        source.anggota.length > 0
-      ) {
-        source.anggota[0].keterangan =
-          person.keterangan;
+      // Jika koordinator dipindahkan, anggota pertama yang tersisa menggantikannya.
+      if (isKoordinator && source.anggota.length > 0) {
+        source.anggota[0].keterangan = person.keterangan;
       }
 
       // Jika kelompok tujuan belum memiliki koordinator,
       // periset yang dipindahkan menjadi koordinator.
-      const hasKoordinator = destination.anggota.some(
-        (a) => a.keterangan !== "Anggota",
-      );
+      const hasKoordinator = destination.anggota.some((a) => a.keterangan !== "Anggota");
 
       movedPerson.keterangan = hasKoordinator
         ? "Anggota"
@@ -255,22 +290,16 @@ export function useKelompokRiset() {
     });
   }
 
+  /* ---------- Data turunan ---------- */
+
   // Menghitung total kelompok dan periset.
   const total = useMemo(() => {
     return {
-      kelompok: data.reduce(
-        (jumlah, p) => jumlah + p.kelompok.length,
-        0,
-      ),
+      kelompok: data.reduce((jumlah, p) => jumlah + p.kelompok.length, 0),
 
       periset: data.reduce(
         (jumlah, p) =>
-          jumlah +
-          p.kelompok.reduce(
-            (jumlahAnggota, k) =>
-              jumlahAnggota + k.anggota.length,
-            0,
-          ),
+          jumlah + p.kelompok.reduce((jumlahAnggota, k) => jumlahAnggota + k.anggota.length, 0),
         0,
       ),
     };
@@ -280,6 +309,10 @@ export function useKelompokRiset() {
   const tampil: PusatTampil[] = useMemo(() => {
     const q = cari.trim().toLowerCase();
 
+    // Saat mengedit tanpa pencarian, kelompok/pusat yang masih kosong tetap
+    // ditampilkan supaya bisa diisi. Di luar itu, yang kosong disembunyikan.
+    const tampilkanKosong = modeEdit && !q;
+
     return activeData
       .map((p, pi) => ({
         nama: p.nama,
@@ -287,26 +320,18 @@ export function useKelompokRiset() {
 
         kelompok: p.kelompok
           .map((k, ki) => {
-            const semuaAnggota = k.anggota.map(
-              (a, ai) => ({
-                ...a,
-                no: ai + 1,
-                ai,
-              }),
-            );
+            const semuaAnggota = k.anggota.map((a, ai) => ({
+              ...a,
+              no: ai + 1,
+              ai,
+            }));
 
-            const cocokKelompok =
-              k.nama.toLowerCase().includes(q);
+            const cocokKelompok = k.nama.toLowerCase().includes(q);
 
             const anggota =
               q && !cocokKelompok
                 ? semuaAnggota.filter((a) =>
-                    [
-                      a.nama,
-                      a.nip,
-                      a.jabatan,
-                      a.keterangan,
-                    ].some((value) =>
+                    [a.nama, a.nip, a.jabatan, a.keterangan].some((value) =>
                       value.toLowerCase().includes(q),
                     ),
                   )
@@ -319,21 +344,20 @@ export function useKelompokRiset() {
               anggota,
             };
           })
-          .filter((k) => k.anggota.length > 0),
+          .filter((k) => tampilkanKosong || k.anggota.length > 0),
       }))
       .filter(
         (p) =>
-          (pusat === SEMUA || p.nama === pusat) &&
-          p.kelompok.length > 0,
+          (pusat === SEMUA || p.nama === pusat) && (tampilkanKosong || p.kelompok.length > 0),
       );
-  }, [activeData, pusat, cari]);
+  }, [activeData, pusat, cari, modeEdit]);
 
   // Daftar pilihan kelompok untuk fitur pindah periset.
   const opsiKelompok = useMemo(() => {
     return draft.flatMap((p, pi) =>
       p.kelompok.map((k, ki) => ({
         value: `${pi}:${ki}`,
-        label: `${p.nama} — ${k.nama}`,
+        label: `${p.nama} — ${k.nama || "(kelompok tanpa nama)"}`,
       })),
     );
   }, [draft]);
@@ -362,6 +386,10 @@ export function useKelompokRiset() {
     mulaiEdit,
     batalEdit,
     simpanEdit,
+
+    tambahKelompok,
+    hapusKelompok,
+    ubahNamaKelompok,
 
     updatePeriset,
     tambahPeriset,
