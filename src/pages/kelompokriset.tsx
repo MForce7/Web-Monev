@@ -64,9 +64,7 @@ export default function KelompokRisetPage() {
     //   terapkanImportData(hasilJson, "ganti" | "tambah");
     // (validasi struktur sudah dilakukan di dalam hook)
 
-    throw new Error(
-      "Integrasi Gemini dan Supabase belum dihubungkan.",
-    );
+    throw new Error("Integrasi Gemini dan Supabase belum dihubungkan.");
   }
 
   return (

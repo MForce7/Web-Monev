@@ -1,11 +1,13 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import type { ReactNode } from "react";
 import type { UserOptions } from "jspdf-autotable";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import Dropdown from "../components/rekapitulasi/Dropdown.tsx";
 import raw from "../data/rekappendanaan.json";
 
 /* ---------- Data: isi awal ada di src/data/rekappendanaan.json ----------
-   (Rekap pendanaan PRIS dan RIIM ORPA). Isi tabel bisa diubah lewat tombol "Ubah" di tiap baris. */
+   (Rekap pendanaan PRIS dan RIIM ORPA). Isi tabel bisa diubah lewat tombol "Ubah" di tiap baris,
+   dan data baru ditambah lewat tombol "+ Tambah Data" (form lengkap dalam pop up). */
 type Skema = "PRIS" | "RIIM";
 type Kegiatan = {
   no: number;
@@ -26,6 +28,8 @@ type Kegiatan = {
   linkLabel?: string;
 };
 type Grup = { skema: Skema; list: Kegiatan[] };
+/** Isi form tambah data (nomor dan total diisi otomatis saat disimpan) */
+type DataBaru = Omit<Kegiatan, "no" | "total">;
 
 const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
 
@@ -34,8 +38,10 @@ const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
 const GRAD_BIRU = "linear-gradient(90deg, #1c3d85 0%, #2a58a5 100%)";
 const GRAD_BIRU_TUA = "linear-gradient(90deg, #14306b 0%, #1f468c 100%)";
 
-/** Jumlah kolom dana tahun minimal */
+/** Jumlah kolom dana tahun minimal di tabel (dan default isian di form tambah data) */
 const MIN_TAHUN = 3;
+/** Jumlah termin minimal yang boleh disimpan lewat form tambah data */
+const MIN_TAHUN_FORM = 1;
 /** Kolom sebelum dan sesudah kolom dana tahun */
 const KOLOM_AWAL = ["No", "Ketua Periset", "Judul", "Pusat Riset", "Jenis / Gelombang", "Jangka (Bln)"];
 const KOLOM_AKHIR = ["Total Pendanaan (Rp)", "Nomor SK", "Status / Keterangan", "Tindakan", "Upload Data Dukung"];
@@ -46,6 +52,11 @@ const URUTAN_SKEMA: Skema[] = ["PRIS", "RIIM"];
 const NAMA_SKEMA: Record<Skema, string> = {
   PRIS: "PRIS — Riset Inovasi Strategis",
   RIIM: "RIIM — Riset dan Inovasi untuk Indonesia Maju",
+};
+/** Nama panjang tanpa singkatan, dipakai di pop up tambah data */
+const KETERANGAN_SKEMA: Record<Skema, string> = {
+  PRIS: "Riset Inovasi Strategis",
+  RIIM: "Riset dan Inovasi untuk Indonesia Maju",
 };
 
 const LENCANA: Record<Skema, string> = {
@@ -72,10 +83,10 @@ const tanggal = (t: string) => {
 const ukuranFile = (b: number) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
 const jumlah = (list: Kegiatan[], t: number) => list.reduce((n, k) => n + (k.dana[t] ?? 0), 0);
 const hitungTotal = (dana: (number | null)[]) => dana.reduce<number>((n, v) => n + (v ?? 0), 0);
-/** Buang termin kosong di ujung, tapi sisakan minimal MIN_TAHUN */
-const rapikanDana = (dana: (number | null)[]) => {
+/** Buang termin kosong di ujung, tapi sisakan minimal `min` termin (bawaan MIN_TAHUN) */
+const rapikanDana = (dana: (number | null)[], min: number = MIN_TAHUN) => {
   const hasil = [...dana];
-  while (hasil.length > MIN_TAHUN && hasil[hasil.length - 1] == null) hasil.pop();
+  while (hasil.length > min && hasil[hasil.length - 1] == null) hasil.pop();
   return hasil;
 };
 /** "1.500.000" -> 1500000, kosong -> null */
@@ -240,8 +251,307 @@ function GayaDropdown() {
   );
 }
 
+/** Panah bulat kecil untuk menggeser tabel ke kiri / kanan */
+function PanahGulir({ arah, onClick }: { arah: "kiri" | "kanan"; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={arah === "kanan" ? "Geser tabel ke kanan" : "Geser tabel ke kiri"}
+      title={arah === "kanan" ? "Geser ke kanan" : "Geser ke kiri"}
+      className={`absolute top-[10px] z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition hover:scale-110 ${
+        arah === "kanan" ? "right-2" : "left-2"
+      }`}
+    >
+      <svg
+        viewBox="0 0 12 12"
+        className="h-3.5 w-3.5"
+        fill="none"
+        stroke="#1f468c"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        {arah === "kanan" ? <path d="M4.5 2.5l3.5 3.5-3.5 3.5" /> : <path d="M7.5 2.5L4 6l3.5 3.5" />}
+      </svg>
+    </button>
+  );
+}
+
+/** Label + isian dalam form pop up */
+function Isian({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-1 block text-xs font-bold text-[#1b3560]">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const PUSAT_LAIN = "__lain__";
+
+/** Pop up form tambah data: semua isian ada di sini, skema dipilih paling atas */
+function FormTambahData({
+  daftarPusat,
+  pusatAwal,
+  skemaAwal,
+  onSimpan,
+  onTutup,
+}: {
+  daftarPusat: string[];
+  pusatAwal: string;
+  skemaAwal: Skema | null;
+  onSimpan: (d: DataBaru) => void;
+  onTutup: () => void;
+}) {
+  const [skema, setSkema] = useState<Skema | null>(skemaAwal);
+  const [jenis, setJenis] = useState("");
+  const [ketua, setKetua] = useState("");
+  const [judul, setJudul] = useState("");
+  const [pusatPilih, setPusatPilih] = useState(pusatAwal || daftarPusat[0] || PUSAT_LAIN);
+  const [pusatBaru, setPusatBaru] = useState("");
+  const [jangka, setJangka] = useState("");
+  /** Awalnya tampil 3 termin, bisa dikurangi sampai 1 */
+  const [dana, setDana] = useState<(number | null)[]>(() => Array.from({ length: MIN_TAHUN }, () => null));
+  const [nomorSK, setNomorSK] = useState("");
+  const [tanggalSK, setTanggalSK] = useState("");
+  const [status, setStatus] = useState("");
+  const [keterangan, setKeterangan] = useState("");
+  const [link, setLink] = useState("");
+  const [linkLabel, setLinkLabel] = useState("");
+  const [galat, setGalat] = useState("");
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onTutup();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onTutup]);
+
+  const bisaKurangi = dana.length > MIN_TAHUN_FORM;
+
+  const simpan = () => {
+    const pusatRiset = pusatPilih === PUSAT_LAIN ? pusatBaru.trim() : pusatPilih;
+    if (!skema) return setGalat("Pilih skema dulu: PRIS atau RIIM.");
+    if (!ketua.trim()) return setGalat("Ketua periset wajib diisi.");
+    if (!judul.trim()) return setGalat("Judul wajib diisi.");
+    if (!pusatRiset) return setGalat("Pusat riset wajib diisi.");
+    onSimpan({
+      skema,
+      jenis: jenis.trim(),
+      ketua: ketua.trim(),
+      judul: judul.trim(),
+      pusatRiset,
+      jangkaBulan: angkaDari(jangka),
+      // Termin kosong di ujung dibuang, minimal tersisa 1 tahun
+      dana: rapikanDana(dana, MIN_TAHUN_FORM),
+      nomorSK: nomorSK.trim(),
+      tanggalSK,
+      status: status.trim(),
+      keterangan: keterangan.trim(),
+      link: link.trim(),
+      linkLabel: linkLabel.trim(),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f1f3d]/50 p-4" role="presentation">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="judul-tambah-data"
+        className="flex max-h-[calc(100vh-2rem)] w-full max-w-3xl flex-col rounded-3xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.25)]"
+      >
+        {/* Kepala */}
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-6 py-4">
+          <div>
+            <h4 id="judul-tambah-data" className="text-base font-bold text-[#1b3560]">
+              Tambah Data Pendanaan
+            </h4>
+            <p className="mt-0.5 text-xs text-slate-500">Isi data kegiatan, lalu klik Simpan.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onTutup}
+            aria-label="Tutup"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Isi form */}
+        <div className="space-y-5 overflow-y-auto px-6 py-5">
+          {/* Pilih skema */}
+          <div>
+            <span className="mb-1.5 block text-xs font-bold text-[#1b3560]">
+              Skema <span className="text-red-500">*</span>
+            </span>
+            <div className="grid grid-cols-2 gap-3">
+              {URUTAN_SKEMA.map((s) => {
+                const aktif = skema === s;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSkema(s)}
+                    aria-pressed={aktif}
+                    className={`rounded-2xl border px-4 py-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a58a5]/40 ${
+                      aktif
+                        ? "border-[#1f468c] bg-[#1f468c] text-white shadow-md"
+                        : "border-[#c3d3ee] bg-[#f5f8fd] text-[#1f468c] hover:border-[#2a58a5] hover:bg-[#e8effb]"
+                    }`}
+                  >
+                    <span className="block text-base font-extrabold">{s}</span>
+                    <span className={`mt-0.5 block text-[11px] leading-snug ${aktif ? "text-white/80" : "text-slate-600"}`}>
+                      {KETERANGAN_SKEMA[s]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Isian label="Ketua Periset *">
+              <input className={INPUT} value={ketua} onChange={(e) => setKetua(e.target.value)} />
+            </Isian>
+            <Isian label="Jenis / Gelombang">
+              <input className={INPUT} value={jenis} onChange={(e) => setJenis(e.target.value)} placeholder="Mis. Gelombang 1" />
+            </Isian>
+            <Isian label="Judul *" className="sm:col-span-2">
+              <textarea className={INPUT} rows={3} value={judul} onChange={(e) => setJudul(e.target.value)} />
+            </Isian>
+            <Isian label="Pusat Riset *">
+              <select className={INPUT} value={pusatPilih} onChange={(e) => setPusatPilih(e.target.value)}>
+                {daftarPusat.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+                <option value={PUSAT_LAIN}>Lainnya (ketik sendiri)…</option>
+              </select>
+              {pusatPilih === PUSAT_LAIN && (
+                <input
+                  className={`${INPUT} mt-1.5`}
+                  value={pusatBaru}
+                  onChange={(e) => setPusatBaru(e.target.value)}
+                  placeholder="Nama pusat riset"
+                  aria-label="Nama pusat riset baru"
+                />
+              )}
+            </Isian>
+            <Isian label="Jangka waktu (bulan)">
+              <input className={INPUT} inputMode="numeric" value={jangka} onChange={(e) => setJangka(e.target.value.replace(/\D/g, ""))} />
+            </Isian>
+          </div>
+
+          {/* Dana per tahun */}
+          <div>
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-bold text-[#1b3560]">Dana per tahun (Rp)</span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDana((d) => [...d, null])}
+                  className="rounded-full border border-[#2a58a5] bg-white px-3 py-0.5 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb]"
+                >
+                  + Tahun
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDana((d) => (d.length > MIN_TAHUN_FORM ? d.slice(0, -1) : d))}
+                  disabled={!bisaKurangi}
+                  title={bisaKurangi ? "Hapus tahun terakhir" : "Minimal 1 tahun"}
+                  className="rounded-full border border-slate-300 bg-white px-3 py-0.5 text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  − Tahun
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {dana.map((v, i) => (
+                <Isian key={i} label={`Tahun ${i + 1}`}>
+                  <input
+                    className={`${INPUT} text-right tabular-nums`}
+                    inputMode="numeric"
+                    value={v == null ? "" : v.toLocaleString("id-ID")}
+                    onChange={(e) =>
+                      setDana((d) => {
+                        const baru = [...d];
+                        baru[i] = angkaDari(e.target.value);
+                        return baru;
+                      })
+                    }
+                  />
+                </Isian>
+              ))}
+            </div>
+            <div className="mt-2 flex items-center justify-between rounded-xl bg-[#e8effb] px-3 py-2 text-xs font-bold text-[#1b3560]">
+              <span>Total pendanaan</span>
+              <span className="tabular-nums">Rp {rupiah(hitungTotal(dana))}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Isian label="Nomor SK">
+              <input className={INPUT} value={nomorSK} onChange={(e) => setNomorSK(e.target.value)} />
+            </Isian>
+            <Isian label="Tanggal SK">
+              <input
+                className={INPUT}
+                type={ISO.test(tanggalSK) || !tanggalSK ? "date" : "text"}
+                value={tanggalSK}
+                onChange={(e) => setTanggalSK(e.target.value)}
+              />
+            </Isian>
+            <Isian label="Status">
+              <textarea className={INPUT} rows={3} value={status} onChange={(e) => setStatus(e.target.value)} />
+            </Isian>
+            <Isian label="Keterangan">
+              <textarea className={INPUT} rows={3} value={keterangan} onChange={(e) => setKeterangan(e.target.value)} />
+            </Isian>
+            <Isian label="Tautan folder / dokumen">
+              <input className={INPUT} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://..." />
+            </Isian>
+            <Isian label="Nama tautan (yang ditampilkan)">
+              <input className={INPUT} value={linkLabel} onChange={(e) => setLinkLabel(e.target.value)} placeholder="Folder dokumen" />
+            </Isian>
+          </div>
+        </div>
+
+        {/* Kaki */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4">
+          <p className="min-h-[1rem] text-xs font-bold text-red-600" role="alert">
+            {galat}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onTutup}
+              className="rounded-full border border-slate-300 bg-white px-5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={simpan}
+              className="rounded-full px-5 py-1.5 text-xs font-bold text-white shadow-md hover:brightness-110"
+              style={{ background: GRAD_BIRU }}
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Props {
-  /** Dipanggil setiap kali isi tabel diubah / dihapus (mis. untuk disimpan ke database) */
+  /** Dipanggil setiap kali isi tabel ditambah / diubah / dihapus (mis. untuk disimpan ke database) */
   onSave?(data: Kegiatan[]): void;
 }
 
@@ -251,32 +561,41 @@ function RekapPendanaanTable({ onSave }: Props) {
   const [pusat, setPusat] = useState(SEMUA_PUSAT);
   const [cari, setCari] = useState("");
   const [mencetak, setMencetak] = useState(false);
+  /** Pop up form tambah data */
+  const [formTambah, setFormTambah] = useState(false);
+  /** Nomor baris yang baru ditambah: disorot sebentar dan digulir ke layar */
+  const [sorot, setSorot] = useState<number | null>(null);
   /** Baris yang sedang diubah + salinan kerjanya */
   const [edit, setEdit] = useState<number | null>(null);
   const [draft, setDraft] = useState<Kegiatan | null>(null);
   /** Berkas data dukung yang dipilih, per nomor kegiatan. Disimpan di memori (hilang saat halaman dimuat ulang). */
   const [berkas, setBerkas] = useState<Record<number, File[]>>({});
 
-  /** Bayangan di tepi kiri/kanan tabel: tanda masih ada isi yang bisa digeser ke samping */
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [bayangan, setBayangan] = useState({ kiri: false, kanan: false });
-  const cekScroll = useCallback(() => {
-    const el = scrollRef.current;
+  /* ----- petunjuk scroll horizontal ----- */
+  const gulirRef = useRef<HTMLDivElement>(null);
+  const [bisaKiri, setBisaKiri] = useState(false);
+  const [bisaKanan, setBisaKanan] = useState(false);
+  const cekGulir = useCallback(() => {
+    const el = gulirRef.current;
     if (!el) return;
-    const kiri = el.scrollLeft > 2;
-    const kanan = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
-    setBayangan((b) => (b.kiri === kiri && b.kanan === kanan ? b : { kiri, kanan }));
+    setBisaKiri(el.scrollLeft > 4);
+    setBisaKanan(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }, []);
   useEffect(() => {
-    const el = scrollRef.current;
+    cekGulir();
+    const el = gulirRef.current;
     if (!el) return;
-    cekScroll();
-    // Hitung ulang saat lebar layar atau lebar tabel berubah (filter, tambah tahun, dst.)
-    const ro = new ResizeObserver(cekScroll);
+    // Pantau ukuran wadah dan tabel, karena lebar tabel berubah saat data / kolom tahun bertambah
+    const ro = new ResizeObserver(cekGulir);
     ro.observe(el);
     if (el.firstElementChild) ro.observe(el.firstElementChild);
-    return () => ro.disconnect();
-  }, [cekScroll]);
+    window.addEventListener("resize", cekGulir);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", cekGulir);
+    };
+  }, [cekGulir]);
+  const geser = (arah: 1 | -1) => gulirRef.current?.scrollBy({ left: arah * 400, behavior: "smooth" });
 
   /** Jumlah kolom dana tahun: minimal 3, atau sebanyak termin terpanjang di data (termasuk baris yang sedang diubah) */
   const nTahun = useMemo(
@@ -306,6 +625,14 @@ function RekapPendanaanTable({ onSave }: Props) {
 
   const grup: Grup[] = URUTAN_SKEMA.map((s) => ({ skema: s, list: tampil.filter((k) => k.skema === s) })).filter((g) => g.list.length > 0);
 
+  // Setelah data baru masuk: gulir ke barisnya, lalu hilangkan sorotan setelah beberapa detik
+  useEffect(() => {
+    if (sorot === null) return;
+    document.getElementById(`baris-${sorot}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = window.setTimeout(() => setSorot(null), 3500);
+    return () => window.clearTimeout(t);
+  }, [sorot]);
+
   /* ----- cetak PDF ----- */
   const cetak = async () => {
     if (mencetak) return;
@@ -320,7 +647,21 @@ function RekapPendanaanTable({ onSave }: Props) {
     }
   };
 
-  /* ----- ubah / simpan / hapus ----- */
+  /* ----- tambah / ubah / simpan / hapus ----- */
+  /** Simpan data dari pop up form tambah */
+  const tambah = (d: DataBaru) => {
+    const no = rows.reduce((m, r) => Math.max(m, r.no), 0) + 1;
+    const baru: Kegiatan = { ...d, no, total: hitungTotal(d.dana) };
+    const next = [...rows, baru];
+    setRows(next);
+    onSave?.(next);
+    // Pastikan baris baru tidak tersembunyi oleh pencarian / filter
+    setCari("");
+    if (skema !== SEMUA_SKEMA && skema !== d.skema) setSkema(SEMUA_SKEMA);
+    if (pusat !== SEMUA_PUSAT && pusat !== d.pusatRiset) setPusat(SEMUA_PUSAT);
+    setFormTambah(false);
+    setSorot(no);
+  };
   const mulaiUbah = (k: Kegiatan) => {
     setEdit(k.no);
     setDraft({ ...k, dana: [...k.dana] });
@@ -331,6 +672,10 @@ function RekapPendanaanTable({ onSave }: Props) {
   };
   const simpan = () => {
     if (!draft) return;
+    if (!draft.ketua.trim() || !draft.judul.trim()) {
+      alert("Ketua periset dan judul wajib diisi.");
+      return;
+    }
     const dana = rapikanDana(draft.dana);
     const baru: Kegiatan = {
       ...draft,
@@ -452,35 +797,51 @@ function RekapPendanaanTable({ onSave }: Props) {
     // Tanpa overflow-hidden di sini supaya daftar dropdown tidak terpotong; sudut bulat dipasang di header dan tabel
     <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
       <GayaDropdown />
+      {formTambah && (
+        <FormTambahData
+          daftarPusat={daftarPusat}
+          pusatAwal={pusat !== SEMUA_PUSAT ? pusat : ""}
+          skemaAwal={skema !== SEMUA_SKEMA ? (skema as Skema) : null}
+          onSimpan={tambah}
+          onTutup={() => setFormTambah(false)}
+        />
+      )}
 
-      <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 rounded-t-2xl sm:rounded-t-3xl flex flex-wrap items-center gap-3">
-        {/* Judul: satu baris penuh di HP/tablet kecil, mengisi sisa ruang di kiri dari md ke atas */}
-        <h3 className="font-bold text-[#1b3560] text-sm w-full md:w-auto md:flex-1 md:min-w-[220px]">
+      <div className="p-4 bg-slate-50 border-b border-slate-200 rounded-t-3xl flex flex-wrap items-center gap-3">
+        {/* Judul mengisi sisa ruang di kiri */}
+        <h3 className="font-bold text-[#1b3560] text-sm min-w-[220px] flex-1">
           Rekap Pendanaan PRIS dan RIIM ORPA
           <span className="ml-2 text-xs font-normal text-slate-500">{rows.length} kegiatan</span>
         </h3>
-        {/* HP: grid 2 kolom (search penuh, 2 dropdown berdampingan, tombol cetak penuh).
-            sm ke atas: baris fleksibel yang menempel di kanan */}
-        <div className="w-full md:w-auto md:ml-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+        {/* Pencarian, dropdown, tambah, dan cetak selalu menempel di kanan */}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <input
             type="search"
             value={cari}
             onChange={(e) => setCari(e.target.value)}
             placeholder="Cari ketua, judul, nomor SK..."
-            className="col-span-2 h-9 w-full sm:w-52 px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
+            className="h-9 w-full sm:w-52 px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
           />
-          <div className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiSkema)}>
+          <div className="dd-kecil w-full min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiSkema)}>
             <Dropdown label="Semua Skema" options={opsiSkema} value={skema} onChange={setSkema} />
           </div>
-          <div className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiPusat)}>
+          <div className="dd-kecil w-full min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiPusat)}>
             <Dropdown label="Semua Pusat Riset" options={opsiPusat} value={pusat} onChange={setPusat} />
           </div>
+          <button
+            type="button"
+            onClick={() => setFormTambah(true)}
+            title="Tambah kegiatan baru"
+            className="h-9 px-4 rounded-full border border-[#2a58a5] bg-white text-xs font-bold text-[#1f468c] shadow-sm transition hover:bg-[#eef3fb]"
+          >
+            + Tambah Data
+          </button>
           <button
             type="button"
             onClick={cetak}
             disabled={mencetak}
             title="Unduh rekap sebagai PDF"
-            className="col-span-2 sm:col-span-1 h-9 px-4 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+            className="h-9 px-4 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
             style={{ background: GRAD_BIRU }}
           >
             {mencetak ? "Membuat PDF…" : "Cetak Rekap"}
@@ -488,268 +849,271 @@ function RekapPendanaanTable({ onSave }: Props) {
         </div>
       </div>
 
-      <div className="relative">
-      <div
-        ref={scrollRef}
-        onScroll={cekScroll}
-        className="overflow-x-auto overscroll-x-contain rounded-b-2xl sm:rounded-b-3xl"
-      >
-        <table className="w-max min-w-full text-left text-xs leading-snug text-[#1b3560] border-collapse">
-          <thead>
-            <tr className="text-white text-center font-bold" style={{ background: GRAD_BIRU }}>
-              {kolom.map((l) => (
-                <th key={l} className="p-2 sm:p-3 text-xs sm:text-sm border-r border-white/25 last:border-r-0 whitespace-nowrap">
-                  {l}
-                </th>
-              ))}
-            </tr>
-          </thead>
+      {/* Pembungkus relatif: bayangan dan panah menempel di tepi area scroll */}
+      <div className="relative rounded-b-3xl">
+        {/* Bayangan dalam di tepi: hanya tampil kalau di sisi itu masih ada bagian tabel tersembunyi */}
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-8 rounded-bl-3xl transition-opacity duration-200 ${bisaKiri ? "opacity-100" : "opacity-0"}`}
+          style={{ background: "linear-gradient(to right, rgba(27,53,96,0.28), rgba(27,53,96,0))" }}
+        />
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-8 rounded-br-3xl transition-opacity duration-200 ${bisaKanan ? "opacity-100" : "opacity-0"}`}
+          style={{ background: "linear-gradient(to left, rgba(27,53,96,0.28), rgba(27,53,96,0))" }}
+        />
+        {bisaKiri && <PanahGulir arah="kiri" onClick={() => geser(-1)} />}
+        {bisaKanan && <PanahGulir arah="kanan" onClick={() => geser(1)} />}
 
-          <tbody>
-            {grup.map((g) => (
-              <Fragment key={g.skema}>
-                <tr>
-                  <td
-                    colSpan={kolom.length}
-                    className="p-2 text-white text-center text-xs font-bold uppercase tracking-wider"
-                    style={{ background: GRAD_BIRU_TUA }}
-                  >
-                    {NAMA_SKEMA[g.skema]}
-                  </td>
-                </tr>
+        <div ref={gulirRef} onScroll={cekGulir} className="overflow-x-auto rounded-b-3xl">
+          <table className="w-max min-w-full text-left text-xs leading-snug text-[#1b3560] border-collapse">
+            <thead>
+              <tr className="text-white text-center text-sm font-bold" style={{ background: GRAD_BIRU }}>
+                {kolom.map((l) => (
+                  <th key={l} className="p-3 px-3 text-sm border-r border-white/25 last:border-r-0 whitespace-nowrap">
+                    {l}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-                {g.list.map((k) => {
-                  /* ===== Baris sedang diubah ===== */
-                  if (edit === k.no && draft) {
-                    const d = draft;
-                    const bisaKurangi = nTahun > MIN_TAHUN && d.dana[nTahun - 1] == null;
-                    return (
-                      <Fragment key={k.no}>
-                        <tr className="bg-[#f5f8fd]">
-                          <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
-                          <td className={`${td} min-w-[150px] sm:min-w-[170px]`}>
-                            <input className={INPUT} value={d.ketua} onChange={(e) => ubah("ketua", e.target.value)} aria-label="Ketua periset" />
-                          </td>
-                          <td className={`${td} min-w-[220px] sm:min-w-[300px] max-w-[420px]`}>
-                            <textarea className={INPUT} rows={4} value={d.judul} onChange={(e) => ubah("judul", e.target.value)} aria-label="Judul" />
-                          </td>
-                          <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>
-                            <select className={INPUT} value={d.pusatRiset} onChange={(e) => ubah("pusatRiset", e.target.value)} aria-label="Pusat riset">
-                              {(daftarPusat.includes(d.pusatRiset) ? daftarPusat : [d.pusatRiset, ...daftarPusat]).map((p) => (
-                                <option key={p}>{p}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>
-                            <select className={`${INPUT} mb-1`} value={d.skema} onChange={(e) => ubah("skema", e.target.value as Skema)} aria-label="Skema">
-                              {URUTAN_SKEMA.map((s) => (
-                                <option key={s}>{s}</option>
-                              ))}
-                            </select>
-                            <input className={INPUT} value={d.jenis} onChange={(e) => ubah("jenis", e.target.value)} aria-label="Jenis atau gelombang" />
-                          </td>
-                          <td className={`${td} min-w-[70px]`}>
-                            <input
-                              className={`${INPUT} text-center`}
-                              inputMode="numeric"
-                              value={d.jangkaBulan ?? ""}
-                              onChange={(e) => ubah("jangkaBulan", angkaDari(e.target.value))}
-                              aria-label="Jangka waktu (bulan)"
-                            />
-                          </td>
-                          {indeksTahun.map((i) => (
-                            <td key={i} className={`${td} min-w-[120px] sm:min-w-[130px]`}>
+            <tbody>
+              {grup.map((g) => (
+                <Fragment key={g.skema}>
+                  <tr>
+                    <td
+                      colSpan={kolom.length}
+                      className="p-2 text-white text-center text-xs font-bold uppercase tracking-wider"
+                      style={{ background: GRAD_BIRU_TUA }}
+                    >
+                      {NAMA_SKEMA[g.skema]}
+                    </td>
+                  </tr>
+
+                  {g.list.map((k) => {
+                    /* ===== Baris sedang diubah ===== */
+                    if (edit === k.no && draft) {
+                      const d = draft;
+                      const bisaKurangi = nTahun > MIN_TAHUN && d.dana[nTahun - 1] == null;
+                      return (
+                        <Fragment key={k.no}>
+                          <tr id={`baris-${k.no}`} className="bg-[#f5f8fd]">
+                            <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
+                            <td className={`${td} min-w-[170px]`}>
+                              <input className={INPUT} value={d.ketua} onChange={(e) => ubah("ketua", e.target.value)} aria-label="Ketua periset" />
+                            </td>
+                            <td className={`${td} min-w-[300px] max-w-[420px]`}>
+                              <textarea className={INPUT} rows={4} value={d.judul} onChange={(e) => ubah("judul", e.target.value)} aria-label="Judul" />
+                            </td>
+                            <td className={`${td} min-w-[150px]`}>
+                              <select className={INPUT} value={d.pusatRiset} onChange={(e) => ubah("pusatRiset", e.target.value)} aria-label="Pusat riset">
+                                {(daftarPusat.includes(d.pusatRiset) ? daftarPusat : [d.pusatRiset, ...daftarPusat]).map((p) => (
+                                  <option key={p}>{p}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className={`${td} min-w-[150px]`}>
+                              <select className={`${INPUT} mb-1`} value={d.skema} onChange={(e) => ubah("skema", e.target.value as Skema)} aria-label="Skema">
+                                {URUTAN_SKEMA.map((s) => (
+                                  <option key={s}>{s}</option>
+                                ))}
+                              </select>
+                              <input className={INPUT} value={d.jenis} onChange={(e) => ubah("jenis", e.target.value)} placeholder="Jenis / gelombang" aria-label="Jenis atau gelombang" />
+                            </td>
+                            <td className={`${td} min-w-[70px]`}>
                               <input
-                                className={`${INPUT} text-right tabular-nums`}
+                                className={`${INPUT} text-center`}
                                 inputMode="numeric"
-                                value={d.dana[i] == null ? "" : d.dana[i]!.toLocaleString("id-ID")}
-                                onChange={(e) => ubahDana(i, e.target.value)}
-                                aria-label={`Dana tahun ${i + 1}`}
+                                value={d.jangkaBulan ?? ""}
+                                onChange={(e) => ubah("jangkaBulan", angkaDari(e.target.value))}
+                                aria-label="Jangka waktu (bulan)"
                               />
                             </td>
-                          ))}
-                          <td className={`${angka} font-bold`} title="Dihitung otomatis dari seluruh dana tahun">
-                            {rupiah(hitungTotal(d.dana))}
-                          </td>
-                          <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>
-                            <input className={`${INPUT} mb-1`} value={d.nomorSK} onChange={(e) => ubah("nomorSK", e.target.value)} placeholder="Nomor SK" aria-label="Nomor SK" />
-                            <input
-                              className={INPUT}
-                              type={ISO.test(d.tanggalSK) || !d.tanggalSK ? "date" : "text"}
-                              value={d.tanggalSK}
-                              onChange={(e) => ubah("tanggalSK", e.target.value)}
-                              aria-label="Tanggal SK"
-                            />
-                          </td>
-                          <td className={`${td} min-w-[200px] sm:min-w-[260px] max-w-[320px]`}>
-                            <span className="mb-0.5 block font-bold">Status</span>
-                            <textarea className={`${INPUT} mb-2`} rows={3} value={d.status} onChange={(e) => ubah("status", e.target.value)} aria-label="Status" />
-                            <span className="mb-0.5 block font-bold">Keterangan</span>
-                            <textarea className={INPUT} rows={3} value={d.keterangan} onChange={(e) => ubah("keterangan", e.target.value)} aria-label="Keterangan" />
-                          </td>
-                          <td className={`${td} whitespace-nowrap`}>
-                            <button
-                              type="button"
-                              onClick={simpan}
-                              className="mb-1 block w-full rounded-full px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-white shadow-md hover:brightness-110"
-                              style={{ background: GRAD_BIRU }}
-                            >
-                              Simpan
-                            </button>
-                            <button
-                              type="button"
-                              onClick={batalUbah}
-                              className="mb-3 block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
-                            >
-                              Batal
-                            </button>
-                            <button
-                              type="button"
-                              onClick={tambahTahun}
-                              className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb]"
-                            >
-                              + Tahun
-                            </button>
-                            <button
-                              type="button"
-                              onClick={kurangiTahun}
-                              disabled={!bisaKurangi}
-                              title={bisaKurangi ? "Hapus termin terakhir" : "Hanya bisa jika termin terakhir kosong dan lebih dari 3"}
-                              className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              − Tahun
-                            </button>
-                          </td>
-                          {selUpload(k)}
-                        </tr>
-                        <tr className="bg-[#f5f8fd]">
-                          <td className="border-b border-slate-200" />
-                          <td colSpan={kolom.length - 1} className="p-2 sm:p-3 border-b border-slate-200">
-                            {/* Lebar mengikuti layar supaya tidak melebihi viewport di HP */}
-                            <div className="sticky left-3 w-[min(820px,calc(100vw-5rem))] space-y-2">
-                              <label className="block">
-                                <span className="mb-1 block font-bold">Tautan folder / dokumen</span>
-                                <input className={INPUT} value={d.link} onChange={(e) => ubah("link", e.target.value)} placeholder="https://..." />
-                              </label>
-                              <label className="block">
-                                <span className="mb-1 block font-bold">Nama tautan (yang ditampilkan)</span>
+                            {indeksTahun.map((i) => (
+                              <td key={i} className={`${td} min-w-[130px]`}>
                                 <input
-                                  className={INPUT}
-                                  value={d.linkLabel ?? ""}
-                                  onChange={(e) => ubah("linkLabel", e.target.value)}
-                                  placeholder="Folder dokumen"
+                                  className={`${INPUT} text-right tabular-nums`}
+                                  inputMode="numeric"
+                                  value={d.dana[i] == null ? "" : d.dana[i]!.toLocaleString("id-ID")}
+                                  onChange={(e) => ubahDana(i, e.target.value)}
+                                  aria-label={`Dana tahun ${i + 1}`}
                                 />
-                              </label>
-                            </div>
-                          </td>
-                        </tr>
-                      </Fragment>
-                    );
-                  }
+                              </td>
+                            ))}
+                            <td className={`${angka} font-bold`} title="Dihitung otomatis dari seluruh dana tahun">
+                              {rupiah(hitungTotal(d.dana))}
+                            </td>
+                            <td className={`${td} min-w-[150px]`}>
+                              <input className={`${INPUT} mb-1`} value={d.nomorSK} onChange={(e) => ubah("nomorSK", e.target.value)} placeholder="Nomor SK" aria-label="Nomor SK" />
+                              <input
+                                className={INPUT}
+                                type={ISO.test(d.tanggalSK) || !d.tanggalSK ? "date" : "text"}
+                                value={d.tanggalSK}
+                                onChange={(e) => ubah("tanggalSK", e.target.value)}
+                                aria-label="Tanggal SK"
+                              />
+                            </td>
+                            <td className={`${td} min-w-[260px] max-w-[320px]`}>
+                              <span className="mb-0.5 block font-bold">Status</span>
+                              <textarea className={`${INPUT} mb-2`} rows={3} value={d.status} onChange={(e) => ubah("status", e.target.value)} aria-label="Status" />
+                              <span className="mb-0.5 block font-bold">Keterangan</span>
+                              <textarea className={INPUT} rows={3} value={d.keterangan} onChange={(e) => ubah("keterangan", e.target.value)} aria-label="Keterangan" />
+                            </td>
+                            <td className={`${td} whitespace-nowrap`}>
+                              <button
+                                type="button"
+                                onClick={simpan}
+                                className="mb-1 block w-full rounded-full px-3.5 py-1 text-[11px] font-bold text-white shadow-md hover:brightness-110"
+                                style={{ background: GRAD_BIRU }}
+                              >
+                                Simpan
+                              </button>
+                              <button
+                                type="button"
+                                onClick={batalUbah}
+                                className="mb-3 block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
+                              >
+                                Batal
+                              </button>
+                              <button
+                                type="button"
+                                onClick={tambahTahun}
+                                className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb]"
+                              >
+                                + Tahun
+                              </button>
+                              <button
+                                type="button"
+                                onClick={kurangiTahun}
+                                disabled={!bisaKurangi}
+                                title={bisaKurangi ? "Hapus termin terakhir" : "Hanya bisa jika termin terakhir kosong dan lebih dari 3"}
+                                className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                − Tahun
+                              </button>
+                            </td>
+                            {selUpload(k)}
+                          </tr>
+                          <tr className="bg-[#f5f8fd]">
+                            <td className="border-b border-slate-200" />
+                            <td colSpan={kolom.length - 1} className="p-3 border-b border-slate-200">
+                              <div className="sticky left-3 max-w-[820px] space-y-2">
+                                <label className="block">
+                                  <span className="mb-1 block font-bold">Tautan folder / dokumen</span>
+                                  <input className={INPUT} value={d.link} onChange={(e) => ubah("link", e.target.value)} placeholder="https://..." />
+                                </label>
+                                <label className="block">
+                                  <span className="mb-1 block font-bold">Nama tautan (yang ditampilkan)</span>
+                                  <input
+                                    className={INPUT}
+                                    value={d.linkLabel ?? ""}
+                                    onChange={(e) => ubah("linkLabel", e.target.value)}
+                                    placeholder="Folder dokumen"
+                                  />
+                                </label>
+                              </div>
+                            </td>
+                          </tr>
+                        </Fragment>
+                      );
+                    }
 
-                  /* ===== Baris biasa ===== */
-                  return (
-                    <tr key={k.no} className="hover:bg-[#eef3fb] transition-colors">
-                      <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
-                      <td className={`${td} min-w-[150px] sm:min-w-[170px]`}>{k.ketua}</td>
-                      <td className={`${td} min-w-[220px] sm:min-w-[300px] max-w-[420px]`}>{k.judul}</td>
-                      <td className={`${td} min-w-[140px] sm:min-w-[150px]`}>{k.pusatRiset}</td>
-                      <td className={`${td} text-center whitespace-nowrap`}>
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
-                      </td>
-                      <td className={`${td} text-center tabular-nums whitespace-nowrap`}>{k.jangkaBulan ?? "—"}</td>
-                      {indeksTahun.map((i) => (
-                        <td key={i} className={angka}>
-                          {rupiah(k.dana[i])}
+                    /* ===== Baris biasa ===== */
+                    return (
+                      <tr
+                        key={k.no}
+                        id={`baris-${k.no}`}
+                        className={`transition-colors duration-500 ${sorot === k.no ? "bg-[#fff6cc]" : "hover:bg-[#eef3fb]"}`}
+                      >
+                        <td className={`${td} text-center whitespace-nowrap`}>{k.no}</td>
+                        <td className={`${td} min-w-[170px]`}>{k.ketua}</td>
+                        <td className={`${td} min-w-[300px] max-w-[420px]`}>{k.judul}</td>
+                        <td className={`${td} min-w-[150px]`}>{k.pusatRiset}</td>
+                        <td className={`${td} text-center whitespace-nowrap`}>
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${LENCANA[k.skema]}`}>{k.jenis}</span>
                         </td>
-                      ))}
-                      <td className={angka}>{rupiah(k.total)}</td>
-                      <td className={`${td} whitespace-nowrap`}>
-                        <div>{k.nomorSK || "—"}</div>
-                        <div className="text-slate-500">{tanggal(k.tanggalSK)}</div>
-                      </td>
-                      <td className={`${td} min-w-[200px] sm:min-w-[260px] max-w-[320px]`}>
-                        <div className="whitespace-pre-line">{k.status || "—"}</div>
-                        {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[11px] text-slate-500">{k.keterangan}</div>}
-                      </td>
-                      <td className={`${td} whitespace-nowrap`}>
-                        <button
-                          type="button"
-                          onClick={() => mulaiUbah(k)}
-                          disabled={edit !== null}
-                          className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Ubah
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => hapus(k)}
-                          disabled={edit !== null}
-                          className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-slate-600 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Hapus
-                        </button>
-                      </td>
-                      {selUpload(k)}
-                    </tr>
-                  );
-                })}
+                        <td className={`${td} text-center tabular-nums whitespace-nowrap`}>{k.jangkaBulan ?? "—"}</td>
+                        {indeksTahun.map((i) => (
+                          <td key={i} className={angka}>
+                            {rupiah(k.dana[i])}
+                          </td>
+                        ))}
+                        <td className={angka}>{rupiah(k.total)}</td>
+                        <td className={`${td} whitespace-nowrap`}>
+                          <div>{k.nomorSK || "—"}</div>
+                          <div className="text-slate-500">{tanggal(k.tanggalSK)}</div>
+                        </td>
+                        <td className={`${td} min-w-[260px] max-w-[320px]`}>
+                          <div className="whitespace-pre-line">{k.status || "—"}</div>
+                          {k.keterangan && <div className="mt-1.5 whitespace-pre-line text-[11px] text-slate-500">{k.keterangan}</div>}
+                        </td>
+                        <td className={`${td} whitespace-nowrap`}>
+                          <button
+                            type="button"
+                            onClick={() => mulaiUbah(k)}
+                            disabled={edit !== null}
+                            className="mb-1 block w-full rounded-full border border-[#2a58a5] bg-white px-3.5 py-1 text-[11px] font-bold text-[#1f468c] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Ubah
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => hapus(k)}
+                            disabled={edit !== null}
+                            className="block w-full rounded-full border border-slate-300 bg-white px-3.5 py-1 text-[11px] font-bold text-slate-600 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                        {selUpload(k)}
+                      </tr>
+                    );
+                  })}
 
-                <tr className="bg-[#e8effb] font-bold">
-                  <td colSpan={5} className="px-3 py-2.5 border-b border-slate-300 text-right uppercase tracking-wide whitespace-nowrap">
-                    Total {g.skema} · {g.list.length} kegiatan
+                  <tr className="bg-[#e8effb] font-bold">
+                    <td colSpan={5} className="px-3 py-2.5 border-b border-slate-300 text-right uppercase tracking-wide whitespace-nowrap">
+                      Total {g.skema} · {g.list.length} kegiatan
+                    </td>
+                    <td className="border-b border-slate-300" />
+                    {indeksTahun.map((i) => (
+                      <td key={i} className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">
+                        {rupiah(jumlah(g.list, i))}
+                      </td>
+                    ))}
+                    <td className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">
+                      {rupiah(g.list.reduce((n, k) => n + k.total, 0))}
+                    </td>
+                    <td colSpan={4} className="border-b border-slate-300" />
+                  </tr>
+                </Fragment>
+              ))}
+
+              {grup.length > 1 && (
+                <tr className="text-white font-bold" style={{ background: GRAD_BIRU }}>
+                  <td colSpan={5} className="px-3 py-2.5 text-right uppercase tracking-wide whitespace-nowrap">
+                    Total seluruhnya · {tampil.length} kegiatan
                   </td>
-                  <td className="border-b border-slate-300" />
+                  <td />
                   {indeksTahun.map((i) => (
-                    <td key={i} className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">
-                      {rupiah(jumlah(g.list, i))}
+                    <td key={i} className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">
+                      {rupiah(jumlah(tampil, i))}
                     </td>
                   ))}
-                  <td className="px-3 py-2.5 border-b border-slate-300 text-right tabular-nums whitespace-nowrap">
-                    {rupiah(g.list.reduce((n, k) => n + k.total, 0))}
-                  </td>
-                  <td colSpan={4} className="border-b border-slate-300" />
+                  <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{rupiah(tampil.reduce((n, k) => n + k.total, 0))}</td>
+                  <td colSpan={4} />
                 </tr>
-              </Fragment>
-            ))}
+              )}
 
-            {grup.length > 1 && (
-              <tr className="text-white font-bold" style={{ background: GRAD_BIRU }}>
-                <td colSpan={5} className="px-3 py-2.5 text-right uppercase tracking-wide whitespace-nowrap">
-                  Total seluruhnya · {tampil.length} kegiatan
-                </td>
-                <td />
-                {indeksTahun.map((i) => (
-                  <td key={i} className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">
-                    {rupiah(jumlah(tampil, i))}
+              {tampil.length === 0 && (
+                <tr>
+                  <td colSpan={kolom.length} className="p-6 text-center text-xs text-slate-500">
+                    Tidak ada data yang cocok dengan pencarian.
                   </td>
-                ))}
-                <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{rupiah(tampil.reduce((n, k) => n + k.total, 0))}</td>
-                <td colSpan={4} />
-              </tr>
-            )}
-
-            {tampil.length === 0 && (
-              <tr>
-                <td colSpan={kolom.length} className="p-6 text-center text-xs text-slate-500">
-                  Tidak ada data yang cocok dengan pencarian.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      {/* Bayangan penanda scroll: tetap di tepi, tidak ikut bergeser */}
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-5 sm:w-8 rounded-bl-2xl sm:rounded-bl-3xl transition-opacity duration-200 ${bayangan.kiri ? "opacity-100" : "opacity-0"}`}
-        style={{ background: "linear-gradient(to right, rgba(27,53,96,0.28), rgba(27,53,96,0))" }}
-      />
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-5 sm:w-8 rounded-br-2xl sm:rounded-br-3xl transition-opacity duration-200 ${bayangan.kanan ? "opacity-100" : "opacity-0"}`}
-        style={{ background: "linear-gradient(to left, rgba(27,53,96,0.28), rgba(27,53,96,0))" }}
-      />
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

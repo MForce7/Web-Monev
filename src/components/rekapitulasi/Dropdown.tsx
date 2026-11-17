@@ -70,7 +70,7 @@ export default function Dropdown({
         </button>
 
         {open && (
-          <ul id={listId} role="listbox" aria-label={label} className="max-h-60 sm:max-h-72 overflow-y-auto overscroll-contain">
+          <ul id={listId} role="listbox" aria-label={label} className="max-h-60 overflow-y-auto overscroll-contain sm:max-h-72">
             {options.map((opt) => {
               const dipilih = opt === value;
               return (

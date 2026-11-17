@@ -3,6 +3,8 @@ import type { CSSProperties } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../data/rekapOutput.json";
+import BilahEkspor from "./BilahEkspor";
+import { unduhExcel, type Sel as SelEkspor, type WarnaSel } from "../../lib/eksporTabel.ts";
 import DropdownPusatRiset from "./DropdownPusatRiset.tsx";
 
 const BULAN = [
@@ -57,6 +59,14 @@ const WARNA_STATUS: Record<StatusPantau, string> = {
   "Belum Lengkap": "bg-[#fef3c7] text-[#92400e]",
   Kosong: "bg-[#fee2e2] text-[#991b1b]",
 };
+
+// Warna status di file Excel (hex tanpa #), sama dengan warna di layar dan PDF
+const WARNA_XLSX: Record<string, WarnaSel> = {
+  Lengkap: { isi: "DCFCE7", teks: "166534" },
+  "Belum Lengkap": { isi: "FEF3C7", teks: "92400E" },
+  Kosong: { isi: "FEE2E2", teks: "991B1B" },
+};
+const warnaStatus = (nilai: SelEkspor) => (typeof nilai === "string" ? WARNA_XLSX[nilai] : undefined);
 
 const daftar = (v?: string[] | string | number): string[] =>
   Array.isArray(v) ? v : v === undefined || v === "" ? [] : [String(v)];
@@ -199,6 +209,67 @@ async function cetakPdf(pusatRiset: string, data: BarisPantau[]) {
   doc.save(`Rekap-Pemantauan-${namaFile}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
+/* ---------- Unduh Excel: tab "Ringkasan" (status per bulan) + tab "Rincian" (yang belum sesuai) ---------- */
+async function unduhExcelPemantauan(pusatRiset: string, data: BarisPantau[]) {
+  const total: Record<StatusPantau, number> = { Lengkap: 0, "Belum Lengkap": 0, Kosong: 0 };
+  data.forEach((d) =>
+    BULAN.forEach((b) => {
+      const s = d.bulan?.[b]?.status;
+      if (s) total[s]++;
+    })
+  );
+  const ringkasan = `Ketua tim: ${data.length}    Lengkap: ${total.Lengkap}    Belum lengkap: ${total["Belum Lengkap"]}    Kosong: ${total.Kosong}`;
+
+  const rincian: SelEkspor[][] = [];
+  data.forEach((d) =>
+    BULAN.forEach((b) => {
+      const s = d.bulan?.[b];
+      if (s?.status && s.status !== "Lengkap") {
+        rincian.push([
+          d.nama,
+          d.pusatRiset ?? "",
+          b,
+          s.status,
+          daftar(s.belumSesuai).map((x) => `• ${x}`).join("\n"),
+        ]);
+      }
+    })
+  );
+
+  await unduhExcel(`Rekap-Pemantauan-${pusatRiset.replace(/[^\w]+/g, "-")}`, [
+    {
+      nama: "Ringkasan",
+      judul: "Rekap Pemantauan Pengisian Logbook",
+      subjudul: pusatRiset,
+      ringkasan,
+      kolom: ["No", "Nama Ketua Tim", "Pusat Riset", ...BULAN],
+      baris: data.map((d, i) => [
+        i + 1,
+        d.nama,
+        d.pusatRiset ?? "",
+        ...BULAN.map((b) => d.bulan?.[b]?.status ?? "-"),
+      ]),
+      rataTengah: [0, ...BULAN.map((_, i) => i + 3)],
+      lebarKolom: [6, 34, 22, ...BULAN.map(() => 15)],
+      warnaSel: (nilai, kol) => (kol >= 3 ? warnaStatus(nilai) : undefined),
+    },
+    ...(rincian.length
+      ? [
+          {
+            nama: "Rincian",
+            judul: "Rincian yang belum sesuai",
+            subjudul: pusatRiset,
+            kolom: ["Nama Ketua Tim", "Pusat Riset", "Bulan", "Status", "Belum diisi di logbook"],
+            baris: rincian,
+            rataTengah: [1, 2, 3],
+            lebarKolom: [34, 22, 14, 16, 60],
+            warnaSel: (nilai: SelEkspor, kol: number) => (kol === 3 ? warnaStatus(nilai) : undefined),
+          },
+        ]
+      : []),
+  ]);
+}
+
 /* ---------- Tabel ---------- */
 const th = "border-r border-white/25 px-3 py-2 text-center text-[11px] font-bold text-white last:border-r-0";
 const td =
@@ -233,7 +304,6 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [bisaKiri, setBisaKiri] = useState(false);
   const [bisaKanan, setBisaKanan] = useState(false);
-  const [mencetak, setMencetak] = useState(false);
 
   const cek = useCallback(() => {
     const el = ref.current;
@@ -254,19 +324,8 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
   const geser = (arah: 1 | -1) => ref.current?.scrollBy({ left: arah * 320, behavior: "smooth" });
   const bisaScroll = bisaKiri || bisaKanan;
 
-  // Belum memilih pusat riset = cetak semua pusat riset
-  const cetak = async () => {
-    if (mencetak) return;
-    setMencetak(true);
-    try {
-      await cetakPdf(pusatRiset ?? "Semua Pusat Riset", data);
-    } catch (err) {
-      console.error(err);
-      alert("PDF gagal dibuat. Coba lagi.");
-    } finally {
-      setMencetak(false);
-    }
-  };
+  // Belum memilih pusat riset = unduh semua pusat riset
+  const namaPusat = pusatRiset ?? "Semua Pusat Riset";
 
   return (
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path

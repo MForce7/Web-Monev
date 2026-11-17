@@ -281,7 +281,8 @@ export default function ActivityHeader({
           min-w-0
           p-2 sm:p-4 md:p-5
         ">
-          <div className="w-full min-w-0">
+          {/* LOG PROGRES BULANAN */}
+          <div className="w-full min-w-0 mt-0 sm:mt-2">
             <MonthlyLogTable
               activityId={activityId}
               initialData={monthlyData}
