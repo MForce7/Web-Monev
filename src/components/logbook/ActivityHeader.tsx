@@ -20,25 +20,20 @@ function buildDefaultMonths(): MonthData[] {
 }
 
 interface Props {
-  activityId: string   // ⬅️ tambahkan ini
+  activityId: string
   initialData: HeaderData
-  // onSave?: (updatedData: HeaderData) => void
-  onSave?: (updatedData: HeaderData) => void | Promise<void> 
+  onSave?: (updatedData: HeaderData) => void | Promise<void>
   initialMonthlyData?: MonthData[]
   onMonthlySave?: (updatedData: MonthData[]) => void
 }
 
 export default function ActivityHeader({
-  activityId,   // ⬅️ tambahkan ini
+  activityId,
   initialData,
   onSave,
   initialMonthlyData,
   onMonthlySave
 }: Props) {
-
-// debug purpose
-   console.log('[ActivityHeader] render, activityId =', activityId)
-
   const [isEditing, setIsEditing] = useState(false)
   const [saved, setSaved] = useState(initialData)
   const [draft, setDraft] = useState(initialData)
@@ -154,7 +149,6 @@ export default function ActivityHeader({
             Informasi aktivitas dan capaian program mitra
           </p>
         </div>
-
 
         {saveError && (
           <div className="min-w-0 break-words rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
@@ -287,18 +281,14 @@ export default function ActivityHeader({
           min-h-25 min-w-0
           p-2 sm:p-4 md:p-5
         ">
-
           {/* LOG PROGRES BULANAN */}
           <div className="w-full min-w-0 mt-0 sm:mt-2">
-
             <MonthlyLogTable
-              activityId={activityId}   // ⬅️ tambahkan ini
+              activityId={activityId}
               initialData={monthlyData}
               onSave={onMonthlySave}
             />
-            
           </div>
-
         </div>
       </div>
     </div>

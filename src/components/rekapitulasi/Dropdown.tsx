@@ -70,7 +70,7 @@ export default function Dropdown({
         </button>
 
         {open && (
-          <ul id={listId} role="listbox" aria-label={label} className="max-h-72 overflow-y-auto overscroll-contain">
+          <ul id={listId} role="listbox" aria-label={label} className="max-h-60 overflow-y-auto overscroll-contain sm:max-h-72">
             {options.map((opt) => {
               const dipilih = opt === value;
               return (
@@ -81,7 +81,7 @@ export default function Dropdown({
                       onChange(opt);
                       setOpen(false);
                     }}
-                    className={`w-full border-t border-[#dbe6f7] py-2.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] sm:py-1.5 ${
+                    className={`w-full border-t border-[#dbe6f7] px-2 py-2.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] sm:py-1.5 ${
                       dipilih ? "bg-[#dbe6f7]" : ""
                     }`}
                   >

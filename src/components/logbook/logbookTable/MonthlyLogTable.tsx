@@ -9,6 +9,8 @@ export type { MonthData }
 /** Lebar minimum tiap kolom (px): Bulan, 4 kolom aktivitas, 5 kolom output, Tindakan */
 const WIDTHS_PX = [88, 150, 120, 130, 100, 100, 130, 100, 80, 100, 100]
 const TABLE_MIN_WIDTH = WIDTHS_PX.reduce((sum, w) => sum + w, 0)
+// Urutan kolom: Bulan | Uraian | Kendala | Mitigasi | Data Dukung Progres |
+// Jenis | Judul | Status | Capaian | Data Dukung Output | Tindakan
 
 const AKTIVITAS = ['Uraian Kemajuan Aktivitas', 'Kendala Ditemui', 'Mitigasi / Rencana Tindak Lanjut', 'Data Dukung Progres']
 const OUTPUT = ['Jenis Output', 'Judul Output', 'Status', 'Capaian (%)', 'Data Dukung Output']
@@ -28,6 +30,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  // Petunjuk scroll horizontal: bayangan dan tombol panah hanya muncul kalau tabel memang bisa digeser
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -87,11 +90,15 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
     <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden w-full max-w-full min-w-0">
       <PrintStyles />
 
-      <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center sm:gap-3 no-print">
+      <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 no-print">
         <h3 className="font-bold text-slate-700 text-sm sm:text-base min-w-0">
           <i className="fa-solid fa-calendar-days mr-2 text-gov-600" /> Log Progres Bulanan (Januari - Desember)
         </h3>
-        <button type="button" onClick={() => window.print()} className="w-full sm:w-auto justify-center px-3 py-2 sm:py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="w-full sm:w-auto justify-center px-3 py-2 sm:py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition flex items-center gap-1.5 shrink-0"
+        >
           <i className="fa-solid fa-print" /> Cetak Laporan
         </button>
       </div>
@@ -140,6 +147,7 @@ export default function MonthlyLogTable({ activityId, initialData, onSave }: Pro
           </div>
         )}
 
+        {/* Di layar sempit tabel di-scroll ke samping, bukan dipadatkan sampai kata terpotong */}
         <div
           ref={scrollRef}
           className="w-full max-w-full overflow-x-auto overscroll-x-contain pb-2 print:overflow-visible print:pb-0"

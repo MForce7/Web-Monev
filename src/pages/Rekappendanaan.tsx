@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ReactNode } from "react";
 import type { UserOptions } from "jspdf-autotable";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
@@ -34,7 +34,7 @@ type DataBaru = Omit<Kegiatan, "no" | "total">;
 const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
 
 /* ---------- Tampilan ----------
-   Isi tabel text-xs, judul kolom text-sm bold, warna #1b3560. */
+   Isi tabel text-xs, judul kolom text-xs (HP) / text-sm (sm ke atas) bold, warna #1b3560. */
 const GRAD_BIRU = "linear-gradient(90deg, #1c3d85 0%, #2a58a5 100%)";
 const GRAD_BIRU_TUA = "linear-gradient(90deg, #14306b 0%, #1f468c 100%)";
 
@@ -68,10 +68,11 @@ const LENCANA: Record<Skema, string> = {
 const INPUT =
   "w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs leading-snug text-[#1b3560] focus:outline-none focus:border-[#2a58a5] focus:ring-2 focus:ring-[#2a58a5]/30";
 
-/** Lebar dropdown mengikuti pilihan terpanjang (satuan ch) + ruang panah di kiri-kanan */
-const lebarDropdown = (opsi: string[]) => ({
-  width: `calc(${Math.max(...opsi.map((o) => o.length))}ch + 4.75rem)`,
-});
+/** Lebar dropdown mengikuti pilihan terpanjang (satuan ch) + ruang panah di kiri-kanan.
+    Disimpan sebagai CSS variable --w; hanya dipakai dari layar sm ke atas (sm:w-[var(--w)]),
+    di HP dropdown mengikuti lebar kolom grid. */
+const lebarDropdown = (opsi: string[]) =>
+  ({ "--w": `calc(${Math.max(...opsi.map((o) => o.length))}ch + 4.75rem)` }) as CSSProperties;
 
 const BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 const rupiah = (n: number | null | undefined) => (typeof n === "number" ? n.toLocaleString("id-ID") : "—");
@@ -728,14 +729,15 @@ function RekapPendanaanTable({ onSave }: Props) {
   const hapusBerkas = (no: number, idx: number) =>
     setBerkas((b) => ({ ...b, [no]: (b[no] ?? []).filter((_, i) => i !== idx) }));
 
-  const td = "px-3 py-2 border-r border-b border-slate-200 align-top";
+  // Padding sel lebih rapat di HP, normal dari sm ke atas
+  const td = "px-2 py-1.5 sm:px-3 sm:py-2 border-r border-b border-slate-200 align-top";
   const angka = `${td} text-right tabular-nums whitespace-nowrap`;
 
   /** Kolom upload: dipakai baris biasa maupun baris yang sedang diubah */
   const selUpload = (k: Kegiatan) => (
-    <td className={`${td} border-r-0 min-w-[220px]`} onClick={(e) => e.stopPropagation()}>
+    <td className={`${td} border-r-0 min-w-[190px] sm:min-w-[220px]`} onClick={(e) => e.stopPropagation()}>
       <label
-        className="inline-block cursor-pointer rounded-full px-3.5 py-1 text-[11px] font-bold text-white shadow-md transition hover:brightness-110"
+        className="inline-block cursor-pointer rounded-full px-3.5 py-1.5 sm:py-1 text-[11px] font-bold text-white shadow-md transition hover:brightness-110"
         style={{ background: GRAD_BIRU }}
       >
         Pilih file
@@ -759,7 +761,7 @@ function RekapPendanaanTable({ onSave }: Props) {
               target="_blank"
               rel="noreferrer"
               title={k.link}
-              className="max-w-[190px] truncate text-[#2a58a5] underline"
+              className="max-w-[170px] sm:max-w-[190px] truncate text-[#2a58a5] underline"
             >
               {k.linkLabel || "Folder dokumen"}
             </a>
@@ -771,7 +773,7 @@ function RekapPendanaanTable({ onSave }: Props) {
             <button
               type="button"
               onClick={() => window.open(URL.createObjectURL(f), "_blank")}
-              className="max-w-[150px] truncate text-left text-[#2a58a5] underline"
+              className="max-w-[120px] sm:max-w-[150px] truncate text-left text-[#2a58a5] underline"
               title={`Buka ${f.name}`}
             >
               {f.name}
@@ -781,7 +783,7 @@ function RekapPendanaanTable({ onSave }: Props) {
               type="button"
               onClick={() => hapusBerkas(k.no, i)}
               aria-label={`Hapus ${f.name}`}
-              className="ml-auto shrink-0 rounded-full px-1.5 font-bold text-slate-500 hover:bg-white hover:text-red-600"
+              className="ml-auto shrink-0 rounded-full px-2 py-0.5 sm:px-1.5 sm:py-0 font-bold text-slate-500 hover:bg-white hover:text-red-600"
             >
               ×
             </button>
@@ -793,7 +795,7 @@ function RekapPendanaanTable({ onSave }: Props) {
 
   return (
     // Tanpa overflow-hidden di sini supaya daftar dropdown tidak terpotong; sudut bulat dipasang di header dan tabel
-    <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
+    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
       <GayaDropdown />
       {formTambah && (
         <FormTambahData
@@ -818,12 +820,12 @@ function RekapPendanaanTable({ onSave }: Props) {
             value={cari}
             onChange={(e) => setCari(e.target.value)}
             placeholder="Cari ketua, judul, nomor SK..."
-            className="h-9 w-52 max-w-full px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
+            className="h-9 w-full sm:w-52 px-4 border border-[#dbe6f7] rounded-full text-xs text-[#1b3560] bg-white focus:outline-none focus:border-[#2a5aa8] focus:ring-2 focus:ring-[#2a5aa8]/30"
           />
-          <div className="dd-kecil max-w-full" style={lebarDropdown(opsiSkema)}>
+          <div className="dd-kecil w-full min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiSkema)}>
             <Dropdown label="Semua Skema" options={opsiSkema} value={skema} onChange={setSkema} />
           </div>
-          <div className="dd-kecil max-w-full" style={lebarDropdown(opsiPusat)}>
+          <div className="dd-kecil w-full min-w-0 sm:w-[var(--w)]" style={lebarDropdown(opsiPusat)}>
             <Dropdown label="Semua Pusat Riset" options={opsiPusat} value={pusat} onChange={setPusat} />
           </div>
           <button
@@ -1120,9 +1122,10 @@ function RekapPendanaanTable({ onSave }: Props) {
 /* ---------- Halaman ---------- */
 export default function RekapPendanaanPage() {
   return (
-    <div className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden" translate="no">
+    // overflow-x-hidden (bukan overflow-hidden) supaya dropdown tidak terpotong; mt-16 di HP, mt-20 dari md
+    <div className="mt-16 md:mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-x-hidden" translate="no">
       <InstansiBar />
-      <div className="p-6 md:p-8">
+      <div className="p-3 sm:p-6 md:p-8">
         <RekapPendanaanTable />
       </div>
     </div>
