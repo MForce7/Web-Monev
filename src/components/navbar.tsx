@@ -17,7 +17,7 @@ const adminMenus = [
   { label: "Import Excel", href: "/importjson" },
   { label: "Rekap Pendanaan", href: "/rekappendanaan" },
   { label: "Kelompok Riset", href: "/kelompokriset" },
-  { label: "Form Periset", href: "/formbaru" },
+  { label: "Kelola Akun", href: "/formbaru" },
 ];
 
 function getInitials(name: string): string {

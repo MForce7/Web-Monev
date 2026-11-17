@@ -81,7 +81,7 @@ export default function Dropdown({
                       onChange(opt);
                       setOpen(false);
                     }}
-                    className={`w-full border-t border-[#dbe6f7] px-2 py-2.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] sm:py-1.5 ${
+                    className={`w-full border-t border-[#dbe6f7] px-2 py-2.5 sm:py-1.5 text-center text-xs font-bold text-[#1b3560] transition hover:bg-[#eaf0fa] ${
                       dipilih ? "bg-[#dbe6f7]" : ""
                     }`}
                   >

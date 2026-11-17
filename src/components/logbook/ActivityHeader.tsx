@@ -273,12 +273,12 @@ export default function ActivityHeader({
           </div>
         )}
 
-        {/* AREA TAMBAHAN / INFORMASI PENDUKUNG */}
+        {/* LOG PROGRES BULANAN */}
         <div className="
           bg-slate-100/80
           border border-slate-200
           rounded-xl sm:rounded-2xl
-          min-h-25 min-w-0
+          min-w-0
           p-2 sm:p-4 md:p-5
         ">
           {/* LOG PROGRES BULANAN */}

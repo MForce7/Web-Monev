@@ -3,13 +3,13 @@ import Sidebar, { type PaletSidebar } from "../components/rekapitulasi/Sidebar.t
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import DropdownBulan from "../components/rekapitulasi/DropdownBulan.tsx";
 import DropdownPusatRiset from "../components/rekapitulasi/DropdownPusatRiset.tsx";
-import { CFC, RIIM, PRIS, Pemantauan, Purwarupa, Model, Publikasi, KI, Paten, HakCipta } from "../config/Index.ts";
+import { CFC, RIIM, PRIS, Purwarupa, Model, Publikasi, KI, Paten, HakCipta } from "../config/Index.ts";
 
-const logbook = { CFC, RIIM, PRIS, Pemantauan } as const; // menu yang memakai dropdown
+const logbook = { CFC, RIIM, PRIS } as const; // menu yang memakai dropdown
 const output = { Purwarupa, Model, Publikasi, KI, Paten, "Hak Cipta": HakCipta } as const;
 
 /* ---------- Palet: ganti di sini saja ---------- */
-const HEADER = "linear-gradient(90deg, #1b3f78 0%, #2a5aa8 100%)"; // sidebar + bilah instansi
+const HEADER = "linear-gradient(90deg, #1b3f78 0%, #2a5aa8 100%)"; // header sidebar
 
 const itemSidebar = {
   bg: "#f5f8fd",       // latar daftar
@@ -22,7 +22,6 @@ const itemSidebar = {
 const WARNA_SIDEBAR: PaletSidebar = {
   logbook: { grad: HEADER, ...itemSidebar },
   output: { grad: HEADER, ...itemSidebar },
-  pemantauan: { grad: HEADER, ...itemSidebar },
   teks: "#1b3560",
 };
 
@@ -58,7 +57,6 @@ export default function Rekapitulasi() {
   // `null` kalau menu yang dipilih bukan milik kelompok itu (memperbaiki error TS 2774)
   const Logbook = menu in logbook ? logbook[menu as keyof typeof logbook] : null;
   const Output = menu in output ? output[menu as keyof typeof output] : null;
-  const pakaiBulan = menu !== "Pemantauan"; // Pemantauan: hanya pilih pusat riset
 
   return (
     <div className="mt-20 flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-[#f2f5fa]" translate="no">
@@ -67,28 +65,19 @@ export default function Rekapitulasi() {
       <div className="flex min-w-0 flex-1 flex-col md:flex-row">
         <Sidebar active={menu} onChange={setMenu} warna={WARNA_SIDEBAR} />
         <main className="min-w-0 flex-1">
-          {/* Bilah instansi: gradasi sama dengan header sidebar */}
-          <div
-            style={{ background: HEADER }}
-            className="[&>*]:!bg-none [&>*]:!bg-transparent [&>*]:!shadow-none"
-          >
-            <InstansiBar />
-          </div>
+          {/* Bilah instansi: dipakai apa adanya, sama persis dengan Rekap Pendanaan */}
+          <InstansiBar />
 
           <div className="min-w-0 px-3 pb-4 pt-3 sm:px-4 md:px-6 md:pt-4">
             {Logbook && (
-              <div
-                className={`mx-auto mb-3 grid w-full grid-cols-1 gap-3 ${
-                  pakaiBulan ? "max-w-3xl sm:grid-cols-2" : "max-w-sm"
-                }`}
-              >
-                {pakaiBulan && <DropdownBulan value={bulan} onChange={setBulan} />}
+              <div className="mx-auto mb-3 grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2">
+                <DropdownBulan value={bulan} onChange={setBulan} />
                 <DropdownPusatRiset value={pusatRiset} onChange={setPusatRiset} />
               </div>
             )}
             <div className="tabel-biru min-w-0">
               {Logbook ? (
-                <Logbook bulan={pakaiBulan ? bulan : null} pusatRiset={pusatRiset} />
+                <Logbook bulan={bulan} pusatRiset={pusatRiset} />
               ) : Output ? (
                 <Output />
               ) : null}

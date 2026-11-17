@@ -1,5 +1,4 @@
 import { useState } from "react";
-// import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 
 import {
   GayaDropdown,
@@ -16,16 +15,12 @@ export default function KelompokRisetPage() {
 
   const {
     modeEdit,
-
     pusat,
     setPusat,
-
     cari,
     setCari,
-
     tampil,
     total,
-
     opsiPusat,
     opsiKelompok,
 
@@ -33,11 +28,16 @@ export default function KelompokRisetPage() {
     batalEdit,
     simpanEdit,
 
+    tambahKelompok,
+    hapusKelompok,
+    ubahNamaKelompok,
+
     updatePeriset,
     tambahPeriset,
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
+    // terapkanImportData dipakai di handleImportFile setelah integrasi selesai
   } = useKelompokRiset();
 
   async function handleCetak() {
@@ -60,15 +60,15 @@ export default function KelompokRisetPage() {
     // TODO:
     // Hubungkan ke Supabase Edge Function.
     // Kirim file ke Gemini untuk dikonversi menjadi JSON.
-    // Validasi hasil JSON sebelum memperbarui data.
+    // Setelah JSON diterima, panggil:
+    //   terapkanImportData(hasilJson, "ganti" | "tambah");
+    // (validasi struktur sudah dilakukan di dalam hook)
 
     throw new Error("Integrasi Gemini dan Supabase belum dihubungkan.");
   }
 
   return (
     <div className="mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-hidden" translate="no">
-      {/* <InstansiBar /> */}
-
       <div className="p-6 md:p-8">
         <div className="bg-white rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.10)] border border-slate-200 w-full max-w-full min-w-0">
           <GayaDropdown />
@@ -93,6 +93,9 @@ export default function KelompokRisetPage() {
             tampil={tampil}
             modeEdit={modeEdit}
             opsiKelompok={opsiKelompok}
+            onTambahKelompok={tambahKelompok}
+            onHapusKelompok={hapusKelompok}
+            onUbahNamaKelompok={ubahNamaKelompok}
             onUpdate={updatePeriset}
             onTambah={tambahPeriset}
             onHapus={hapusPeriset}

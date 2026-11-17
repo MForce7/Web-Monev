@@ -6,11 +6,13 @@ import { PrintStyles, WRAP } from '../shared'
 
 export type { MonthData }
 
-/** Lebar minimum tiap kolom (px): Bulan, 4 kolom aktivitas, 5 kolom output, Tindakan */
+/**
+ * Lebar minimum tiap kolom (px).
+ * Urutan kolom: Bulan | Uraian | Kendala | Mitigasi | Data Dukung Progres |
+ * Jenis | Judul | Status | Capaian | Data Dukung Output | Tindakan
+ */
 const WIDTHS_PX = [88, 150, 120, 130, 100, 100, 130, 100, 80, 100, 100]
 const TABLE_MIN_WIDTH = WIDTHS_PX.reduce((sum, w) => sum + w, 0)
-// Urutan kolom: Bulan | Uraian | Kendala | Mitigasi | Data Dukung Progres |
-// Jenis | Judul | Status | Capaian | Data Dukung Output | Tindakan
 
 const AKTIVITAS = ['Uraian Kemajuan Aktivitas', 'Kendala Ditemui', 'Mitigasi / Rencana Tindak Lanjut', 'Data Dukung Progres']
 const OUTPUT = ['Jenis Output', 'Judul Output', 'Status', 'Capaian (%)', 'Data Dukung Output']

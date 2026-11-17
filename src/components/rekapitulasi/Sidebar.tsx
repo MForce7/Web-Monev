@@ -9,7 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-import { sidebarMenu, sidebarOutput, sidebarPemantauan } from "../../config/Datacontoh.ts";
+import { sidebarMenu, sidebarOutput } from "../../config/Datacontoh.ts";
 
 /* ---------- Warna: tiap grup punya aksen sendiri, satu keluarga hangat (merah -> koral) ---------- */
 export type Warna = {
@@ -37,33 +37,23 @@ const WARNA_OUTPUT: Warna = {
   bar: "#b3122b",
   ring: "#b3122b",
 };
-const WARNA_PEMANTAUAN: Warna = {
-  grad: "linear-gradient(90deg, #3b0a17 0%, #7a0f27 100%)", // anggur gelap, paling tegas
-  bg: "#fdf0f3",
-  hover: "#fadfe5",
-  aktif: "#f5c6d1",
-  bar: "#7a0f27",
-  ring: "#7a0f27",
-};
 
 /** Paket warna sidebar. Bisa dikirim dari halaman lewat prop `warna`; kalau tidak, pakai bawaan ini. */
 export type PaletSidebar = {
   logbook: Warna;
   output: Warna;
-  pemantauan: Warna;
   teks: string; // warna tulisan item di dalam daftar
 };
 
 export const PALET_BAWAAN: PaletSidebar = {
   logbook: WARNA_LOGBOOK,
   output: WARNA_OUTPUT,
-  pemantauan: WARNA_PEMANTAUAN,
   teks: "#5a0a1a",
 };
 
 /* ---------- Menu: daftar diambil dari config yang sudah ada ---------- */
 type Grup = {
-  id: "logbook" | "output" | "pemantauan";
+  id: "logbook" | "output";
   judul: string;
   items: readonly string[];
 };
@@ -71,7 +61,6 @@ type Grup = {
 const GRUP_MENU: Grup[] = [
   { id: "logbook", judul: "Rekap Logbook", items: sidebarMenu },
   { id: "output", judul: "Rekap Output", items: sidebarOutput },
-  { id: "pemantauan", judul: "Pemantauan", items: sidebarPemantauan },
 ];
 
 /* ---------- Animasi ---------- */
@@ -317,11 +306,11 @@ export default function Sidebar({ active, onChange, warna = PALET_BAWAAN }: Side
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
   return (
-    // HP: bilah penuh di atas konten, 3 grup berjajar. Tablet ke atas (md): kolom di kiri.
+    // HP: bilah penuh di atas konten, 2 grup berjajar. Tablet ke atas (md): kolom di kiri.
     <aside className="relative z-10 w-full shrink-0 bg-white px-3 py-3 shadow-[0_4px_10px_rgba(0,0,0,0.12)] md:w-44 md:py-5 md:shadow-[4px_0_10px_rgba(0,0,0,0.12)]">
       <nav aria-label="Menu rekap">
         {/* md:items-stretch penting: tanpa ini lebar grup jadi 0 di desktop (isinya absolute) */}
-        <ul className="grid grid-cols-3 items-start gap-2 md:flex md:flex-col md:items-stretch md:gap-3">
+        <ul className="grid grid-cols-2 items-start gap-2 md:flex md:flex-col md:items-stretch md:gap-3">
           {GRUP_MENU.map((g) => (
             <GrupDropdown
               key={g.id}

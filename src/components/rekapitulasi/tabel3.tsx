@@ -5,6 +5,7 @@ import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
 import rekapOutput from "../../data/rekapOutput.json";
 import BilahEkspor from "./BilahEkspor";
 import { unduhExcel, type Sel as SelEkspor, type WarnaSel } from "../../lib/eksporTabel.ts";
+import DropdownPusatRiset from "./DropdownPusatRiset.tsx";
 
 const BULAN = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -285,9 +286,14 @@ const stickyHead1 = `sticky left-0 z-20 ${kunci1}`;
 const stickyHead2 = `sticky left-[var(--no-w)] z-20 ${kunci2}`;
 
 // bulan tetap ada di tipe props supaya cocok dengan komponen lain, tapi tidak dipakai di sini
-type Props = { bulan?: string | null; pusatRiset: string | null };
+type Props = {
+  bulan?: string | null;
+  pusatRiset: string | null;
+  /** Kalau diisi, dropdown pusat riset tampil di samping tombol Cetak */
+  onChangePusatRiset?: (v: string | null) => void;
+};
 
-export default function Tabel3({ pusatRiset }: Props) {
+export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
   // "Semua Pusat Riset" (atau belum memilih) = tampilkan semua ketua tim
   const data =
     pusatRiset && pusatRiset !== "Semua Pusat Riset"
@@ -325,13 +331,36 @@ export default function Tabel3({ pusatRiset }: Props) {
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full min-w-0 rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
       <section className="isolate w-full overflow-hidden rounded-2xl bg-white [--no-w:44px] [--nama-w:120px] [--sticky-w:164px] [clip-path:inset(0_round_1rem)] md:[--no-w:56px] md:[--nama-w:200px] md:[--sticky-w:256px]">
-        {/* Bilah atas: judul + tombol unduh PDF dan Excel */}
-        <BilahEkspor
-          judul="Pemantauan pengisian logbook"
-          subjudul={pusatRiset ?? "Semua pusat riset"}
-          onPdf={() => cetakPdf(namaPusat, data)}
-          onExcel={() => unduhExcelPemantauan(namaPusat, data)}
-        />
+        {/* Bilah atas: judul di kiri; dropdown pusat riset + tombol Cetak di kanan.
+            z-40 supaya daftar dropdown tampil di atas tabel (kolom sticky memakai z-10 sampai z-30). */}
+        <div className="relative z-40 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[#dbe6f7] bg-white px-3 py-2 sm:px-4">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-[#1b3560]">Pemantauan pengisian logbook</p>
+            <p className="truncate text-xs text-slate-500">{pusatRiset ?? "Semua pusat riset"}</p>
+          </div>
+          <div className="ml-auto flex min-w-0 items-center gap-2">
+            {onChangePusatRiset && (
+              <div className="w-44 min-w-0 sm:w-60">
+                <DropdownPusatRiset value={pusatRiset} onChange={onChangePusatRiset} />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={cetak}
+              disabled={mencetak}
+              title="Unduh rekap sebagai PDF"
+              style={{ background: GRAD_CARD }}
+              className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(27,63,120,0.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 sm:gap-2 sm:px-4"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 9V3h12v6" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="7" rx="1" />
+              </svg>
+              {mencetak ? "Membuat PDF…" : "Cetak"}
+            </button>
+          </div>
+        </div>
 
         {/* petunjuk: hanya muncul kalau tabel memang bisa di-scroll */}
         {bisaScroll && (

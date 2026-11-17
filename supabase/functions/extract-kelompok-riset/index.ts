@@ -1,141 +1,130 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+// Deploy : supabase functions deploy import-kelompok-riset
+// Set key: supabase secrets set GEMINI_API_KEY=xxxxxxxx
 
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
-const GEMINI_MODEL = "gemini-2.0-flash";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
-const RESPONSE_SCHEMA = {
-  type: "object",
-  properties: {
-    pusatRiset: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          nama: { type: "string" },
-          kelompok: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                nama: { type: "string" },
-                anggota: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      nama: { type: "string" },
-                      nip: { type: "string" },
-                      keterangan: { type: "string" },
-                      jabatan: { type: "string" },
-                    },
-                    required: ["nama", "nip", "keterangan", "jabatan"],
-                  },
-                },
-              },
-              required: ["nama", "anggota"],
-            },
-          },
-        },
-        required: ["nama", "kelompok"],
-      },
-    },
-  },
-  required: ["pusatRiset"],
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const GEMINI_MODEL = "gemini-2.5-flash"; // ganti sesuai model terbaru di AI Studio bila perlu
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-const PROMPT = `Kamu membantu mengekstrak data kelompok riset dari dokumen resmi (surat keputusan, SK, atau daftar personel).
-Baca dokumen ini dan susun ke dalam struktur JSON berikut:
-- pusatRiset: daftar pusat riset yang disebut di dokumen
-  - nama: nama lengkap pusat riset (contoh: "Pusat Riset Antariksa", "Pusat Riset Teknologi Penerbangan", "Pusat Riset Teknologi Satelit", "Pusat Riset Teknologi Roket")
-  - kelompok: daftar kelompok riset di bawah pusat riset itu
-    - nama: nama kelompok riset
-    - anggota: daftar periset dalam kelompok itu
-      - nama: nama lengkap periset (termasuk gelar jika ada)
-      - nip: NIP periset (angka sebagai string, string kosong jika tidak disebutkan)
-      - keterangan: peran orang itu di kelompok. Pakai "Koordinator" atau "Ketua" PERSIS seperti tertulis di dokumen untuk pemimpin kelompok, dan "Anggota" untuk anggota biasa
-      - jabatan: jabatan fungsional periset tersebut (contoh: "Peneliti Ahli Madya", "Perekayasa Ahli Muda")
+const PROMPT_EKSTRAKSI = `
+Kamu mengekstrak data "Kelompok Riset" dari dokumen (SK, surat, daftar nama, dsb).
+Kembalikan HANYA JSON dengan struktur persis berikut, tanpa teks atau markdown lain:
 
-Jika dokumen hanya menyebut satu pusat riset, tetap kembalikan sebagai array berisi satu elemen.
-Jangan mengarang data yang tidak ada di dokumen. Jika suatu field tidak disebutkan, isi dengan string kosong.`;
+{
+  "pusatRiset": [
+    {
+      "nama": "string",
+      "kelompok": [
+        {
+          "nama": "string",
+          "anggota": [
+            {
+              "nama": "string",
+              "nip": "string",
+              "keterangan": "Koordinator" | "Ketua" | "Anggota",
+              "jabatan": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
-Deno.serve(async (req) => {
+Aturan:
+- NIP atau jabatan yang tidak ditemukan diisi string kosong "".
+- Tepat satu orang per kelompok berketerangan "Koordinator" atau "Ketua", sisanya "Anggota".
+- Jangan menambah field lain di luar struktur di atas.
+`;
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+  });
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS_HEADERS });
+  }
+
   try {
-    if (req.method !== "POST") {
-      return new Response("Method not allowed", { status: 405 });
-    }
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
-
-    // Verifikasi caller adalah admin, pakai JWT yang diteruskan dari client
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: isAdminData, error: isAdminError } = await supabase.rpc("is_admin");
-    if (isAdminError || !isAdminData) {
-      return new Response(JSON.stringify({ error: "Hanya admin yang boleh mengimpor data" }), { status: 403 });
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY belum diset sebagai Supabase secret.");
     }
 
     const { fileBase64, mimeType } = await req.json();
 
     if (!fileBase64 || !mimeType) {
-      return new Response(JSON.stringify({ error: "fileBase64 dan mimeType wajib diisi" }), { status: 400 });
+      return jsonResponse(
+        { error: "fileBase64 dan mimeType wajib diisi." },
+        400,
+      );
     }
 
-    let parts: unknown[];
-
-    if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      // .docx -> ekstrak teks dulu, baru kirim sebagai teks ke Gemini (Gemini tidak baca .docx native)
-      const mammoth = await import("npm:mammoth@1.7.0");
-      const buffer = Uint8Array.from(atob(fileBase64), (c) => c.charCodeAt(0));
-      const result = await mammoth.extractRawText({ buffer });
-      parts = [{ text: `${PROMPT}\n\n--- ISI DOKUMEN ---\n${result.value}` }];
-    } else {
-      // PDF atau gambar -> kirim langsung sebagai inline data (multimodal), termasuk hasil scan
-      parts = [
-        { text: PROMPT },
-        { inline_data: { mime_type: mimeType, data: fileBase64 } },
-      ];
-    }
-
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts }],
-          generationConfig: {
-            response_mime_type: "application/json",
-            response_schema: RESPONSE_SCHEMA,
+    const geminiRes = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: PROMPT_EKSTRAKSI },
+              { inline_data: { mime_type: mimeType, data: fileBase64 } },
+            ],
           },
-        }),
-      }
-    );
+        ],
+        generationConfig: {
+          temperature: 0,
+          responseMimeType: "application/json",
+        },
+      }),
+    });
 
     if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      return new Response(JSON.stringify({ error: `Gemini API error: ${errText}` }), { status: 502 });
+      const detail = await geminiRes.text();
+      throw new Error(`Gemini API error ${geminiRes.status}: ${detail}`);
     }
 
-    const geminiJson = await geminiRes.json();
-    const text = geminiJson.candidates?.[0]?.content?.parts?.[0]?.text;
+    const geminiData = await geminiRes.json();
+    const teks = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!text) {
-      return new Response(JSON.stringify({ error: "Gemini tidak mengembalikan hasil" }), { status: 502 });
+    if (!teks) {
+      throw new Error("Gemini tidak mengembalikan hasil yang valid.");
     }
 
-    const parsed = JSON.parse(text);
+    let hasil: unknown;
+    try {
+      hasil = JSON.parse(teks);
+    } catch {
+      throw new Error("Hasil Gemini bukan JSON yang valid.");
+    }
 
-    return new Response(JSON.stringify(parsed), {
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500 });
+    if (
+      !hasil ||
+      typeof hasil !== "object" ||
+      !Array.isArray((hasil as { pusatRiset?: unknown }).pusatRiset)
+    ) {
+      throw new Error("Struktur JSON hasil tidak sesuai format yang diharapkan.");
+    }
+
+    return jsonResponse(hasil);
+  } catch (error) {
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : "Terjadi kesalahan." },
+      500,
+    );
   }
 });
