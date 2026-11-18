@@ -58,7 +58,7 @@ export default function KelompokRisetToolbar({
   return (
     <>
       <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 rounded-t-2xl sm:rounded-t-3xl flex flex-wrap items-center gap-3">
-        <h3 className="font-bold text-[#1b3560] text-sm w-full md:w-auto md:flex-1 md:min-w-[220px]">
+        <h3 className="font-bold text-[#1b3560] text-sm w-full md:w-auto md:flex-1 md:min-w-55">
           Kelompok Riset ORPA Tahun Anggaran 2026
           <span className="block sm:inline sm:ml-2 text-xs font-normal text-slate-500">
             {total.kelompok} kelompok · {total.periset} periset
@@ -81,31 +81,25 @@ export default function KelompokRisetToolbar({
           />
 
           <div
-            className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-[var(--w)]"
+            className="dd-kecil col-span-2 sm:col-span-1 min-w-0 sm:w-(--w)"
             style={lebarDd}
           >
-            Edit Data
-          </button>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={onBatalEdit}
-              disabled={menyimpan}
-              className="h-9 px-4 border border-slate-300 bg-white text-slate-600 rounded-full text-xs font-bold hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Batal
-            </button>
+            <Dropdown
+              label="Semua Pusat Riset"
+              options={opsiPusat}
+              value={pusat}
+              onChange={setPusat}
+            />
+          </div>
 
           {!modeEdit ? (
             <button
               type="button"
-              onClick={onSimpanEdit}
-              disabled={menyimpan}
-              className="h-9 px-4 text-white rounded-full text-xs font-bold shadow-md hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={onMulaiEdit}
+              className={tombol}
               style={{ background: GRAD_BIRU_TUA }}
             >
-              {menyimpan ? "Menyimpan..." : "Simpan Perubahan"}
+              Edit Data
             </button>
           ) : (
             // Di HP, tombol Batal/Simpan ada di bar bawah layar (lihat di bawah)
@@ -113,7 +107,8 @@ export default function KelompokRisetToolbar({
               <button
                 type="button"
                 onClick={onBatalEdit}
-                className="hidden md:inline-flex items-center justify-center h-9 px-4 border border-slate-300 bg-white text-slate-600 rounded-full text-xs font-bold hover:bg-slate-100"
+                disabled={menyimpan}
+                className="hidden md:inline-flex items-center justify-center h-9 px-4 border border-slate-300 bg-white text-slate-600 rounded-full text-xs font-bold hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Batal
               </button>
@@ -121,10 +116,11 @@ export default function KelompokRisetToolbar({
               <button
                 type="button"
                 onClick={onSimpanEdit}
+                disabled={menyimpan}
                 className={`hidden md:inline-flex items-center justify-center ${tombol}`}
                 style={{ background: GRAD_BIRU_TUA }}
               >
-                Simpan Perubahan
+                {menyimpan ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </>
           )}
@@ -160,17 +156,19 @@ export default function KelompokRisetToolbar({
           <button
             type="button"
             onClick={onBatalEdit}
-            className="h-10 flex-1 rounded-full border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100"
+            disabled={menyimpan}
+            className="h-10 flex-1 rounded-full border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Batal
           </button>
           <button
             type="button"
             onClick={onSimpanEdit}
-            className="h-10 flex-[2] rounded-full text-xs font-bold text-white shadow-md hover:brightness-110"
+            disabled={menyimpan}
+            className="h-10 flex-2 rounded-full text-xs font-bold text-white shadow-md hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: GRAD_BIRU_TUA }}
           >
-            Simpan Perubahan
+            {menyimpan ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       )}

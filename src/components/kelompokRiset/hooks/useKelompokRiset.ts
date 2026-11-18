@@ -74,7 +74,7 @@ export function useKelompokRiset() {
 
       await simpanKelompokRiset(draft);
 
-      setData(cloneData(bersih));
+      setData(cloneData(draft));
       setDraft([]);
       setModeEdit(false);
 

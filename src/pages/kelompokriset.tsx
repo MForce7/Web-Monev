@@ -14,7 +14,7 @@ export default function KelompokRisetPage() {
   const [mencetak, setMencetak] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
-  const {
+    const {
     memuat,
     errorMuat,
     muatUlang,
@@ -43,7 +43,7 @@ export default function KelompokRisetPage() {
     hapusPeriset,
     gantiKoordinator,
     pindahPeriset,
-    // terapkanImportData dipakai di handleImportFile setelah integrasi selesai
+    terapkanImportData,
   } = useKelompokRiset();
 
   async function handleCetak() {
