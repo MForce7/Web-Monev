@@ -88,7 +88,7 @@ export default function ImportDataModal({ open, onClose, onImport }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading) {
           onClose();
@@ -131,7 +131,7 @@ export default function ImportDataModal({ open, onClose, onImport }: Props) {
                   Baris pertama harus berisi header kolom persis:
                 </p>
 
-                <p className="text-[11px] font-mono text-[#1b3560] bg-white border border-blue-100 rounded-md p-2 mt-2 break-words">
+                <p className="text-[11px] font-mono text-[#1b3560] bg-white border border-blue-100 rounded-md p-2 mt-2 wrap-break-words">
                   {HEADER_WAJIB_TEKS}
                 </p>
               </div>

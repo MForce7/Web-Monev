@@ -327,6 +327,22 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
   // Belum memilih pusat riset = unduh semua pusat riset
   const namaPusat = pusatRiset ?? "Semua Pusat Riset";
 
+  const [mencetak, setMencetak] = useState(false);
+
+  async function handleCetak() {
+    if (mencetak) return;
+
+    try {
+      setMencetak(true);
+      await cetakPdf(namaPusat, data);
+    } catch (error) {
+      console.error("Gagal membuat PDF:", error);
+      alert("PDF gagal dibuat. Silakan coba kembali.");
+    } finally {
+      setMencetak(false);
+    }
+  }
+
   return (
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full min-w-0 rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
@@ -346,7 +362,7 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
             )}
             <button
               type="button"
-              onClick={cetak}
+              onClick={handleCetak}
               disabled={mencetak}
               title="Unduh rekap sebagai PDF"
               style={{ background: GRAD_CARD }}
