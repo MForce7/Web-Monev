@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import type { HeaderData } from '../../types/monev'
 import { STATUS_PELAKSANAAN } from '../../types/monev'
-import { KATEGORI_PENDANAAN, SKEMA_MITRA_PROGRAM } from '../../lib/config'
+import { KATEGORI_PENDANAAN, UNIT_PENGAMPU_DIFA, PROGRAM_SKEMA_PENDANAAN } from '../../lib/config'
 import { HEADER_INPUT, Row, WRAP } from './shared'
 
 /* ───────────────────────── Bar judul (dulu HeaderBar.tsx) ───────────────────────── */
@@ -35,94 +35,12 @@ export function HeaderBar({ isEditing, onEdit }: { isEditing: boolean; onEdit: (
   )
 }
 
-/* ───────────────── Dropdown dengan pilihan "Lainnya" + kolom isian ───────────────── */
+/* ───────────────── Dropdown sederhana TANPA opsi "Lainnya" ───────────────── */
 
 interface PresetOption {
-  readonly value: string // yang disimpan, contoh: "RM"
-  readonly label: string // yang ditampilkan, contoh: "Rupiah Murni (RM)"
+  readonly value: string
+  readonly label: string
 }
-
-interface SelectWithOtherProps {
-  label: string
-  value: string
-  options: readonly PresetOption[]
-  otherLabel: string
-  otherPlaceholder: string
-  isEditing: boolean
-  onChange: (value: string) => void
-}
-
-const OTHER = '__other__'
-
-function SelectWithOther({
-  label,
-  value,
-  options,
-  otherLabel,
-  otherPlaceholder,
-  isEditing,
-  onChange,
-}: SelectWithOtherProps) {
-  const preset = options.find((o) => o.value === value)
-
-  // True saat user memilih "Lainnya" tapi kolomnya masih kosong
-  const [otherMode, setOtherMode] = useState(false)
-
-  // Nilai yang bukan salah satu pilihan baku dianggap isian "Lainnya"
-  const isOther = otherMode || (value !== '' && !preset)
-  const selectValue = isOther ? OTHER : (preset?.value ?? '')
-
-  const handleSelect = (next: string) => {
-    if (next === OTHER) {
-      setOtherMode(true)
-      if (preset) onChange('') // dari pilihan baku -> kosongkan agar user mengetik sendiri
-      return
-    }
-    setOtherMode(false)
-    onChange(next)
-  }
-
-  return (
-    <Row label={label}>
-      {isEditing ? (
-        <div className="flex flex-col gap-2">
-          <select
-            aria-label={label}
-            value={selectValue}
-            onChange={(e) => handleSelect(e.target.value)}
-            className={`w-full p-2 text-sm ${HEADER_INPUT}`}
-          >
-            <option value="" disabled>
-              Pilih salah satu
-            </option>
-            {options.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-            <option value={OTHER}>{otherLabel}</option>
-          </select>
-
-          {isOther && (
-            <input
-              type="text"
-              aria-label={`${label} (isian lainnya)`}
-              value={value}
-              placeholder={otherPlaceholder}
-              onChange={(e) => onChange(e.target.value)}
-              className={`w-full p-2 text-sm ${HEADER_INPUT}`}
-            />
-          )}
-        </div>
-      ) : (
-        <span className={`text-slate-800 ${WRAP}`}>{(preset?.label ?? value) || '-'}</span>
-      )}
-    </Row>
-  )
-}
-
-/* ───────────────── Dropdown sederhana TANPA opsi "Lainnya" ───────────────── */
-/* Dipakai untuk Kategori Pendanaan: pilihannya memang dikunci hanya 2 opsi */
 
 interface PlainSelectProps {
   label: string
@@ -157,6 +75,17 @@ function PlainSelect({ label, value, options, isEditing, onChange }: PlainSelect
   )
 }
 
+/* ───────────────── Teks terkunci (dipakai saat pilihan dipaksa oleh field lain) ───────────────── */
+
+function LockedField({ value }: { value: string }) {
+  return (
+    <span className="text-slate-800">
+      {value}
+      <span className="ml-2 text-xs text-slate-400">(terkunci)</span>
+    </span>
+  )
+}
+
 /* ───────────────────────── Baris info (dulu InfoRows.tsx) ───────────────────────── */
 
 interface InfoRowsProps {
@@ -166,35 +95,117 @@ interface InfoRowsProps {
 }
 
 export function InfoRows({ data, isEditing, onChange }: InfoRowsProps) {
-  // Default aman kalau data lama belum punya field ini (string kosong dianggap Rupiah Murni)
   const kategori = data.kategoriPendanaan || 'Rupiah Murni'
   const isPnbp = kategori === 'PNBP'
 
+  // Jaga konsistensi tiap kali masuk mode edit: PNBP -> Unit wajib ORPA, DFRI -> Program wajib SBKU
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isEditing) return
+    if (isPnbp && data.unitPengampuDifa !== 'ORPA') {
+      onChange('unitPengampuDifa', 'ORPA')
+    }
+  }, [isEditing, isPnbp])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isEditing) return
+    if (data.unitPengampuDifa === 'DFRI' && data.programSkemaPendanaan !== 'SBKU') {
+      onChange('programSkemaPendanaan', 'SBKU')
+    }
+  }, [isEditing, data.unitPengampuDifa])
+
+  const handleKategoriChange = (v: string) => {
+    onChange('kategoriPendanaan', v)
+    if (v === 'PNBP') {
+      onChange('unitPengampuDifa', 'ORPA')
+      if (data.programSkemaPendanaan === 'SBKU') onChange('programSkemaPendanaan', '')
+    }
+  }
+
+  const handleUnitChange = (v: string) => {
+    onChange('unitPengampuDifa', v)
+    if (v === 'DFRI') {
+      onChange('programSkemaPendanaan', 'SBKU')
+    } else if (data.programSkemaPendanaan === 'SBKU') {
+      onChange('programSkemaPendanaan', '')
+    }
+  }
+
   return (
     <>
-      {/* KATEGORI PENDANAAN — hanya 2 opsi, default Rupiah Murni */}
       <PlainSelect
         label="Kategori Pendanaan"
         value={kategori}
         options={KATEGORI_PENDANAAN}
         isEditing={isEditing}
-        onChange={(v) => onChange('kategoriPendanaan', v)}
+        onChange={handleKategoriChange}
       />
 
-      {isPnbp ? (
-        /* ───────────── Isian khusus PNBP ───────────── */
-        <>
-          <SelectWithOther
-            key={`skema-pnbp-${isEditing}`}
-            label="Skema Mitra Program"
-            value={data.skemaMitraProgram}
-            options={SKEMA_MITRA_PROGRAM}
-            otherLabel="Mitra External / Lainnya"
-            otherPlaceholder="Tulis nama mitra / skema lainnya"
-            isEditing={isEditing}
-            onChange={(v) => onChange('skemaMitraProgram', v)}
-          />
+      <Row label="Unit Pengampu DIFA">
+        {isEditing ? (
+          isPnbp ? (
+            <LockedField value="ORPA (Organisasi Riset Penerbangan dan Antariksa)" />
+          ) : (
+            <select
+              aria-label="Unit Pengampu DIFA"
+              value={data.unitPengampuDifa || ''}
+              onChange={(e) => handleUnitChange(e.target.value)}
+              className={`w-full p-2 text-sm ${HEADER_INPUT}`}
+            >
+              <option value="" disabled>
+                Pilih salah satu
+              </option>
+              {UNIT_PENGAMPU_DIFA.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          )
+        ) : (
+          <span className={`text-slate-800 ${WRAP}`}>
+            {UNIT_PENGAMPU_DIFA.find((o) => o.value === data.unitPengampuDifa)?.label ||
+              data.unitPengampuDifa ||
+              '-'}
+          </span>
+        )}
+      </Row>
 
+      <Row label="Program / Skema Pendanaan">
+        {isEditing ? (
+          data.unitPengampuDifa === 'DFRI' ? (
+            <LockedField value="SBKU" />
+          ) : (
+            <select
+              aria-label="Program / Skema Pendanaan"
+              value={data.programSkemaPendanaan || ''}
+              onChange={(e) => onChange('programSkemaPendanaan', e.target.value)}
+              className={`w-full p-2 text-sm ${HEADER_INPUT}`}
+            >
+              <option value="" disabled>
+                Pilih salah satu
+              </option>
+              {PROGRAM_SKEMA_PENDANAAN.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          )
+        ) : (
+          <span className={`text-slate-800 ${WRAP}`}>
+            {data.programSkemaPendanaan === 'SBKU'
+              ? 'SBKU'
+              : PROGRAM_SKEMA_PENDANAAN.find((o) => o.value === data.programSkemaPendanaan)?.label ||
+                data.programSkemaPendanaan ||
+                '-'}
+          </span>
+        )}
+      </Row>
+
+      {isPnbp ? (
+        <>
           <Row label="Judul Kontrak">
             {isEditing ? (
               <input
@@ -282,33 +293,19 @@ export function InfoRows({ data, isEditing, onChange }: InfoRowsProps) {
           </Row>
         </>
       ) : (
-        /* ───────────── Isian default (Rupiah Murni) ───────────── */
-        <>
-          <SelectWithOther
-            key={`skema-rm-${isEditing}`}
-            label="Skema Mitra Program"
-            value={data.skemaMitraProgram}
-            options={SKEMA_MITRA_PROGRAM}
-            otherLabel="Mitra External / Lainnya"
-            otherPlaceholder="Tulis nama mitra / skema lainnya"
-            isEditing={isEditing}
-            onChange={(v) => onChange('skemaMitraProgram', v)}
-          />
-
-          <Row label="Judul">
-            {isEditing ? (
-              <input
-                type="text"
-                aria-label="Judul"
-                value={data.judulAktivitas}
-                onChange={(e) => onChange('judulAktivitas', e.target.value)}
-                className={`w-full p-2 text-sm ${HEADER_INPUT}`}
-              />
-            ) : (
-              <span className={`font-medium text-slate-800 ${WRAP}`}>{data.judulAktivitas || '-'}</span>
-            )}
-          </Row>
-        </>
+        <Row label="Judul">
+          {isEditing ? (
+            <input
+              type="text"
+              aria-label="Judul"
+              value={data.judulAktivitas}
+              onChange={(e) => onChange('judulAktivitas', e.target.value)}
+              className={`w-full p-2 text-sm ${HEADER_INPUT}`}
+            />
+          ) : (
+            <span className={`font-medium text-slate-800 ${WRAP}`}>{data.judulAktivitas || '-'}</span>
+          )}
+        </Row>
       )}
     </>
   )

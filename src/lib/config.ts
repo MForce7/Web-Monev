@@ -59,13 +59,26 @@ export const statusTone = (status: string) => STATUS_TONE[status] ?? TONE.awal
 
 
 export const KATEGORI_PENDANAAN = [
-  { value: 'RM', label: 'Rupiah Murni (RM)' },
+  // { value: 'RM', label: 'Rupiah Murni (RM)' },
+  { label: 'Rupiah Murni', value: 'Rupiah Murni' },
   { value: 'PNBP', label: 'PNBP' },
 ] as const
 
-export const SKEMA_MITRA_PROGRAM = [
+// export const SKEMA_MITRA_PROGRAM = [
+//   { value: 'ORPA', label: 'ORPA (Organisasi Riset Penerbangan dan Antariksa)' },
+//   { value: 'DFRI', label: 'DFRI (Deputi Bidang Fasilitasi Riset dan Inovasi)' },
+//   { value: 'RIIM', label: 'RIIM (Riset dan Inovasi untuk Indonesia Maju)' },
+//   { value: 'PRIS', label: 'PRIS (Program Riset Inovasi Substantif / Strategis)' },
+// ] as const
+
+
+export const UNIT_PENGAMPU_DIFA = [
   { value: 'ORPA', label: 'ORPA (Organisasi Riset Penerbangan dan Antariksa)' },
   { value: 'DFRI', label: 'DFRI (Deputi Bidang Fasilitasi Riset dan Inovasi)' },
+] as const
+
+export const PROGRAM_SKEMA_PENDANAAN = [
   { value: 'RIIM', label: 'RIIM (Riset dan Inovasi untuk Indonesia Maju)' },
   { value: 'PRIS', label: 'PRIS (Program Riset Inovasi Substantif / Strategis)' },
-] as const
+  { value: 'Hibah', label: 'Hibah' },
+] as const  

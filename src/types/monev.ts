@@ -15,7 +15,8 @@ export interface HeaderData {
   progresKeterangan: string
   statusPelaksanaan: string
   kategoriPendanaan: string
-  skemaMitraProgram: string
+  unitPengampuDifa: string          // ganti dari skemaMitraProgram
+  programSkemaPendanaan: string      // baru
 
   // Field khusus saat kategoriPendanaan === 'PNBP'
   judulKontrak: string
@@ -165,7 +166,8 @@ export const emptyHeaderData = (): HeaderData => ({
   progresKeterangan: '',
   statusPelaksanaan: '',
   kategoriPendanaan: 'Rupiah Murni',
-  skemaMitraProgram: '',
+  unitPengampuDifa: '',
+  programSkemaPendanaan: '',
   judulKontrak: '',
   targetPenerimaan: 0,
   targetPenggunaan: 0,
