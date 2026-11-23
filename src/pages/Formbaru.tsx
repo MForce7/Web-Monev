@@ -23,6 +23,7 @@ import {
   kecil,
   fetchAllAdmins,
   importPerisetDiDb,
+  hapusAkunDiDb,
   type AdminRingkas,
   type ModeForm,
   type TargetHapus,
@@ -117,6 +118,8 @@ function FormbaruKonten() {
         hapusDiBrowser(target.nama);
       } else if (target.tipe === "aktivitas") {
         await deleteActivityInDb(target.id);
+      } else if (target.tipe === "akun") {
+        await hapusAkunDiDb(target.id);
       } else {
         await deleteActivitiesInDb(target.aktivitas.map((a) => a.id));
       }
@@ -158,6 +161,26 @@ function FormbaruKonten() {
             <p>
               Milik <b>{target.nama || "periset"}</b>. Target output dan seluruh log bulanannya ikut
               terhapus permanen dari database dan tidak bisa dikembalikan.
+            </p>
+          </>
+        ),
+      };
+    }
+
+    if (target.tipe === "akun") {
+      return {
+        judul: `Yakin ingin menghapus akun ${target.nama || "ini"}?`,
+        isi: (
+          <>
+            <p className="rounded-lg bg-[#fee2e2] px-3 py-2 font-semibold text-[#991b1b] [overflow-wrap:anywhere]">
+              Akun login periset ini akan ikut terhapus — bukan cuma aktivitasnya.
+            </p>
+            <p>
+              {target.jumlahAktivitas > 0
+                ? `${target.jumlahAktivitas} aktivitas beserta seluruh log bulanannya`
+                : "Profil periset ini"}{" "}
+              akan terhapus permanen dan tidak bisa dikembalikan. Periset tidak akan bisa login lagi
+              setelah ini.
             </p>
           </>
         ),

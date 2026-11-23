@@ -144,12 +144,28 @@ export function DaftarPerisetTable({
                                     aktivitas: p.aktivitas.map((a) => ({ id: a.id, judul: a.judul })),
                                   })
                                 }
-                                aria-label={`Hapus periset ${p.nama}`}
+                                aria-label={`Hapus semua aktivitas ${p.nama}`}
                                 className="rounded-full border border-[#fecaca] px-3 py-1 text-xs font-bold text-[#991b1b] hover:bg-[#fee2e2]"
                               >
-                                Hapus
+                                Hapus aktivitas
                               </button>
                             )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                onRequestDelete({
+                                  sumber: "db",
+                                  tipe: "akun",
+                                  id: p.id,
+                                  nama: p.nama,
+                                  jumlahAktivitas: p.aktivitas.length,
+                                })
+                              }
+                              aria-label={`Hapus akun ${p.nama}`}
+                              className="rounded-full bg-[#991b1b] px-3 py-1 text-xs font-bold text-white hover:bg-[#7f1d1d]"
+                            >
+                              Hapus akun
+                            </button>
                           </div>
                         </td>
                       </tr>
