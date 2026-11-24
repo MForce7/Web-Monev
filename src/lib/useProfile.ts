@@ -30,29 +30,61 @@ export function useProfile(userId: string | undefined) {
     setLoading(true)
     setError(null)
 
-    supabase
-      .from('profiles')
-      .select('full_name, unit_kerja, satuan_kerja, role, avatar_file_id')
-      .eq('id', userId)
-      .single()
-      .then(({ data, error: err }) => {
-        if (cancelled) return
+    // supabase
+    //   .from('profiles')
+    //   .select('full_name, unit_kerja, satuan_kerja, role, avatar_file_id')
+    //   .eq('id', userId)
+    //   .single()
+    //   .then(({ data, error: err }) => {
+    //     if (cancelled) return
 
-        if (err) {
-          setError(err.message)
-          setProfile(null)
-        } else if (data) {
-          setProfile({
-            fullName: data.full_name ?? '',
-            unitKerja: data.unit_kerja ?? '',
-            satuanKerja: data.satuan_kerja ?? '',
-            role: data.role ?? 'researcher',
-            avatarFileId: data.avatar_file_id ?? null,
-          })
-        }
+    //     if (err) {
+    //       setError(err.message)
+    //       setProfile(null)
+    //     } else if (data) {
+    //       setProfile({
+    //         fullName: data.full_name ?? '',
+    //         unitKerja: data.unit_kerja ?? '',
+    //         satuanKerja: data.satuan_kerja ?? '',
+    //         role: data.role ?? 'researcher',
+    //         avatarFileId: data.avatar_file_id ?? null,
+    //       })
+    //     }
 
-        setLoading(false)
-      })
+    //     setLoading(false)
+    //   })
+        supabase
+        .from('profiles')
+        .select('full_name, unit_kerja, satuan_kerja, role, avatar_file_id')
+        .eq('id', userId)
+        .maybeSingle()
+        .then((hasil) => {
+          // ---- DEBUG SEMENTARA: hapus setelah masalah ketemu ----
+          console.log('DEBUG useProfile userId:', userId)
+          console.log('DEBUG useProfile hasil mentah:', JSON.stringify(hasil, null, 2))
+          // --------------------------------------------------------
+
+          if (cancelled) return
+
+          const { data, error: err } = hasil
+
+          if (err) {
+            setError(err.message)
+            setProfile(null)
+          } else if (data) {
+            setProfile({
+              fullName: data.full_name ?? '',
+              unitKerja: data.unit_kerja ?? '',
+              satuanKerja: data.satuan_kerja ?? '',
+              role: data.role ?? 'researcher',
+              avatarFileId: data.avatar_file_id ?? null,
+            })
+          } else {
+            setProfile(null)
+          }
+
+          setLoading(false)
+        })
 
     return () => {
       cancelled = true

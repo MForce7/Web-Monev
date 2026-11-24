@@ -55,7 +55,8 @@ interface ActivityRow {
   progres_keterangan: string
   status_pelaksanaan: string
   kategori_pendanaan: string
-  skema_mitra_program: string
+  unit_pengampu_difa: string        // ganti dari skema_mitra_program
+  program_skema_pendanaan: string    // baru
   judul_kontrak: string
   target_penerimaan: number
   target_penggunaan: number
@@ -80,7 +81,7 @@ const SELECT_QUERY = `
   activities (
     id, nama_ketua, unit_kerja, satuan_kerja, judul_aktivitas,
     progres_total, progres_keterangan, status_pelaksanaan,
-    kategori_pendanaan, skema_mitra_program, judul_kontrak,
+    kategori_pendanaan, unit_pengampu_difa, program_skema_pendanaan, judul_kontrak,
     target_penerimaan, target_penggunaan, banyak_termin, status_kontrak,
     target_outputs ( jenis, jumlah ),
     monthly_reports (
@@ -108,7 +109,8 @@ export async function updateActivityHeaderInDb(activityId: string, header: Heade
       progres_keterangan: header.progresKeterangan,
       status_pelaksanaan: header.statusPelaksanaan,
       kategori_pendanaan: header.kategoriPendanaan,
-      skema_mitra_program: header.skemaMitraProgram,
+      unit_pengampu_difa: header.unitPengampuDifa,
+      program_skema_pendanaan: header.programSkemaPendanaan,
       judul_kontrak: header.judulKontrak,
       target_penerimaan: header.targetPenerimaan,
       target_penggunaan: header.targetPenggunaan,
@@ -117,6 +119,7 @@ export async function updateActivityHeaderInDb(activityId: string, header: Heade
       updated_at: new Date().toISOString(),
     })
     .eq('id', activityId)
+  // ...sisanya sama persis seperti sebelumnya
 
   if (headerError) throw new Error(headerError.message)
 
@@ -219,7 +222,8 @@ function toActivityEntry(row: ActivityRow): ActivityEntry {
     progresKeterangan: row.progres_keterangan,
     statusPelaksanaan: row.status_pelaksanaan,
     kategoriPendanaan: row.kategori_pendanaan,
-    skemaMitraProgram: row.skema_mitra_program,
+    unitPengampuDifa: row.unit_pengampu_difa,
+    programSkemaPendanaan: row.program_skema_pendanaan,
     judulKontrak: row.judul_kontrak,
     targetPenerimaan: row.target_penerimaan,
     targetPenggunaan: row.target_penggunaan,
@@ -305,6 +309,7 @@ export async function fetchAllResearchers(): Promise<PerisetRingkas[]> {
       `id, full_name, unit_kerja,
        activities ( id, nama_ketua, judul_aktivitas, status_pelaksanaan, progres_total )`,
     )
+     .eq('role', 'researcher')   // ⬅️ tambahkan baris ini
     .order('full_name', { ascending: true })
 
   if (error) throw new Error(error.message)
@@ -325,6 +330,14 @@ export async function fetchAllResearchers(): Promise<PerisetRingkas[]> {
     }
   })
 }
+
+
+
+
+
+
+
+
 
 const PESAN_TIDAK_TERHAPUS =
   'Tidak ada data yang terhapus. Kemungkinan akun ini tidak diizinkan menghapus (aturan akses/RLS di Supabase), atau aktivitasnya sudah tidak ada.'

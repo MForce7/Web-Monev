@@ -1,6 +1,8 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, type ReactNode } from 'react'
 import { useSession } from './useSession'
 import { useProfile } from './useProfile'
+import { debugCetakSemuaProfil } from './debugProfiles' // DEBUG SEMENTARA
+
 
 interface AuthContextValue {
   session: ReturnType<typeof useSession>['session']
@@ -14,6 +16,13 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { session, loading: sessionLoading } = useSession()
   const { profile, loading: roleLoading } = useProfile(session?.user?.id)
+
+  useEffect(() => {
+    if (session) {
+      void debugCetakSemuaProfil()
+    }
+  }, [session])
+
 
   const value: AuthContextValue = {
     session,
