@@ -10,6 +10,7 @@ export interface HeaderData {
   unitKerja: string
   satuanKerja: string
   judulAktivitas: string
+  tahunPelaksanaan: number
   targetOutputs: TargetOutput[]
   progresTotal: number
   progresKeterangan: string
@@ -161,6 +162,7 @@ export const emptyHeaderData = (): HeaderData => ({
   unitKerja: '',
   satuanKerja: '',
   judulAktivitas: '',
+  tahunPelaksanaan: new Date().getFullYear(),
   targetOutputs: [],
   progresTotal: 0,
   progresKeterangan: '',

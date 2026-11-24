@@ -25,6 +25,8 @@ interface Props {
   onSave?: (updatedData: HeaderData) => void | Promise<void>
   initialMonthlyData?: MonthData[]
   onMonthlySave?: (updatedData: MonthData[]) => void
+  /** Hanya admin yang boleh mengubah field tertentu (mis. Tahun Pelaksanaan) */
+  isAdmin?: boolean
 }
 
 export default function ActivityHeader({
@@ -32,7 +34,8 @@ export default function ActivityHeader({
   initialData,
   onSave,
   initialMonthlyData,
-  onMonthlySave
+  onMonthlySave,
+  isAdmin = false
 }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [saved, setSaved] = useState(initialData)
@@ -212,6 +215,7 @@ export default function ActivityHeader({
                   data={data}
                   isEditing={isEditing}
                   onChange={setField}
+                  isAdmin={isAdmin}
                 />
               </Safe>
 

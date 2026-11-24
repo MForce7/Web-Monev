@@ -1,3 +1,4 @@
+
 import { UNIT, LAIN, kelasInput, type Identitas } from "./shared";
 import { Field } from "./Field";
 import { Seksi } from "./Seksi";
@@ -9,10 +10,20 @@ type IdentitasFieldsProps = {
   tampilIden: (k: string) => string | undefined;
 };
 
-export function IdentitasFields({ iden, ubahIden, pilihUnit, tampilIden }: IdentitasFieldsProps) {
+export function IdentitasFields({
+  iden,
+  ubahIden,
+  pilihUnit,
+  tampilIden,
+}: IdentitasFieldsProps) {
   return (
     <Seksi n={1} judul="Identitas Ketua Tim">
-      <Field label="Nama ketua tim" id="nama" wajib galat={tampilIden("nama")}>
+      <Field
+        label="Nama ketua tim"
+        id="nama"
+        wajib
+        galat={tampilIden("nama")}
+      >
         <input
           id="nama"
           value={iden.nama}
@@ -21,8 +32,34 @@ export function IdentitasFields({ iden, ubahIden, pilihUnit, tampilIden }: Ident
         />
       </Field>
 
+      <Field
+        label="NIP"
+        id="nip"
+        galat={tampilIden("nip")}
+        hint="Opsional. Jika diisi, NIP harus terdiri dari 18 digit dan tidak boleh digunakan akun lain."
+      >
+        <input
+          id="nip"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          maxLength={18}
+          value={iden.nip}
+          onChange={(e) =>
+            ubahIden("nip", e.target.value.replace(/\D/g, "").slice(0, 18))
+          }
+          placeholder="Masukkan NIP (18 digit)"
+          className={kelasInput(tampilIden("nip"))}
+        />
+      </Field>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Email aktif" id="email" wajib galat={tampilIden("email")}>
+        <Field
+          label="Email aktif"
+          id="email"
+          wajib
+          galat={tampilIden("email")}
+        >
           <input
             id="email"
             type="email"
@@ -49,7 +86,12 @@ export function IdentitasFields({ iden, ubahIden, pilihUnit, tampilIden }: Ident
         </Field>
       </div>
 
-      <Field label="Unit kerja" id="unit" wajib galat={tampilIden("unit")}>
+      <Field
+        label="Unit kerja"
+        id="unit"
+        wajib
+        galat={tampilIden("unit")}
+      >
         <select
           id="unit"
           value={iden.unit}
@@ -57,13 +99,16 @@ export function IdentitasFields({ iden, ubahIden, pilihUnit, tampilIden }: Ident
           className={kelasInput(tampilIden("unit"))}
         >
           <option value="">Pilih unit kerja…</option>
+
           {UNIT.map((u) => (
             <option key={u.nama} value={u.nama}>
               {u.nama}
             </option>
           ))}
+
           <option value={LAIN}>Lainnya (isi manual)</option>
         </select>
+
         {iden.unit === LAIN && (
           <input
             aria-label="Unit kerja lainnya"
