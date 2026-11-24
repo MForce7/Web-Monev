@@ -1,6 +1,15 @@
+
 import { Field } from "./Field";
 import { Seksi } from "./Seksi";
-import { OPSI_JENIS, OPSI_STATUS, OPSI_KATEGORI, batas, kelasInput, type Aktivitas, type Target } from "./shared";
+import {
+  OPSI_JENIS,
+  OPSI_STATUS,
+  OPSI_KATEGORI,
+  batas,
+  kelasInput,
+  type Aktivitas,
+  type Target,
+} from "./shared";
 
 export const OPSI_UNIT_PENGAMPU_DIFA = [
   { value: "ORPA", label: "ORPA (Organisasi Riset Penerbangan dan Antariksa)" },
@@ -15,10 +24,17 @@ export const OPSI_PROGRAM_SKEMA_ORPA = [
 
 export const OPSI_PROGRAM_SKEMA_DFRI = [{ value: "SBKU", label: "SBKU" }];
 
-export const SEMUA_PROGRAM_SKEMA = [...OPSI_PROGRAM_SKEMA_ORPA, ...OPSI_PROGRAM_SKEMA_DFRI];
+export const SEMUA_PROGRAM_SKEMA = [
+  ...OPSI_PROGRAM_SKEMA_ORPA,
+  ...OPSI_PROGRAM_SKEMA_DFRI,
+];
 
 export const opsiProgramSkema = (unitDifa: string) =>
-  unitDifa === "DFRI" ? OPSI_PROGRAM_SKEMA_DFRI : unitDifa === "ORPA" ? OPSI_PROGRAM_SKEMA_ORPA : [];
+  unitDifa === "DFRI"
+    ? OPSI_PROGRAM_SKEMA_DFRI
+    : unitDifa === "ORPA"
+      ? OPSI_PROGRAM_SKEMA_ORPA
+      : [];
 
 type AktivitasCardProps = {
   a: Aktivitas;
@@ -31,7 +47,6 @@ type AktivitasCardProps = {
   ubahTarget: (aid: number, tid: number, patch: Partial<Target>) => void;
   tambahTarget: (aid: number) => void;
   hapusTarget: (aid: number, tid: number) => void;
-  /** true kalau server menolak khusus aktivitas ini — dikasih ring merah di kartunya */
   disorotServer?: boolean;
 };
 
@@ -59,8 +74,11 @@ export function AktivitasCard({
       <div className="flex items-center justify-between gap-3 bg-[#eaf0fa] px-4 py-2.5 sm:px-6">
         <h3 className="text-sm font-extrabold">
           Aktivitas {i + 1}
-          {total > 1 && <span className="font-semibold text-slate-500"> dari {total}</span>}
+          {total > 1 && (
+            <span className="font-semibold text-slate-500"> dari {total}</span>
+          )}
         </h3>
+
         {total > 1 && (
           <button
             type="button"
@@ -73,13 +91,21 @@ export function AktivitasCard({
       </div>
 
       {disorotServer && (
-        <p role="alert" className="bg-[#fee2e2] px-4 py-2 text-xs font-semibold text-[#991b1b] sm:px-6">
+        <p
+          role="alert"
+          className="bg-[#fee2e2] px-4 py-2 text-xs font-semibold text-[#991b1b] sm:px-6"
+        >
           Server menolak data aktivitas ini — periksa bagian Pendanaan di bawah.
         </p>
       )}
 
       <Seksi n={nomorAktivitas} judul="Aktivitas & output">
-        <Field label="Judul aktivitas" id={`judul-${a.id}`} wajib galat={tampilAkt(a.id, "judul")}>
+        <Field
+          label="Judul aktivitas"
+          id={`judul-${a.id}`}
+          wajib
+          galat={tampilAkt(a.id, "judul")}
+        >
           <textarea
             id={`judul-${a.id}`}
             rows={3}
@@ -89,8 +115,39 @@ export function AktivitasCard({
           />
         </Field>
 
+        {/* Tahun pelaksanaan */}
+        <Field
+          label="Tahun pelaksanaan"
+          id={`tahun-pelaksanaan-${a.id}`}
+          wajib
+          galat={tampilAkt(a.id, "tahunPelaksanaan")}
+          hint="Masukkan tahun pelaksanaan aktivitas (2000–2100)."
+        >
+          <input
+            id={`tahun-pelaksanaan-${a.id}`}
+            type="number"
+            min={2000}
+            max={2100}
+            step={1}
+            value={a.tahunPelaksanaan}
+            onChange={(e) =>
+              ubahAkt(a.id, {
+                tahunPelaksanaan:
+                  e.target.value === "" ? ("" as unknown as number) : Number(e.target.value),
+              })
+            }
+            className={kelasInput(tampilAkt(a.id, "tahunPelaksanaan"))}
+            placeholder="Contoh: 2026"
+          />
+        </Field>
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Status pelaksanaan" id={`status-${a.id}`} wajib galat={tampilAkt(a.id, "status")}>
+          <Field
+            label="Status pelaksanaan"
+            id={`status-${a.id}`}
+            wajib
+            galat={tampilAkt(a.id, "status")}
+          >
             <select
               id={`status-${a.id}`}
               value={a.status}
@@ -98,7 +155,9 @@ export function AktivitasCard({
               className={kelasInput(tampilAkt(a.id, "status"))}
             >
               {OPSI_STATUS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </Field>
@@ -110,17 +169,26 @@ export function AktivitasCard({
                 min={0}
                 max={100}
                 value={a.progres}
-                onChange={(e) => ubahAkt(a.id, { progres: batas(Number(e.target.value), 0, 100) })}
+                onChange={(e) =>
+                  ubahAkt(a.id, {
+                    progres: batas(Number(e.target.value), 0, 100),
+                  })
+                }
                 aria-label={`Progres total aktivitas ${i + 1}`}
                 className="min-w-0 flex-1 accent-[#1f4e8c]"
               />
+
               <input
                 id={`progres-${a.id}`}
                 type="number"
                 min={0}
                 max={100}
                 value={a.progres}
-                onChange={(e) => ubahAkt(a.id, { progres: batas(Number(e.target.value), 0, 100) })}
+                onChange={(e) =>
+                  ubahAkt(a.id, {
+                    progres: batas(Number(e.target.value), 0, 100),
+                  })
+                }
                 className={`${kelasInput()} w-20! shrink-0 text-center`}
               />
             </div>
@@ -140,28 +208,39 @@ export function AktivitasCard({
           <p className="mb-1 text-[13px] font-bold">
             Target output<span className="text-[#991b1b]"> *</span>
           </p>
+
           <div className="grid gap-2">
             {a.targets.map((t, ti) => (
               <div key={t.id} className="flex items-center gap-2">
                 <select
                   aria-label={`Jenis target ${ti + 1} aktivitas ${i + 1}`}
                   value={t.jenis}
-                  onChange={(e) => ubahTarget(a.id, t.id, { jenis: e.target.value })}
+                  onChange={(e) =>
+                    ubahTarget(a.id, t.id, { jenis: e.target.value })
+                  }
                   className={`${kelasInput(tampilAkt(a.id, "target"))} min-w-0 flex-1`}
                 >
                   <option value="">Pilih jenis output…</option>
                   {OPSI_JENIS.map((j) => (
-                    <option key={j} value={j}>{j}</option>
+                    <option key={j} value={j}>
+                      {j}
+                    </option>
                   ))}
                 </select>
+
                 <input
                   type="number"
                   min={1}
                   aria-label={`Jumlah target ${ti + 1} aktivitas ${i + 1}`}
                   value={t.jumlah}
-                  onChange={(e) => ubahTarget(a.id, t.id, { jumlah: batas(Number(e.target.value), 1, 999) })}
+                  onChange={(e) =>
+                    ubahTarget(a.id, t.id, {
+                      jumlah: batas(Number(e.target.value), 1, 999),
+                    })
+                  }
                   className={`${kelasInput()} w-16! shrink-0 text-center sm:w-24!`}
                 />
+
                 <button
                   type="button"
                   onClick={() => hapusTarget(a.id, t.id)}
@@ -172,11 +251,13 @@ export function AktivitasCard({
                 </button>
               </div>
             ))}
+
             {tampilAkt(a.id, "target") && (
               <p role="alert" className="text-xs font-semibold text-[#991b1b]">
                 {tampilAkt(a.id, "target")}
               </p>
             )}
+
             <div>
               <button
                 type="button"
@@ -192,7 +273,12 @@ export function AktivitasCard({
 
       <Seksi n={nomorAktivitas + 1} judul="Pendanaan">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Kategori pendanaan" id={`kategori-${a.id}`} wajib galat={tampilAkt(a.id, "kategori")}>
+          <Field
+            label="Kategori pendanaan"
+            id={`kategori-${a.id}`}
+            wajib
+            galat={tampilAkt(a.id, "kategori")}
+          >
             <select
               id={`kategori-${a.id}`}
               value={a.kategori}
@@ -221,7 +307,11 @@ export function AktivitasCard({
             id={`unit-difa-${a.id}`}
             wajib
             galat={tampilAkt(a.id, "skema")}
-            hint={a.kategori === "PNBP" ? "PNBP hanya untuk ORPA." : "Rupiah Murni bisa ORPA atau DFRI."}
+            hint={
+              a.kategori === "PNBP"
+                ? "PNBP hanya untuk ORPA."
+                : "Rupiah Murni bisa ORPA atau DFRI."
+            }
           >
             <select
               id={`unit-difa-${a.id}`}
@@ -231,7 +321,8 @@ export function AktivitasCard({
                 const unitPengampuDifa = e.target.value;
                 ubahAkt(a.id, {
                   unitPengampuDifa,
-                  programSkemaPendanaan: unitPengampuDifa === "DFRI" ? "SBKU" : "",
+                  programSkemaPendanaan:
+                    unitPengampuDifa === "DFRI" ? "SBKU" : "",
                 });
               }}
               className={kelasInput(tampilAkt(a.id, "skema"))}
@@ -253,18 +344,27 @@ export function AktivitasCard({
             id={`program-skema-${a.id}`}
             wajib
             galat={tampilAkt(a.id, "skema")}
-            hint={a.unitPengampuDifa === "DFRI" ? "DFRI hanya untuk skema SBKU." : "ORPA bisa RIIM, PRIS, atau Hibah."}
+            hint={
+              a.unitPengampuDifa === "DFRI"
+                ? "DFRI hanya untuk skema SBKU."
+                : "ORPA bisa RIIM, PRIS, atau Hibah."
+            }
           >
             <select
               id={`program-skema-${a.id}`}
               value={a.programSkemaPendanaan}
               disabled={a.unitPengampuDifa === "DFRI" || !a.unitPengampuDifa}
-              onChange={(e) => ubahAkt(a.id, { programSkemaPendanaan: e.target.value })}
+              onChange={(e) =>
+                ubahAkt(a.id, { programSkemaPendanaan: e.target.value })
+              }
               className={kelasInput(tampilAkt(a.id, "skema"))}
             >
               <option value="">
-                {a.unitPengampuDifa ? "Pilih program/skema…" : "Pilih unit pengampu DIFA dulu"}
+                {a.unitPengampuDifa
+                  ? "Pilih program/skema…"
+                  : "Pilih unit pengampu DIFA dulu"}
               </option>
+
               {opsiProgramSkema(a.unitPengampuDifa).map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}

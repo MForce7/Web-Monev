@@ -92,9 +92,11 @@ interface InfoRowsProps {
   data: HeaderData
   isEditing: boolean
   onChange: <K extends keyof HeaderData>(field: K, value: HeaderData[K]) => void
+  /** Hanya admin yang boleh mengubah field tertentu (mis. Tahun Pelaksanaan) */
+  isAdmin?: boolean
 }
 
-export function InfoRows({ data, isEditing, onChange }: InfoRowsProps) {
+export function InfoRows({ data, isEditing, onChange, isAdmin = false }: InfoRowsProps) {
   const kategori = data.kategoriPendanaan || 'Rupiah Murni'
   const isPnbp = kategori === 'PNBP'
 
@@ -200,6 +202,28 @@ export function InfoRows({ data, isEditing, onChange }: InfoRowsProps) {
               : PROGRAM_SKEMA_PENDANAAN.find((o) => o.value === data.programSkemaPendanaan)?.label ||
                 data.programSkemaPendanaan ||
                 '-'}
+          </span>
+        )}
+      </Row>
+
+      <Row label="Tahun Pelaksanaan">
+        {isEditing && isAdmin ? (
+          <input
+            type="number"
+            min={2000}
+            max={2100}
+            step={1}
+            aria-label="Tahun Pelaksanaan"
+            value={data.tahunPelaksanaan}
+            onChange={(e) => onChange('tahunPelaksanaan', Number(e.target.value))}
+            className={`w-full p-2 text-sm ${HEADER_INPUT}`}
+          />
+        ) : (
+          <span className={`text-slate-800 ${WRAP}`}>
+            {data.tahunPelaksanaan || '-'}
+            {isEditing && !isAdmin && (
+              <span className="ml-2 text-xs text-slate-400">(hanya admin yang dapat mengubah)</span>
+            )}
           </span>
         )}
       </Row>

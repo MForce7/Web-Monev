@@ -51,6 +51,7 @@ interface ActivityRow {
   unit_kerja: string
   satuan_kerja: string
   judul_aktivitas: string
+  tahun_pelaksanaan: number
   progres_total: number
   progres_keterangan: string
   status_pelaksanaan: string
@@ -79,7 +80,7 @@ interface ProfileRow {
 const SELECT_QUERY = `
   id, full_name, unit_kerja, satuan_kerja, role, avatar_file_id,
   activities (
-    id, nama_ketua, unit_kerja, satuan_kerja, judul_aktivitas,
+    id, nama_ketua, unit_kerja, satuan_kerja, judul_aktivitas, tahun_pelaksanaan,
     progres_total, progres_keterangan, status_pelaksanaan,
     kategori_pendanaan, unit_pengampu_difa, program_skema_pendanaan, judul_kontrak,
     target_penerimaan, target_penggunaan, banyak_termin, status_kontrak,
@@ -105,6 +106,7 @@ export async function updateActivityHeaderInDb(activityId: string, header: Heade
       unit_kerja: header.unitKerja,
       satuan_kerja: header.satuanKerja,
       judul_aktivitas: header.judulAktivitas,
+      tahun_pelaksanaan: header.tahunPelaksanaan,
       progres_total: clampPercent(header.progresTotal),
       progres_keterangan: header.progresKeterangan,
       status_pelaksanaan: header.statusPelaksanaan,
@@ -217,6 +219,7 @@ function toActivityEntry(row: ActivityRow): ActivityEntry {
     unitKerja: row.unit_kerja,
     satuanKerja: row.satuan_kerja,
     judulAktivitas: row.judul_aktivitas,
+    tahunPelaksanaan: row.tahun_pelaksanaan,
     targetOutputs: (row.target_outputs ?? []).map((t) => ({ jenis: t.jenis, jumlah: t.jumlah })),
     progresTotal: row.progres_total,
     progresKeterangan: row.progres_keterangan,

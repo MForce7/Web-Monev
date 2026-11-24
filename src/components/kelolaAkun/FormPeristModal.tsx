@@ -41,6 +41,7 @@ export function FormPeristModal({ mode, onClose, onSavedBaru, onSavedTambahAkt }
   const aktivitasBaru = (): Aktivitas => ({
     id: idBaru(),
     judul: "",
+    tahunPelaksanaan: new Date().getFullYear(),
     status: "",
     progres: 0,
     keterangan: "",
@@ -112,6 +113,9 @@ export function FormPeristModal({ mode, onClose, onSavedBaru, onSavedTambahAkt }
     const ident: Record<string, string> = {};
     if (modeBaru) {
       if (!namaBersih) ident.nama = "Nama ketua tim wajib diisi";
+      if (iden.nip.trim() && !/^\d{18}$/.test(iden.nip.trim())) {
+        ident.nip = "NIP harus terdiri dari 18 digit angka";
+      }
       if (!emailBersih) {
         ident.email = "Email aktif wajib diisi";
       } else if (!POLA_EMAIL.test(emailBersih)) {
@@ -145,6 +149,14 @@ export function FormPeristModal({ mode, onClose, onSavedBaru, onSavedTambahAkt }
         e.skema = "Pilih unit pengampu DIFA";
       } else if (!a.programSkemaPendanaan) {
         e.skema = "Pilih program/skema pendanaan";
+      }
+      
+      if (
+        !Number.isInteger(Number(a.tahunPelaksanaan)) ||
+        Number(a.tahunPelaksanaan) < 2000 ||
+        Number(a.tahunPelaksanaan) > 2100
+      ) {
+        e.tahunPelaksanaan = "Tahun pelaksanaan harus antara 2000–2100";
       }
 
       akt[a.id] = e;
@@ -217,6 +229,7 @@ export function FormPeristModal({ mode, onClose, onSavedBaru, onSavedTambahAkt }
 
     const payload: AktivitasPayload[] = aktivitas.map((a) => ({
       judul: a.judul.trim(),
+      tahunPelaksanaan: Number(a.tahunPelaksanaan),
       status: a.status,
       progres: a.progres,
       keterangan: a.keterangan.trim(),

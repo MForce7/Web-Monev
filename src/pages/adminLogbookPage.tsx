@@ -221,6 +221,7 @@ export default function AdminLogbookPage() {
               onSave={updateHeader(activity.id)}
               initialMonthlyData={activity.bulanan}
               onMonthlySave={updateMonthly(activity.id)}
+              isAdmin
             />
           ))}
         </div>
