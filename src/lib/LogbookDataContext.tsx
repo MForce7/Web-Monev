@@ -21,7 +21,7 @@ interface LogbookDataValue {
 const LogbookDataContext = createContext<LogbookDataValue | undefined>(undefined)
 
 export function LogbookDataProvider({ children }: { children: ReactNode }) {
-  const { session, loading: sessionLoading } = useAuth()
+  const { session, sessionLoading: sessionLoading } = useAuth()
   const userId = session?.user.id
 
   const [profile, setProfile] = useState<ProfileInfo | null>(null)

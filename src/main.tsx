@@ -20,6 +20,7 @@ import MainLayout from './components/mainLayout.tsx'
 import ProtectedRoute from './components/protectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
+import { YearProvider } from './lib/YearContext.tsx'
 import { LogbookDataProvider } from './lib/LogbookDataContext.tsx'
 
 const router = createBrowserRouter([
@@ -56,12 +57,16 @@ const router = createBrowserRouter([
   },
 ])
 
+// Urutan provider penting:
+// AuthProvider -> YearProvider (butuh role dari Auth) -> LogbookDataProvider (nanti butuh tahun)
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <LogbookDataProvider>
-        <RouterProvider router={router} />
-      </LogbookDataProvider>
+      <YearProvider>
+        <LogbookDataProvider>
+          <RouterProvider router={router} />
+        </LogbookDataProvider>
+      </YearProvider>
     </AuthProvider>
   </StrictMode>,
 )
