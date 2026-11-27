@@ -5,7 +5,7 @@ import type { PerisetRingkas } from "../../lib/supabaseLogbookData";
 import type { AktivitasPayload, PerisetImport, OpsiExcel } from "../../lib/excelPeriset";
 import { PROGRAM_SKEMA_PER_UNIT } from "../../lib/excelPeriset";
 import { supabase } from "../../lib/supabase";
-
+import { FunctionsHttpError } from "@supabase/supabase-js";
 export const OPSI_JENIS = JENIS_OUTPUT as readonly string[];
 export const OPSI_STATUS = STATUS_PELAKSANAAN as readonly string[];
 export const UNIT: { nama: string; satuanKerja: string }[] = unitKerjaRaw.unitKerja;
@@ -121,39 +121,54 @@ export function parseGalatServer(pesanMentah: string): GalatServer {
 export async function panggilManageResearcher(
   payload: Record<string, unknown>
 ) {
-  const { data, error } = await supabase.functions.invoke(
-    "manage-researcher",
-    {
-      body: payload,
-    }
-  );
-
-  if (error) {
-    // Coba baca pesan asli dari respons Edge Function
-    let pesan = error.message || "Gagal menghubungi server.";
-
-    if ("context" in error && error.context instanceof Response) {
-      try {
-        const body = await error.context.clone().json();
-        pesan = body?.error || body?.message || pesan;
-      } catch {
-        // Respons bukan JSON atau tidak dapat dibaca
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      "manage-researcher",
+      {
+        body: payload,
       }
+    );
+
+    if (error) {
+      if (error instanceof FunctionsHttpError) {
+        let detail: unknown;
+
+        try {
+          detail = await error.context.clone().json();
+        } catch {
+          detail = await error.context.text();
+        }
+
+        console.error("Edge Function HTTP Error:", {
+          status: error.context.status,
+          detail,
+        });
+
+        let pesan = `Edge Function gagal (${error.context.status}).`;
+        if (typeof detail === "object" && detail !== null) {
+          const obj = detail as Record<string, unknown>;
+          if (typeof obj.error === "string" && obj.error) {
+            pesan = obj.error;
+          } else if (typeof obj.message === "string" && obj.message) {
+            pesan = obj.message;
+          }
+        } else if (typeof detail === "string" && detail.trim()) {
+          pesan = detail;
+        }
+
+        throw new Error(pesan);
+      }
+
+      console.error("Edge Function error:", error);
+      throw new Error(error.message || "Gagal menghubungi server.");
     }
 
-    console.error("Edge Function error:", error);
-    throw new Error(pesan);
+    return data;
+  } catch (error) {
+    console.error("Proses Edge Function gagal:", error);
+    throw error;
   }
-
-  if (data?.error) {
-    throw new Error(data.error);
-  }
-
-  return data;
 }
-
-
-
 
 
 export async function buatPerisetDiDb(identitas: Identitas, aktivitas: AktivitasPayload[]): Promise<{ id: string }> {
@@ -171,9 +186,17 @@ export async function buatPerisetDiDb(identitas: Identitas, aktivitas: Aktivitas
   });
 }
 
-export async function hapusAkunDiDb(perisetId: PerisetTujuan["id"]): Promise<{ jumlahAktivitasTerhapus: number }> {
-  const data = await panggilManageResearcher({ action: "delete_researcher", perisetId });
-  return { jumlahAktivitasTerhapus: data?.jumlahAktivitasTerhapus ?? 0 };
+export async function hapusAkunDiDb(
+  researcherId: string
+) {
+  if (!researcherId) {
+    throw new Error("ID periset wajib diberikan.");
+  }
+
+  return await panggilManageResearcher({
+    action: "delete_researcher",
+    researcherId,
+  });
 }
 
 export async function tambahAktivitasDiDb(perisetId: PerisetTujuan["id"], aktivitas: AktivitasPayload[]): Promise<void> {

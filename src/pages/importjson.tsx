@@ -28,12 +28,8 @@ import {
 } from "../lib/validasiLogbook";
 import { BULAN } from "../lib/LogbookData";
 import {
-  ambilLogbookAktif,
-  daftarLogbook,
-  hapusLogbook,
-  simpanLogbook,
-  simpanSelesai,
-} from "../lib/logbookStore";
+  simpanImportLogbookDiDb,
+} from "../lib/supabaseLogbookData";
 
 /* ───────── Konstanta & helper ───────── */
 
@@ -98,18 +94,21 @@ const teksTarget = (e: EntriLogbook) =>
 
 /** Gabung hasil import baru ke daftar yang sudah ada (ketua yang sama digabung per bulan) */
 function gabungHasil(lama: HasilEntri[], baru: HasilEntri[]) {
-  const peta = new Map(lama.map((h) => [h.nama, h]));
+  const kunci = (h: HasilEntri) =>
+    `${h.nama.trim().toLocaleLowerCase()}|${h.entri.header.unitKerja.trim().toLocaleLowerCase()}`;
+  const peta = new Map(lama.map((h) => [kunci(h), h]));
   let diperbarui = 0;
 
   for (const h of baru) {
-    const ada = peta.get(h.nama);
+    const id = kunci(h);
+    const ada = peta.get(id);
     if (!ada) {
-      peta.set(h.nama, h);
+      peta.set(id, h);
       continue;
     }
     diperbarui++;
     const pesanLama = new Set(ada.masalah.map((x) => x.pesan));
-    peta.set(h.nama, {
+    peta.set(id, {
       nama: h.nama,
       entri: gabungEntri(ada.entri, h.entri),
       masalah: [...ada.masalah, ...h.masalah.filter((x) => !pesanLama.has(x.pesan))],
@@ -122,7 +121,7 @@ function gabungHasil(lama: HasilEntri[], baru: HasilEntri[]) {
 function unduhTemplateJson() {
   const template = {
     versi: 1,
-    tahun: 2026,
+    tahun: new Date().getFullYear(),
     logbook: [
       {
         header: {
@@ -267,7 +266,7 @@ export default function ImportJson() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [tersimpan, setTersimpan] = useState<number | null>(null);
-  const [versi, setVersi] = useState(0);
+  const [menyimpanDb, setMenyimpanDb] = useState(false);
   const [gabung, setGabung] = useState(true);
   const [bulanPilih, setBulanPilih] = useState<string>(BULAN[new Date().getMonth()]);
 
@@ -327,7 +326,7 @@ export default function ImportJson() {
       if (gagal.length) setError(gagal.join(" | "));
       if (diperbarui) {
         setInfo(
-          `${diperbarui} ketua sudah ada: bulan yang terisi di file terbaru menggantikan bulan yang sama, bulan lainnya dipertahankan.`
+          `${diperbarui} ketua pada Unit Kerja yang sama sudah ada: bulan yang terisi di file terbaru menggantikan bulan yang sama, bulan lainnya dipertahankan.`
         );
       }
     } catch {
@@ -377,9 +376,6 @@ export default function ImportJson() {
     return [...peta.entries()];
   }, [daftar]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const tersimpanDiBrowser = useMemo(() => daftarLogbook().length, [versi, tersimpan]);
-
   /* ----- aksi ----- */
 
   const ubahBulanan = (idx: number, bulanan: EntriLogbook["bulanan"]) =>
@@ -387,33 +383,58 @@ export default function ImportJson() {
       p ? p.map((x, i) => (i === idx ? { ...x, entri: { ...x.entri, bulanan } } : x)) : p
     );
 
-  const simpan = () => {
+  const simpan = async () => {
     if (!layak.length) {
       setError("Tidak ada logbook yang layak disimpan.");
       return;
     }
 
-    const peta = new Map<string, EntriLogbook>(
-      (gabung ? daftarLogbook() : []).map((e) => [e.header.namaKetua, e])
-    );
-    for (const h of layak) {
-      const nama = h.entri.header.namaKetua;
-      const ada = peta.get(nama);
-      peta.set(nama, ada ? gabungEntri(ada, h.entri) : h.entri);
-    }
-
-    const aktif =
-      (gabung ? ambilLogbookAktif()?.header.namaKetua : undefined) ??
-      layak[0].entri.header.namaKetua;
-
-    if (!simpanLogbook([...peta.values()], aktif)) {
-      setError("Gagal menyimpan: penyimpanan browser penuh atau diblokir.");
-      return;
-    }
-
-    simpanSelesai(selesai); // status "selesai" ikut tersimpan bersama logbook
+    setMenyimpanDb(true);
     setError("");
-    setTersimpan(layak.length);
+    setInfo("");
+    try {
+      const hasilSimpan = await simpanImportLogbookDiDb(
+        layak.map((item) => item.entri),
+        gabung,
+      );
+      const gagal = hasilSimpan.hasil.filter((item) => !item.success);
+
+      if (hasilSimpan.berhasil > 0) {
+        setInfo(`${hasilSimpan.berhasil} logbook berhasil disimpan ke Supabase.`);
+      }
+
+      if (gagal.length > 0) {
+        const kunciUnitNama = (nama: string, unit: string) =>
+          `${nama.trim().toLocaleLowerCase()}|${unit.trim().toLocaleLowerCase()}`;
+        const kunciGagal = new Set(
+          gagal.map((item) => kunciUnitNama(item.nama, item.unitKerja)),
+        );
+        setHasil((current) =>
+          current?.filter((item) =>
+            kunciGagal.has(
+              kunciUnitNama(item.entri.header.namaKetua, item.entri.header.unitKerja),
+            ),
+          ) ?? null,
+        );
+        setError(
+          `${gagal.length} logbook gagal disimpan: ${gagal
+            .map((item) => `${item.nama} (${item.unitKerja || "tanpa unit"}): ${item.message}`)
+            .join(" | ")}`,
+        );
+        setTersimpan(null);
+      } else {
+        setTersimpan(hasilSimpan.berhasil);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Gagal menyimpan logbook ke Supabase.",
+      );
+      setTersimpan(null);
+    } finally {
+      setMenyimpanDb(false);
+    }
   };
 
   const salinPrompt = async () => {
@@ -425,13 +446,6 @@ export default function ImportJson() {
     } catch {
       setError("Prompt tidak bisa disalin otomatis. Izinkan akses clipboard di browser.");
     }
-  };
-
-  const hapusTersimpan = () => {
-    if (!window.confirm("Hapus semua logbook yang tersimpan di browser ini?")) return;
-    hapusLogbook();
-    setVersi((v) => v + 1);
-    setInfo("Data logbook di browser sudah dihapus. Halaman Logbook kembali memakai logbook.json.");
   };
 
   /* ----- tampilan ----- */
@@ -455,11 +469,25 @@ export default function ImportJson() {
                   Unggah file JSON-nya (boleh banyak sekaligus), periksa laporan, lalu simpan.
                 </p>
               </div>
-              <TombolGradasi onClick={unduhTemplateJson} className="w-full sm:w-auto">
-                <Ikon d={IKON.unduh} />
-                Unduh Template
-              </TombolGradasi>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <TombolGradasi onClick={unduhTemplateJson} className="w-full sm:w-auto">
+                  <Ikon d={IKON.unduh} />
+                  Unduh Template
+                </TombolGradasi>
+                <a
+                  href={`${import.meta.env.BASE_URL}dummy-logbook-import.json`}
+                  download="contoh-import-logbook.json"
+                  className="flex w-full shrink-0 items-center justify-center gap-2 rounded-full border border-[#9db8e0] bg-white px-4 py-2 text-xs font-bold text-[#1b3560] transition hover:bg-[#f5f8fd] sm:w-auto"
+                >
+                  <Ikon d={IKON.unduh} />
+                  Unduh Contoh Import
+                </a>
+              </div>
             </div>
+            <p className="border-b border-[#dbe6f7] px-4 py-2 text-xs text-amber-800 sm:px-6">
+              Sebelum menyimpan ke Supabase, ganti nama ketua dan Unit Kerja pada file contoh
+              agar sesuai dengan profil periset yang sudah terdaftar.
+            </p>
 
             {/* Prompt AI */}
             <div className="flex flex-col gap-2 border-b border-[#dbe6f7] bg-[#f5f8fd] px-4 py-3 text-[13px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:px-6">
@@ -842,7 +870,7 @@ export default function ImportJson() {
                 role="status"
                 className="mx-3 mt-4 break-words rounded-xl bg-[#dcfce7] px-4 py-2 text-sm font-semibold text-[#166534] sm:mx-6"
               >
-                {tersimpan} logbook disimpan. Total di browser: {tersimpanDiBrowser}.{" "}
+                {tersimpan} logbook disimpan ke Supabase.{" "}
                 <a href="/logbook" className="underline">
                   Buka halaman Logbook
                 </a>
@@ -860,29 +888,21 @@ export default function ImportJson() {
                     className="mt-0.5 h-4 w-4 shrink-0 accent-[#1f4e8c]"
                   />
                   <span>
-                    Gabungkan dengan logbook yang sudah tersimpan (ketua yang sama digabung per
-                    bulan)
+                    Gabungkan ke aktivitas yang sudah ada (pemilik, judul, dan tahun sama;
+                    bulan yang diisi diperbarui)
                   </span>
                 </label>
-
-                {tersimpanDiBrowser > 0 && (
-                  <span>
-                    Tersimpan di browser: {tersimpanDiBrowser} logbook{" "}
-                    <button
-                      type="button"
-                      onClick={hapusTersimpan}
-                      className="font-bold text-[#991b1b] underline"
-                    >
-                      Hapus
-                    </button>
-                  </span>
-                )}
+                <span>
+                  Profil periset harus sudah ada di Supabase. Data dicocokkan berdasarkan nama dan
+                  Unit Kerja.
+                </span>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={reset}
+                  disabled={menyimpanDb}
                   className="flex-1 rounded-full px-[18px] py-2.5 text-[13px] font-bold hover:bg-[#f5f8fd] sm:flex-none"
                 >
                   Batal
@@ -890,11 +910,11 @@ export default function ImportJson() {
                 <TombolGradasi
                   besar
                   onClick={simpan}
-                  disabled={!hasil || layak.length === 0 || tersimpan !== null}
+                  disabled={!hasil || layak.length === 0 || tersimpan !== null || menyimpanDb}
                   className="flex-[2] sm:flex-none"
                 >
                   <Ikon d={IKON.centang} lebar={2.6} />
-                  Simpan ke Logbook
+                  {menyimpanDb ? "Menyimpan…" : "Simpan ke Supabase"}
                 </TombolGradasi>
               </div>
             </div>

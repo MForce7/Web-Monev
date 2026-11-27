@@ -4,7 +4,7 @@ import CalendarBox, { toKey, type Agenda } from "../components/dashboard_2/calen
 import CalendarDesc from "../components/dashboard_2/calendardesc";
 import TriwulanStat from "../components/dashboard_2/triwulanStat";
 import Leaderboard, { type LeaderboardData } from "../components/dashboard_2/leaderboard";
-import { Pemantauan } from "../config/Index.ts";
+import  TabelPemantauan  from "../components/dashboard_2/pemantauan/TabelPemantauan.tsx";
 import type { DashboardData } from "../types/dashboard";
 import { useAuth } from "../lib/AuthContext";
 import { fetchAgendas } from "../lib/supabaseAgendaData";
@@ -73,7 +73,7 @@ export default function DashboardV2() {
   return (
     <div className="flex min-h-dvh w-full flex-col items-center overflow-x-hidden">
       <Jumbotron />
-
+      {isAdmin && (
       <div className="w-full bg-[#F6F6F6] px-4 py-8 font-sans text-[#353535] sm:px-8 sm:py-10">
         <div className="mx-auto grid max-w-[1320px] items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-stretch">
           <CalendarBox
@@ -98,7 +98,7 @@ export default function DashboardV2() {
           />
         </div>
       </div>
-
+      )}
       {loadError && (
         <p className="px-6 py-4 text-sm text-red-600">Gagal memuat data statistik: {loadError}</p>
       )}
@@ -110,7 +110,7 @@ export default function DashboardV2() {
       <div className="w-full bg-[#F6F6F6] px-4 py-8 font-sans text-[#353535] sm:px-8 sm:py-10">
         <div className="mx-auto max-w-[1320px] min-w-0">
           <div className="min-w-0">
-            <Pemantauan bulan={null} pusatRiset={pusatRiset} onChangePusatRiset={setPusatRiset} />
+            <TabelPemantauan bulan={null} pusatRiset={pusatRiset} onChangePusatRiset={setPusatRiset} />
           </div>
         </div>
       </div>

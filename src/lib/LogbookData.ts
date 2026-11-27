@@ -50,11 +50,16 @@ function month(bulan: string, m?: Obj): MonthData {
 
 export function loadHeader(input: unknown = raw): HeaderData {
   const h: Obj = (input as Obj)?.header ?? {}
+  const tahunPelaksanaan = num(h.tahunPelaksanaan)
   return {
     namaKetua: str(h.namaKetua),
     unitKerja: str(h.unitKerja),
     satuanKerja: str(h.satuanKerja),
     judulAktivitas: str(h.judulAktivitas),
+    tahunPelaksanaan:
+      Number.isInteger(tahunPelaksanaan) && tahunPelaksanaan >= 2000 && tahunPelaksanaan <= 2100
+        ? tahunPelaksanaan
+        : new Date().getFullYear(),
     targetOutputs: Array.isArray(h.targetOutputs)
       ? h.targetOutputs.map((t: Obj) => ({ jenis: str(t?.jenis), jumlah: num(t?.jumlah) }))
       : [],

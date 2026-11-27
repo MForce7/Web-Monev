@@ -319,8 +319,9 @@ function FormbaruKonten() {
           sudahAda={(nama) => dbList.some((p) => kecil(p.nama) === kecil(nama))}
           onClose={() => setShowImport(false)}
           onSimpan={async (data: PerisetImport[]) => {
-            await importPerisetDiDb(data);
+            const hasil = await importPerisetDiDb(data);
             await muatDb();
+            return hasil;
           }}
         />
       )}

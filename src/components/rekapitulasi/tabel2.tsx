@@ -2,37 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
-import rekapOutput from "../../data/rekapOutput.json";
 import BilahEkspor from "./BilahEkspor.tsx";
 import { bersihkanNama, teksLink, unduhExcel, unduhPdfTabel, type Grup } from "../../lib/eksporTabel.ts";
-
-/* ---------- Tipe data (sama dengan tabel logbook) ---------- */
-type LinkDukung = { label: string; url: string };
-type BarisOutput = {
-  jenis?: string;
-  ketua?: string;
-  judul?: string;
-  status?: string;
-  progres?: number;
-  dataDukung?: LinkDukung[];
-};
-type BarisLogbook = {
-  bulan?: string;
-  ketua?: string;
-  aktivitas?: {
-    uraian?: string;
-    kendala?: string;
-    mitigasi?: string;
-    dataDukung?: LinkDukung[];
-  };
-  output?: BarisOutput;
-};
-type RekapJson = {
-  logbook?: Record<string, Record<string, BarisLogbook[]>>; // { CFC: { PRA: [item, ...] } }
-  output?: Record<string, BarisOutput[]>; // { Purwarupa: [...], Model: [...] }
-};
-
-const json = rekapOutput as unknown as RekapJson;
+import type {
+  BarisOutputRekap,
+  JenisOutputRekap,
+} from "../../lib/supabaseRekapitulasi";
 
 /* ---------- Kolom ---------- */
 const kolom = [
@@ -65,43 +40,30 @@ const RATA_TENGAH = [0, 5, 6, 8, 9, 10];
 const LEBAR_PDF = [8, 28, 40, 30, 36, 22, 18, 34, 16, 16, 26]; // mm
 const LEBAR_XLSX = [6, 28, 40, 30, 36, 28, 20, 36, 16, 14, 30]; // karakter
 
-const barisEkspor = (data: BarisLogbook[], denganUrl: boolean) =>
+const barisEkspor = (data: BarisOutputRekap[], denganUrl: boolean) =>
   data.map((d, i) => [
     i + 1,
-    d.ketua ?? d.output?.ketua ?? "",
-    d.aktivitas?.uraian ?? "",
-    d.aktivitas?.kendala ?? "",
-    d.aktivitas?.mitigasi ?? "",
-    teksLink(d.aktivitas?.dataDukung, denganUrl),
-    d.output?.jenis ?? "",
-    d.output?.judul ?? "",
-    d.output?.status ?? "",
-    `${d.output?.progres ?? 0}%`,
-    teksLink(d.output?.dataDukung, denganUrl),
+    d.ketua,
+    d.aktivitas.uraian,
+    d.aktivitas.kendala,
+    d.aktivitas.mitigasi,
+    teksLink(d.aktivitas.dataDukung, denganUrl),
+    d.output.jenis,
+    d.output.judul,
+    d.output.status,
+    `${d.output.progres}%`,
+    teksLink(d.output.dataDukung, denganUrl),
   ]);
 
-// Baris template yang masih kosong (belum diisi) tidak ditampilkan
-const terisi = (b: BarisLogbook) =>
-  [b.ketua, b.aktivitas?.uraian, b.aktivitas?.kendala, b.aktivitas?.mitigasi, b.output?.judul, b.output?.status].some(
-    (v) => v && v.trim() !== ""
-  );
-
-function ambilData(jenis: string): BarisLogbook[] {
-  // Utama: ambil dari logbook, hanya yang jenis outputnya cocok
-  const dariLogbook = Object.values(json.logbook ?? {})
-    .flatMap((perPusat) => Object.values(perPusat).flat())
-    .filter((b) => b.output?.jenis === jenis)
-    .filter(terisi);
-  if (dariLogbook.length) return dariLogbook;
-
-  // Cadangan: struktur { output: { <jenis>: [...] } } (tanpa data aktivitas)
-  return (json.output?.[jenis] ?? [])
-    .map((o): BarisLogbook => ({ ketua: o.ketua, output: o }))
-    .filter(terisi);
+function ambilData(
+  semua: BarisOutputRekap[],
+  jenis: JenisOutputRekap,
+): BarisOutputRekap[] {
+  return semua.filter((baris) => baris.output.jenis === jenis);
 }
 
 /* ---------- Komponen kecil ---------- */
-function DaftarLink({ links }: { links?: LinkDukung[] }) {
+function DaftarLink({ links }: { links?: BarisOutputRekap["output"]["dataDukung"] }) {
   if (!links || links.length === 0) return <span className="text-slate-400">–</span>;
   return (
     <ul className="space-y-1">
@@ -144,8 +106,14 @@ function TombolPanah({ arah, onClick }: { arah: "kiri" | "kanan"; onClick: () =>
 }
 
 /* ---------- Tabel ---------- */
-export default function Tabel2({ jenis }: { jenis: string }) {
-  const data = ambilData(jenis);
+export default function Tabel2({
+  jenis,
+  data: semua,
+}: {
+  jenis: JenisOutputRekap;
+  data: BarisOutputRekap[];
+}) {
+  const data = ambilData(semua, jenis);
   const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG); // sisa baris tetap kosong seperti desain
 
   const ref = useRef<HTMLDivElement>(null);
@@ -252,17 +220,17 @@ export default function Tabel2({ jenis }: { jenis: string }) {
                   >
                     <Sel>{d ? i + 1 : null}</Sel>
                     <Sel kiri>
-                      <span className="font-medium">{d?.ketua ?? d?.output?.ketua}</span>
+                      <span className="font-medium">{d?.ketua}</span>
                     </Sel>
-                    <Sel kiri>{d?.aktivitas?.uraian}</Sel>
-                    <Sel kiri>{d?.aktivitas?.kendala}</Sel>
-                    <Sel kiri>{d?.aktivitas?.mitigasi}</Sel>
-                    <Sel>{d && <DaftarLink links={d.aktivitas?.dataDukung} />}</Sel>
-                    <Sel>{d?.output?.jenis}</Sel>
-                    <Sel kiri>{d?.output?.judul}</Sel>
-                    <Sel>{d?.output?.status}</Sel>
-                    <Sel>{d ? `${d.output?.progres ?? 0}%` : null}</Sel>
-                    <Sel>{d && <DaftarLink links={d.output?.dataDukung} />}</Sel>
+                    <Sel kiri>{d?.aktivitas.uraian}</Sel>
+                    <Sel kiri>{d?.aktivitas.kendala}</Sel>
+                    <Sel kiri>{d?.aktivitas.mitigasi}</Sel>
+                    <Sel>{d && <DaftarLink links={d.aktivitas.dataDukung} />}</Sel>
+                    <Sel>{d?.output.jenis}</Sel>
+                    <Sel kiri>{d?.output.judul}</Sel>
+                    <Sel>{d?.output.status}</Sel>
+                    <Sel>{d ? `${d.output.progres}%` : null}</Sel>
+                    <Sel>{d && <DaftarLink links={d.output.dataDukung} />}</Sel>
                   </li>
                 );
               })}

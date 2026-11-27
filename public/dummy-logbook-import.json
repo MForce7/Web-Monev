@@ -1,0 +1,56 @@
+{
+  "versi": 1,
+  "tahun": 2026,
+  "logbook": [
+    {
+      "header": {
+        "namaKetua": "GANTI DENGAN NAMA PERISET",
+        "unitKerja": "GANTI DENGAN UNIT KERJA PROFIL",
+        "satuanKerja": "",
+        "judulAktivitas": "DUMMY - Uji Coba Import Logbook",
+        "tahunPelaksanaan": 2026,
+        "targetOutputs": [
+          {
+            "jenis": "Publikasi",
+            "jumlah": 1
+          },
+          {
+            "jenis": "KI",
+            "jumlah": 1
+          }
+        ],
+        "progresTotal": 35,
+        "progresKeterangan": "Contoh data untuk menguji import logbook.",
+        "statusPelaksanaan": "Pelaksanaan / Berjalan"
+      },
+      "bulanan": [
+        {
+          "bulan": "November",
+          "aktivitas": {
+            "uraian": "Melakukan pengumpulan dan pemeriksaan data awal.",
+            "kendala": "Sebagian data masih menunggu konfirmasi.",
+            "mitigasi": "Menghubungi unit terkait dan menjadwalkan pemeriksaan lanjutan.",
+            "dataDukung": []
+          },
+          "output": {
+            "jenis": "Publikasi",
+            "judul": "DUMMY - Artikel hasil penelitian",
+            "status": "Under Review",
+            "capaian": 40,
+            "dataDukung": []
+          },
+          "outputTambahan": [
+            {
+              "jenis": "KI",
+              "judul": "DUMMY - Dokumen pengajuan kekayaan intelektual",
+              "status": "Submit Intipdaqu",
+              "capaian": 20,
+              "dataDukung": []
+            }
+          ]
+        }
+      ],
+      "catatanImport": []
+    }
+  ]
+}
