@@ -3,35 +3,24 @@ import type { ReactNode } from "react";
 import type { UserOptions } from "jspdf-autotable";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import Dropdown from "../components/rekapitulasi/Dropdown.tsx";
-import raw from "../data/rekappendanaan.json";
+import ImportRekapPendanaanModal from "../components/rekapitulasi/ImportRekapPendanaanModal";
+import { parseFileRekapPendanaan } from "../lib/excelRekapPendanaan";
+import {
+  ambilRekapPendanaan,
+  simpanSemuaRekapPendanaan,
+  type RekapPendanaanRecord,
+  type SkemaPendanaan,
+} from "../lib/supabaseRekapPendanaan";
 
-/* ---------- Data: isi awal ada di src/data/rekappendanaan.json ----------
-   (Rekap pendanaan PRIS dan RIIM ORPA). Isi tabel bisa diubah lewat tombol "Ubah" di tiap baris,
-   dan data baru ditambah lewat tombol "+ Tambah Data" (form lengkap dalam pop up). */
-type Skema = "PRIS" | "RIIM";
-type Kegiatan = {
+/* ---------- Data rekap pendanaan dari Supabase ---------- */
+type Skema = SkemaPendanaan;
+type Kegiatan = RekapPendanaanRecord & {
   no: number;
-  skema: Skema;
-  jenis: string;
-  ketua: string;
-  judul: string;
-  pusatRiset: string;
-  jangkaBulan: number | null;
-  dana: (number | null)[]; // Tahun 1, 2, 3, ... (bisa lebih dari 3)
   total: number;
-  nomorSK: string;
-  tanggalSK: string; // "2026-08-04" atau teks bebas
-  status: string;
-  keterangan: string;
-  link: string;
-  /** Tulisan yang ditampilkan untuk tautan (kosong = "Folder dokumen") */
-  linkLabel?: string;
 };
 type Grup = { skema: Skema; list: Kegiatan[] };
 /** Isi form tambah data (nomor dan total diisi otomatis saat disimpan) */
-type DataBaru = Omit<Kegiatan, "no" | "total">;
-
-const DATA: Kegiatan[] = (raw as { pendanaan: Kegiatan[] }).pendanaan;
+type DataBaru = Omit<Kegiatan, "id" | "no" | "total">;
 
 /* ---------- Tampilan ----------
    Isi tabel text-xs, judul kolom text-xs (HP) / text-sm (sm ke atas) bold, warna #1b3560. */
@@ -551,16 +540,19 @@ function FormTambahData({
 }
 
 interface Props {
-  /** Dipanggil setiap kali isi tabel ditambah / diubah / dihapus (mis. untuk disimpan ke database) */
-  onSave?(data: Kegiatan[]): void;
+  initialRows: Kegiatan[];
+  onSave: (data: Kegiatan[]) => Promise<void>;
 }
 
-function RekapPendanaanTable({ onSave }: Props) {
-  const [rows, setRows] = useState<Kegiatan[]>(DATA);
+function RekapPendanaanTable({ initialRows, onSave }: Props) {
+  const [rows, setRows] = useState<Kegiatan[]>(initialRows);
   const [skema, setSkema] = useState(SEMUA_SKEMA);
   const [pusat, setPusat] = useState(SEMUA_PUSAT);
   const [cari, setCari] = useState("");
   const [mencetak, setMencetak] = useState(false);
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [galatSimpan, setGalatSimpan] = useState("");
+  const [showImport, setShowImport] = useState(false);
   /** Pop up form tambah data */
   const [formTambah, setFormTambah] = useState(false);
   /** Nomor baris yang baru ditambah: disorot sebentar dan digulir ke layar */
@@ -649,18 +641,41 @@ function RekapPendanaanTable({ onSave }: Props) {
 
   /* ----- tambah / ubah / simpan / hapus ----- */
   /** Simpan data dari pop up form tambah */
-  const tambah = (d: DataBaru) => {
-    const no = rows.reduce((m, r) => Math.max(m, r.no), 0) + 1;
-    const baru: Kegiatan = { ...d, no, total: hitungTotal(d.dana) };
+  const simpanSemua = async (next: Kegiatan[]) => {
+    setMenyimpan(true);
+    setGalatSimpan("");
+
+    try {
+      await onSave(next);
+      setRows(next);
+      return true;
+    } catch (error) {
+      console.error("Gagal menyimpan rekap pendanaan:", error);
+      setGalatSimpan(
+        error instanceof Error ? error.message : "Data gagal disimpan ke Supabase.",
+      );
+      return false;
+    } finally {
+      setMenyimpan(false);
+    }
+  };
+
+  const tambah = async (d: DataBaru) => {
+    const baru: Kegiatan = {
+      ...d,
+      id: crypto.randomUUID(),
+      no: rows.length + 1,
+      total: hitungTotal(d.dana),
+    };
     const next = [...rows, baru];
-    setRows(next);
-    onSave?.(next);
+    if (!(await simpanSemua(next))) return;
+
     // Pastikan baris baru tidak tersembunyi oleh pencarian / filter
     setCari("");
     if (skema !== SEMUA_SKEMA && skema !== d.skema) setSkema(SEMUA_SKEMA);
     if (pusat !== SEMUA_PUSAT && pusat !== d.pusatRiset) setPusat(SEMUA_PUSAT);
     setFormTambah(false);
-    setSorot(no);
+    setSorot(baru.no);
   };
   const mulaiUbah = (k: Kegiatan) => {
     setEdit(k.no);
@@ -670,7 +685,7 @@ function RekapPendanaanTable({ onSave }: Props) {
     setEdit(null);
     setDraft(null);
   };
-  const simpan = () => {
+  const simpan = async () => {
     if (!draft) return;
     if (!draft.ketua.trim() || !draft.judul.trim()) {
       alert("Ketua periset dan judul wajib diisi.");
@@ -685,21 +700,45 @@ function RekapPendanaanTable({ onSave }: Props) {
       total: hitungTotal(dana), // total selalu = jumlah seluruh termin
     };
     const next = rows.map((r) => (r.no === baru.no ? baru : r));
-    setRows(next);
-    onSave?.(next);
+    if (!(await simpanSemua(next))) return;
     batalUbah();
   };
-  const hapus = (k: Kegiatan) => {
+  const hapus = async (k: Kegiatan) => {
     if (!window.confirm(`Hapus kegiatan "${k.judul}"?`)) return;
-    const next = rows.filter((r) => r.no !== k.no);
-    setRows(next);
-    onSave?.(next);
+    const next = rows
+      .filter((r) => r.id !== k.id)
+      .map((r, index) => ({ ...r, no: index + 1 }));
+    if (!(await simpanSemua(next))) return;
     setBerkas((b) => {
       const sisa = { ...b };
       delete sisa[k.no];
       return sisa;
     });
     if (edit === k.no) batalUbah();
+  };
+  const importFile = async (file: File, mode: "ganti" | "tambah") => {
+    const imported = await parseFileRekapPendanaan(file);
+    const incoming = imported.map((record, index) => ({
+      ...record,
+      id: crypto.randomUUID(),
+      no: index + 1,
+      total: hitungTotal(record.dana),
+    }));
+    const basis = mode === "ganti" ? [] : rows;
+    const next = [...basis, ...incoming].map((row, index) => ({
+      ...row,
+      no: index + 1,
+    }));
+
+    if (!(await simpanSemua(next))) {
+      throw new Error("Import gagal disimpan. Periksa pesan error pada halaman.");
+    }
+
+    setCari("");
+    setSkema(SEMUA_SKEMA);
+    setPusat(SEMUA_PUSAT);
+    setEdit(null);
+    setDraft(null);
   };
   const ubah = <F extends keyof Kegiatan>(f: F, v: Kegiatan[F]) => setDraft((d) => (d ? { ...d, [f]: v } : d));
   const ubahDana = (i: number, s: string) =>
@@ -802,8 +841,16 @@ function RekapPendanaanTable({ onSave }: Props) {
           daftarPusat={daftarPusat}
           pusatAwal={pusat !== SEMUA_PUSAT ? pusat : ""}
           skemaAwal={skema !== SEMUA_SKEMA ? (skema as Skema) : null}
-          onSimpan={tambah}
+          onSimpan={(data) => void tambah(data)}
           onTutup={() => setFormTambah(false)}
+        />
+      )}
+      {showImport && (
+        <ImportRekapPendanaanModal
+          open={showImport}
+          menyimpan={menyimpan}
+          onClose={() => setShowImport(false)}
+          onImport={importFile}
         />
       )}
 
@@ -831,15 +878,25 @@ function RekapPendanaanTable({ onSave }: Props) {
           <button
             type="button"
             onClick={() => setFormTambah(true)}
+            disabled={menyimpan || edit !== null}
             title="Tambah kegiatan baru"
-            className="h-9 px-4 rounded-full border border-[#2a58a5] bg-white text-xs font-bold text-[#1f468c] shadow-sm transition hover:bg-[#eef3fb]"
+            className="h-9 px-4 rounded-full border border-[#2a58a5] bg-white text-xs font-bold text-[#1f468c] shadow-sm transition hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-50"
           >
             + Tambah Data
           </button>
           <button
             type="button"
+            onClick={() => setShowImport(true)}
+            disabled={menyimpan || edit !== null}
+            title="Import data dari Excel atau CSV"
+            className="h-9 px-4 rounded-full border border-[#2a58a5] bg-white text-xs font-bold text-[#1f468c] shadow-sm transition hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Import Excel
+          </button>
+          <button
+            type="button"
             onClick={cetak}
-            disabled={mencetak}
+            disabled={mencetak || menyimpan}
             title="Unduh rekap sebagai PDF"
             className="h-9 px-4 hover:brightness-110 text-white rounded-full text-xs font-bold shadow-md transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
             style={{ background: GRAD_BIRU }}
@@ -848,6 +905,15 @@ function RekapPendanaanTable({ onSave }: Props) {
           </button>
         </div>
       </div>
+
+      {galatSimpan && (
+        <p
+          role="alert"
+          className="border-b border-red-100 bg-red-50 px-4 py-3 text-xs text-red-700"
+        >
+          Gagal menyimpan: {galatSimpan}
+        </p>
+      )}
 
       {/* Pembungkus relatif: bayangan dan panah menempel di tepi area scroll */}
       <div className="relative rounded-b-3xl">
@@ -1121,12 +1187,92 @@ function RekapPendanaanTable({ onSave }: Props) {
 
 /* ---------- Halaman ---------- */
 export default function RekapPendanaanPage() {
+  const [rows, setRows] = useState<Kegiatan[]>([]);
+  const [memuat, setMemuat] = useState(true);
+  const [galatMuat, setGalatMuat] = useState("");
+
+  const bacaData = useCallback(async () => {
+    const data = await ambilRekapPendanaan();
+    return data.map((record, index) => ({
+      ...record,
+      no: index + 1,
+      total: hitungTotal(record.dana),
+    }));
+  }, []);
+
+  const muatData = useCallback(async () => {
+    setMemuat(true);
+    setGalatMuat("");
+
+    try {
+      setRows(await bacaData());
+    } catch (error) {
+      console.error("Gagal memuat rekap pendanaan:", error);
+      setGalatMuat(
+        error instanceof Error
+          ? error.message
+          : "Data rekap pendanaan gagal dimuat.",
+      );
+    } finally {
+      setMemuat(false);
+    }
+  }, [bacaData]);
+
+  useEffect(() => {
+    let aktif = true;
+
+    bacaData()
+      .then((data) => {
+        if (aktif) setRows(data);
+      })
+      .catch((error: unknown) => {
+        console.error("Gagal memuat rekap pendanaan:", error);
+        if (aktif) {
+          setGalatMuat(
+            error instanceof Error
+              ? error.message
+              : "Data rekap pendanaan gagal dimuat.",
+          );
+        }
+      })
+      .finally(() => {
+        if (aktif) setMemuat(false);
+      });
+
+    return () => {
+      aktif = false;
+    };
+  }, [bacaData]);
+
+  const simpanData = useCallback(async (data: Kegiatan[]) => {
+    await simpanSemuaRekapPendanaan(data);
+  }, []);
+
   return (
     // overflow-x-hidden (bukan overflow-hidden) supaya dropdown tidak terpotong; mt-16 di HP, mt-20 dari md
     <div className="mt-16 md:mt-20 min-h-screen w-full bg-[#f4f4f4] overflow-x-hidden" translate="no">
       <InstansiBar />
       <div className="p-3 sm:p-6 md:p-8">
-        <RekapPendanaanTable />
+        {memuat ? (
+          <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500">
+            Memuat rekap pendanaan dari Supabase...
+          </div>
+        ) : galatMuat ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-8 text-center">
+            <p role="alert" className="text-sm text-red-600">
+              Gagal memuat data: {galatMuat}
+            </p>
+            <button
+              type="button"
+              onClick={() => void muatData()}
+              className="rounded-full bg-[#1c3d85] px-4 py-2 text-xs font-bold text-white"
+            >
+              Coba lagi
+            </button>
+          </div>
+        ) : (
+          <RekapPendanaanTable initialRows={rows} onSave={simpanData} />
+        )}
       </div>
     </div>
   );

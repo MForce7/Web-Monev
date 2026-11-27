@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Sidebar, { type PaletSidebar } from "../components/rekapitulasi/Sidebar.tsx";
 import InstansiBar from "../components/rekapitulasi/InstansiBar.tsx";
 import DropdownBulan from "../components/rekapitulasi/DropdownBulan.tsx";
 import DropdownPusatRiset from "../components/rekapitulasi/DropdownPusatRiset.tsx";
 import { CFC, RIIM, PRIS, Purwarupa, Model, Publikasi, KI, Paten, HakCipta } from "../config/Index.ts";
+import {
+  fetchRekapitulasi,
+  type DataRekapitulasi,
+} from "../lib/supabaseRekapitulasi";
 
 const logbook = { CFC, RIIM, PRIS } as const; // menu yang memakai dropdown
 const output = { Purwarupa, Model, Publikasi, KI, Paten, "Hak Cipta": HakCipta } as const;
@@ -53,6 +57,58 @@ export default function Rekapitulasi() {
   const [menu, setMenu] = useState("CFC");
   const [bulan, setBulan] = useState<string | null>(null);
   const [pusatRiset, setPusatRiset] = useState<string | null>(null);
+  const [dataRekap, setDataRekap] = useState<DataRekapitulasi>({
+    logbook: [],
+    output: [],
+  });
+  const [memuatRekap, setMemuatRekap] = useState(true);
+  const [galatRekap, setGalatRekap] = useState<string | null>(null);
+  const [percobaanMuat, setPercobaanMuat] = useState(0);
+
+  useEffect(() => {
+    let aktif = true;
+
+    fetchRekapitulasi()
+      .then((data) => {
+        if (aktif) {
+          setDataRekap(data);
+          setGalatRekap(null);
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Gagal memuat rekapitulasi:", error);
+        if (aktif) {
+          setGalatRekap(
+            error instanceof Error
+              ? error.message
+              : "Data rekapitulasi gagal dimuat dari Supabase.",
+          );
+        }
+      })
+      .finally(() => {
+        if (aktif) setMemuatRekap(false);
+      });
+
+    return () => {
+      aktif = false;
+    };
+  }, [percobaanMuat]);
+
+  const opsiPusatRiset = useMemo(
+    () => [
+      ...Array.from(
+        new Set(dataRekap.logbook.map((baris) => baris.pusatRiset).filter(Boolean)),
+      ).sort((a, b) => a.localeCompare(b, "id")),
+      "Semua Pusat Riset",
+    ],
+    [dataRekap.logbook],
+  );
+
+  const cobaMuatUlang = () => {
+    setMemuatRekap(true);
+    setGalatRekap(null);
+    setPercobaanMuat((nilai) => nilai + 1);
+  };
 
   // `null` kalau menu yang dipilih bukan milik kelompok itu (memperbaiki error TS 2774)
   const Logbook = menu in logbook ? logbook[menu as keyof typeof logbook] : null;
@@ -72,14 +128,60 @@ export default function Rekapitulasi() {
             {Logbook && (
               <div className="mx-auto mb-3 grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2">
                 <DropdownBulan value={bulan} onChange={setBulan} />
-                <DropdownPusatRiset value={pusatRiset} onChange={setPusatRiset} />
+                <DropdownPusatRiset
+                  value={pusatRiset}
+                  onChange={setPusatRiset}
+                  opsi={opsiPusatRiset}
+                />
               </div>
             )}
             <div className="tabel-biru min-w-0">
               {Logbook ? (
-                <Logbook bulan={bulan} pusatRiset={pusatRiset} />
+                memuatRekap ? (
+                  <p className="rounded-xl bg-white p-6 text-center text-sm text-slate-500">
+                    Memuat rekapitulasi dari Supabase...
+                  </p>
+                ) : galatRekap ? (
+                  <div className="flex flex-col items-center gap-3 rounded-xl bg-white p-6 text-center">
+                    <p role="alert" className="text-sm text-red-600">
+                      Gagal memuat data: {galatRekap}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={cobaMuatUlang}
+                      className="rounded-full bg-[#1b3f78] px-4 py-2 text-xs font-bold text-white"
+                    >
+                      Coba lagi
+                    </button>
+                  </div>
+                ) : (
+                  <Logbook
+                    bulan={bulan}
+                    pusatRiset={pusatRiset}
+                    data={dataRekap.logbook}
+                  />
+                )
               ) : Output ? (
-                <Output />
+                memuatRekap ? (
+                  <p className="rounded-xl bg-white p-6 text-center text-sm text-slate-500">
+                    Memuat rekapitulasi dari Supabase...
+                  </p>
+                ) : galatRekap ? (
+                  <div className="flex flex-col items-center gap-3 rounded-xl bg-white p-6 text-center">
+                    <p role="alert" className="text-sm text-red-600">
+                      Gagal memuat data: {galatRekap}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={cobaMuatUlang}
+                      className="rounded-full bg-[#1b3f78] px-4 py-2 text-xs font-bold text-white"
+                    >
+                      Coba lagi
+                    </button>
+                  </div>
+                ) : (
+                  <Output data={dataRekap.output} />
+                )
               ) : null}
             </div>
           </div>

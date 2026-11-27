@@ -2,34 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { GRAD_CARD } from "../../config/Warna.ts";
 import { JUMLAH_BARIS_KOSONG } from "../../config/Datacontoh.ts";
-import rekapOutput from "../../data/rekapOutput.json";
 import BilahEkspor from "./BilahEkspor.tsx";
 import { bersihkanNama, teksLink, unduhExcel, unduhPdfTabel, type Grup } from "../../lib/eksporTabel.ts";
-
-/* ---------- Tipe data (mengikuti rekapOutput.json -> "logbook") ---------- */
-type LinkDukung = { label: string; url: string };
-type BarisLogbook = {
-  bulan?: string;
-  ketua?: string;
-  aktivitas?: {
-    uraian?: string;
-    kendala?: string;
-    mitigasi?: string;
-    dataDukung?: LinkDukung[];
-  };
-  output?: {
-    jenis?: string;
-    judul?: string;
-    status?: string;
-    progres?: number;
-    dataDukung?: LinkDukung[];
-  };
-};
-type RekapJson = {
-  logbook?: Record<string, Record<string, BarisLogbook[]>>; // { CFC: { PRA: [baris x 12] } }
-};
-
-const json = rekapOutput as unknown as RekapJson;
+import type {
+  BarisLogbookRekap,
+  MenuLogbookRekap,
+} from "../../lib/supabaseRekapitulasi";
 
 /* ---------- Kolom ---------- */
 const NOMOR = "No";
@@ -43,22 +21,23 @@ const td =
   "border-b border-r border-[#dbe6f7] px-3 py-2 text-center text-xs leading-snug text-[#1b3560] last:border-r-0 [overflow-wrap:break-word]";
 
 /* ---------- Ekspor (PDF dan Excel) ---------- */
-const KOLOM_EKSPOR = [NOMOR, NAMA_KETUA, ...kolom];
+const KOLOM_EKSPOR = [NOMOR, NAMA_KETUA, "Bulan", ...kolom];
 const GRUP_EKSPOR: Grup = {
-  tetap: 2,
+  tetap: 3,
   items: [
     { label: "Kemajuan Aktivitas / Kegiatan", span: kemajuan.length },
     { label: "Output Presentase Progres", span: output.length },
   ],
 };
-const RATA_TENGAH = [0, 5, 6, 8, 9, 10];
-const LEBAR_PDF = [8, 28, 40, 30, 36, 22, 18, 34, 16, 16, 26]; // mm
-const LEBAR_XLSX = [6, 28, 40, 30, 36, 28, 20, 36, 16, 14, 30]; // karakter
+const RATA_TENGAH = [0, 2, 6, 7, 9, 10, 11];
+const LEBAR_PDF = [8, 28, 16, 40, 30, 36, 22, 18, 34, 16, 16, 26]; // mm
+const LEBAR_XLSX = [6, 28, 16, 40, 30, 36, 28, 20, 36, 16, 14, 30]; // karakter
 
-const barisEkspor = (data: BarisLogbook[], denganUrl: boolean) =>
+const barisEkspor = (data: BarisLogbookRekap[], denganUrl: boolean) =>
   data.map((d, i) => [
     i + 1,
     d.ketua ?? "",
+    d.bulan,
     d.aktivitas?.uraian ?? "",
     d.aktivitas?.kendala ?? "",
     d.aktivitas?.mitigasi ?? "",
@@ -74,25 +53,30 @@ const barisEkspor = (data: BarisLogbook[], denganUrl: boolean) =>
 // Nilai kosong atau diawali "Semua" dianggap belum memilih (tidak memfilter)
 const pilih = (v?: string | null): v is string => !!v && !v.startsWith("Semua");
 
-// Baris template yang masih kosong tidak ditampilkan
-const terisi = (b: BarisLogbook) =>
-  [b.ketua, b.aktivitas?.uraian, b.aktivitas?.kendala, b.aktivitas?.mitigasi, b.output?.jenis, b.output?.judul, b.output?.status].some(
-    (v) => v && v.trim() !== ""
-  );
+const rentangBulan: Record<string, string[]> = {
+  "Triwulan 1": ["Januari", "Februari", "Maret"],
+  "Triwulan 2": ["April", "Mei", "Juni"],
+  "Triwulan 3": ["Juli", "Agustus", "September"],
+  "Triwulan 4": ["Oktober", "November", "Desember"],
+  "Semester 1": ["Januari", "Februari", "Maret", "April", "Mei", "Juni"],
+  "Semester 2": ["Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+};
 
-function ambilData(menu?: string | null, pusatRiset?: string | null, bulan?: string | null): BarisLogbook[] {
-  const perMenu = json.logbook ?? {};
-  const daftarMenu = pilih(menu) ? [menu] : Object.keys(perMenu);
+function ambilData(
+  semua: BarisLogbookRekap[],
+  menu?: MenuLogbookRekap,
+  pusatRiset?: string | null,
+  bulan?: string | null,
+): BarisLogbookRekap[] {
+  const bulanDipilih = bulan ? rentangBulan[bulan] ?? [bulan] : null;
 
-  return daftarMenu
-    .flatMap((m) => {
-      const perPusat = perMenu[m] ?? {};
-      const daftarPusat = pilih(pusatRiset) ? [pusatRiset] : Object.keys(perPusat);
-      return daftarPusat.flatMap((p) => perPusat[p] ?? []);
-    })
-    .filter(terisi)
-    .filter((b) => !pilih(bulan) || b.bulan === bulan);
+  return semua
+    .filter((baris) => !menu || baris.menu === menu)
+    .filter((baris) => !pilih(pusatRiset) || baris.pusatRiset === pusatRiset)
+    .filter((baris) => !bulanDipilih || bulanDipilih.includes(baris.bulan));
 }
+
+type LinkDukung = { label: string; url: string };
 
 /* ---------- Komponen kecil ---------- */
 function DaftarLink({ links }: { links?: LinkDukung[] }) {
@@ -131,13 +115,19 @@ function TombolPanah({ arah, onClick }: { arah: "kiri" | "kanan"; onClick: () =>
 
 /* ---------- Tabel ---------- */
 type Props = {
-  menu?: string | null; // CFC / RIIM / PRIS
-  pusatRiset?: string | null; // PRA / PRTS / PRTR / PRTP
+  data: BarisLogbookRekap[];
+  menu?: MenuLogbookRekap;
+  pusatRiset?: string | null;
   bulan?: string | null; // Januari ... Desember
 };
 
-export default function Tabel({ menu, pusatRiset, bulan }: Props) {
-  const data = ambilData(menu, pusatRiset, bulan);
+export default function Tabel({
+  data: semua,
+  menu,
+  pusatRiset,
+  bulan,
+}: Props) {
+  const data = ambilData(semua, menu, pusatRiset, bulan);
   const jumlahBaris = Math.max(data.length, JUMLAH_BARIS_KOSONG);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -226,10 +216,11 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
             onScroll={cek}
             className="overflow-x-auto overscroll-x-contain [scrollbar-color:#2a5aa8_#eaf0fa] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-[#eaf0fa] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#2a5aa8]"
           >
-            <table className="w-full min-w-[1186px] border-separate border-spacing-0 bg-white">
+            <table className="w-full min-w-[1276px] border-separate border-spacing-0 bg-white">
               <colgroup>
                 <col className="w-[44px] sm:w-[56px]" />
                 <col className="w-[140px] sm:w-[180px]" />
+                <col className="w-[90px]" />
                 {kolom.map((label) => (
                   <col key={label} style={label === "Presentase Progress (%)" ? { width: 90 } : undefined} />
                 ))}
@@ -243,6 +234,9 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
                   </th>
                   <th rowSpan={2} className={`${th} bg-[#1b3f78] text-left`}>
                     {NAMA_KETUA}
+                  </th>
+                  <th rowSpan={2} className={`${th} bg-[#1b3f78]`}>
+                    Bulan
                   </th>
                   <th colSpan={kemajuan.length} className={`${th} uppercase`}>
                     Kemajuan Aktivitas / Kegiatan
@@ -272,6 +266,7 @@ export default function Tabel({ menu, pusatRiset, bulan }: Props) {
                     >
                       <Td>{d ? i + 1 : null}</Td>
                       <td className={`${td} bg-inherit text-left font-medium`}>{d?.ketua}</td>
+                      <Td>{d?.bulan}</Td>
                       <Td kiri>{d?.aktivitas?.uraian}</Td>
                       <Td kiri>{d?.aktivitas?.kendala}</Td>
                       <Td kiri>{d?.aktivitas?.mitigasi}</Td>

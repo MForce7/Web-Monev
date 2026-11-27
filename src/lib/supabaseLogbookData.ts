@@ -1,5 +1,6 @@
 // import { BULAN_URUT, clampPercent } from '../types/monev'
 import { supabase } from './supabase'
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import type { MonthData } from '../components/logbook/logbookTable/MonthlyLogTable'
 
 import {
@@ -10,6 +11,7 @@ import {
   type Attachment,
   type HeaderData,
   type MonevMonth,
+  type MonthOutput,
 } from '../types/monev'
 
 export interface ProfileInfo {
@@ -21,14 +23,66 @@ export interface ProfileInfo {
   avatarFileId: string | null
 }
 
+export type HasilSimpanImportLogbook = {
+  total: number
+  berhasil: number
+  gagal: number
+  hasil: { nama: string; unitKerja: string; success: boolean; message: string }[]
+}
+
+export async function simpanImportLogbookDiDb(
+  entries: { header: HeaderData; bulanan: MonthData[] }[],
+  gabung: boolean,
+): Promise<HasilSimpanImportLogbook> {
+  const { data, error } = await supabase.functions.invoke<HasilSimpanImportLogbook>(
+    'manage-researcher',
+    { body: { action: 'import_logbook', entries, gabung } },
+  )
+
+  if (error) {
+    let message = error.message
+    if (error instanceof FunctionsHttpError) {
+      try {
+        const detail: unknown = await error.context.clone().json()
+        if (
+          typeof detail === 'object' &&
+          detail !== null &&
+          'error' in detail &&
+          typeof detail.error === 'string'
+        ) {
+          message = detail.error
+        }
+      } catch {
+        message = error.message
+      }
+    }
+    throw new Error(message)
+  }
+
+  if (!data) throw new Error('Server tidak mengembalikan hasil import logbook.')
+  return data
+}
+
 interface SupportFileRow {
   kategori: 'aktivitas' | 'output'
   label: string
   url: string | null
   storage_path: string | null
+  monthly_report_output_id: string | null
+}
+
+interface MonthlyReportOutputRow {
+  id: string
+  urutan: number
+  jenis: string
+  judul: string
+  status: string
+  capaian: number
+  keterangan: string
 }
 
 interface MonthlyReportRow {
+  id: string
   bulan: number
   uraian: string
   kendala: string
@@ -38,6 +92,7 @@ interface MonthlyReportRow {
   output_status: string
   output_capaian: number
   support_files: SupportFileRow[] | null
+  monthly_report_outputs: MonthlyReportOutputRow[] | null
 }
 
 interface TargetOutputRow {
@@ -86,9 +141,10 @@ const SELECT_QUERY = `
     target_penerimaan, target_penggunaan, banyak_termin, status_kontrak,
     target_outputs ( jenis, jumlah ),
     monthly_reports (
-      bulan, uraian, kendala, mitigasi,
+      id, bulan, uraian, kendala, mitigasi,
       output_jenis, output_judul, output_status, output_capaian,
-      support_files ( kategori, label, url, storage_path )
+      support_files ( kategori, label, url, storage_path, monthly_report_output_id ),
+      monthly_report_outputs ( id, urutan, jenis, judul, status, capaian, keterangan )
     )
   )
 `
@@ -161,55 +217,217 @@ export async function updateMonthlyReport(activityId: string, month: MonthData):
     throw new Error(`Nama bulan tidak dikenali: "${month.bulan}"`)
   }
   const bulanNumber = bulanIndex + 1
+  const outputs = [month.output, ...(month.outputTambahan ?? [])].filter((output) =>
+    output.jenis ||
+    output.judul ||
+    (output.status && output.status !== 'Belum Mulai') ||
+    output.keterangan ||
+    output.capaian > 0 ||
+    output.dataDukung.length,
+  )
+  const outputUtama = outputs[0] ?? {
+    jenis: '',
+    judul: '',
+    status: '',
+    capaian: 0,
+  }
 
-  const { error } = await supabase
+  const { data: existingReports, error: lookupError } = await supabase
     .from('monthly_reports')
-    .update({
-      uraian: month.aktivitas.uraian,
-      kendala: month.aktivitas.kendala,
-      mitigasi: month.aktivitas.mitigasi,
-      output_jenis: month.output.jenis,
-      output_judul: month.output.judul,
-      output_status: month.output.status,
-      output_capaian: clampPercent(month.output.capaian),
-      updated_at: new Date().toISOString(),
-    })
+    .select('id')
     .eq('activity_id', activityId)
     .eq('bulan', bulanNumber)
+    .limit(2)
 
-  if (error) throw new Error(error.message)
+  if (lookupError) throw new Error(lookupError.message)
+  if ((existingReports ?? []).length > 1) {
+    throw new Error(`Terdapat lebih dari satu laporan bulan ${month.bulan} untuk aktivitas ini.`)
+  }
+
+  const reportPayload = {
+    uraian: month.aktivitas.uraian,
+    kendala: month.aktivitas.kendala,
+    mitigasi: month.aktivitas.mitigasi,
+    output_jenis: outputUtama.jenis,
+    output_judul: outputUtama.judul,
+    output_status: outputUtama.status,
+    output_capaian: clampPercent(outputUtama.capaian),
+    updated_at: new Date().toISOString(),
+  }
+
+  const existingReportId = existingReports?.[0]?.id as string | undefined
+  const { data: savedReport, error: saveError } = existingReportId
+    ? await supabase
+        .from('monthly_reports')
+        .update(reportPayload)
+        .eq('id', existingReportId)
+        .select('id')
+        .single()
+    : await supabase
+        .from('monthly_reports')
+        .insert({ ...reportPayload, activity_id: activityId, bulan: bulanNumber })
+        .select('id')
+        .single()
+
+  if (saveError) throw new Error(saveError.message)
+  if (!savedReport) throw new Error(`Laporan bulan ${month.bulan} tidak berhasil disimpan.`)
+
+  const { error: deleteOutputsError } = await supabase
+    .from('monthly_report_outputs')
+    .delete()
+    .eq('monthly_report_id', savedReport.id)
+
+  if (deleteOutputsError) throw new Error(deleteOutputsError.message)
+
+  const rowsToInsert = outputs.map((output, urutan) => ({
+    monthly_report_id: savedReport.id,
+    urutan,
+    jenis: output.jenis,
+    judul: output.judul,
+    status: output.status,
+    capaian: clampPercent(output.capaian),
+    keterangan: output.keterangan ?? '',
+    updated_at: new Date().toISOString(),
+  }))
+
+  const { data: insertedOutputs, error: insertOutputsError } =
+    rowsToInsert.length > 0
+      ? await supabase
+          .from('monthly_report_outputs')
+          .insert(rowsToInsert)
+          .select('id, urutan')
+      : { data: [], error: null }
+
+  if (insertOutputsError) throw new Error(insertOutputsError.message)
+
+  const { error: deleteActivityFilesError } = await supabase
+    .from('support_files')
+    .delete()
+    .eq('monthly_report_id', savedReport.id)
+    .eq('kategori', 'aktivitas')
+
+  if (deleteActivityFilesError) throw new Error(deleteActivityFilesError.message)
+
+  const { error: deleteLegacyOutputFilesError } = await supabase
+    .from('support_files')
+    .delete()
+    .eq('monthly_report_id', savedReport.id)
+    .eq('kategori', 'output')
+    .is('monthly_report_output_id', null)
+
+  if (deleteLegacyOutputFilesError) throw new Error(deleteLegacyOutputFilesError.message)
+
+  const outputIdByOrder = new Map(
+    (insertedOutputs ?? []).map((output) => [output.urutan, output.id]),
+  )
+  const activityFiles = month.aktivitas.dataDukung.map((file) => ({
+    monthly_report_id: savedReport.id,
+    kategori: 'aktivitas' as const,
+    label: file.label,
+    url: file.url || null,
+    storage_path: null,
+  }))
+  const outputFiles = outputs.flatMap((output, urutan) => {
+    const outputId = outputIdByOrder.get(urutan)
+    if (!outputId) return []
+    return output.dataDukung.map((file) => ({
+      monthly_report_id: savedReport.id,
+      monthly_report_output_id: outputId,
+      kategori: 'output' as const,
+      label: file.label,
+      url: file.url || null,
+      storage_path: null,
+    }))
+  })
+
+  const filesToInsert = [...activityFiles, ...outputFiles]
+  if (filesToInsert.length > 0) {
+    const { error: insertFilesError } = await supabase
+      .from('support_files')
+      .insert(filesToInsert)
+
+    if (insertFilesError) throw new Error(insertFilesError.message)
+  }
 }
 
 
 
-function toAttachments(files: SupportFileRow[] | null, kategori: 'aktivitas' | 'output'): Attachment[] {
+function toAttachments(
+  files: SupportFileRow[] | null,
+  kategori: 'aktivitas' | 'output',
+  outputId?: string,
+): Attachment[] {
   if (!files) return []
   return files
-    .filter((f) => f.kategori === kategori)
+    .filter((f) => {
+      if (f.kategori !== kategori) return false
+      return kategori === 'aktivitas'
+        ? true
+        : outputId
+          ? f.monthly_report_output_id === outputId
+          : !f.monthly_report_output_id
+    })
     .map((f) => ({ label: f.label, url: f.url ?? f.storage_path ?? '' }))
 }
 
-function toMonevMonth(bulanIndex: number, row: MonthlyReportRow | undefined): MonevMonth {
+function toMonthOutput(
+  row: Pick<MonthlyReportRow, 'output_jenis' | 'output_judul' | 'output_status' | 'output_capaian'>,
+  files: SupportFileRow[] | null,
+  outputId?: string,
+): MonthOutput {
+  return {
+    jenis: row.output_jenis ?? '',
+    judul: row.output_judul ?? '',
+    status: row.output_status ?? '',
+    capaian: row.output_capaian ?? 0,
+    dataDukung: toAttachments(files, 'output', outputId),
+  }
+}
+
+function outputTerisi(output: MonthOutput): boolean {
+  return Boolean(
+    output.jenis ||
+      output.judul ||
+      (output.status && output.status !== 'Belum Mulai') ||
+      output.capaian > 0 ||
+      output.keterangan ||
+      output.dataDukung.length,
+  )
+}
+
+function toMonevMonth(bulanIndex: number, rows: MonthlyReportRow[] | undefined): MonevMonth {
   const bulan = BULAN_URUT[bulanIndex]
-  if (!row) return emptyMonth(bulan)
+  if (!rows?.length) return emptyMonth(bulan)
+
+  const first = rows[0]
+  const outputsFromRelation = rows
+    .flatMap((row) => row.monthly_report_outputs ?? [])
+    .sort((a, b) => a.urutan - b.urutan)
+    .map((output) => ({
+      jenis: output.jenis,
+      judul: output.judul,
+      status: output.status,
+      capaian: output.capaian,
+      keterangan: output.keterangan,
+      dataDukung: rows.flatMap((row) =>
+        toAttachments(row.support_files, 'output', output.id),
+      ),
+    }))
+
+  const outputs = outputsFromRelation.length
+    ? outputsFromRelation
+    : rows.map((row) => toMonthOutput(row, row.support_files)).filter(outputTerisi)
 
   return {
     bulan,
     aktivitas: {
-      uraian: row.uraian,
-      kendala: row.kendala,
-      mitigasi: row.mitigasi,
-      dataDukung: toAttachments(row.support_files, 'aktivitas'),
+      uraian: first.uraian ?? '',
+      kendala: first.kendala ?? '',
+      mitigasi: first.mitigasi ?? '',
+      dataDukung: rows.flatMap((row) => toAttachments(row.support_files, 'aktivitas')),
     },
-    output: {
-      jenis: row.output_jenis,
-      judul: row.output_judul,
-      status: row.output_status,
-      capaian: row.output_capaian,
-      dataDukung: toAttachments(row.support_files, 'output'),
-      // Catatan: monthly_reports belum punya kolom "keterangan", dan hanya 1 output/bulan
-      // (belum ada tabel untuk outputTambahan). Lihat catatan di balasan utama.
-    },
+    output: outputs[0] ?? emptyMonth(bulan).output,
+    ...(outputs.length > 1 ? { outputTambahan: outputs.slice(1) } : {}),
   }
 }
 
@@ -234,7 +452,10 @@ function toActivityEntry(row: ActivityRow): ActivityEntry {
     statusKontrak: row.status_kontrak,
   }
 
-  const byBulan = new Map((row.monthly_reports ?? []).map((m) => [m.bulan, m]))
+  const byBulan = new Map<number, MonthlyReportRow[]>()
+  for (const month of row.monthly_reports ?? []) {
+    byBulan.set(month.bulan, [...(byBulan.get(month.bulan) ?? []), month])
+  }
   const bulanan = BULAN_URUT.map((_, idx) => toMonevMonth(idx, byBulan.get(idx + 1)))
 
   return { id: row.id, header, bulanan }

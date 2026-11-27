@@ -279,7 +279,7 @@ function susunBulan(nama: string, aktivitas: MonthData['aktivitas'], outs: Out[]
   }
 }
 
-function normEntri(raw: unknown, i: number): HasilEntri {
+function normEntri(raw: unknown, i: number, tahunDefault: number): HasilEntri {
   const r = rec(raw)
   const h = rec(r.header)
   const m: Masalah[] = []
@@ -346,6 +346,15 @@ function normEntri(raw: unknown, i: number): HasilEntri {
     unitKerja: str(h.unitKerja),
     satuanKerja: str(h.satuanKerja),
     judulAktivitas: str(h.judulAktivitas),
+    tahunPelaksanaan: (() => {
+      const nilai = angka(h.tahunPelaksanaan ?? r.tahunPelaksanaan ?? tahunDefault)
+      if (Number.isInteger(nilai) && nilai >= 2000 && nilai <= 2100) return nilai
+      m.push({
+        level: 'peringatan',
+        pesan: `Tahun pelaksanaan "${str(h.tahunPelaksanaan ?? r.tahunPelaksanaan)}" tidak valid; dipakai ${tahunDefault}`,
+      })
+      return tahunDefault
+    })(),
     targetOutputs,
     progresTotal: persen(h.progresTotal, 'Progres total', m),
     progresKeterangan: str(h.progresKeterangan),
@@ -406,9 +415,15 @@ export function parseBerkas(teks: string): { hasil: HasilEntri[] } | { galat: st
   let data: unknown
   try { data = JSON.parse(teks) } catch (e) { return { galat: `File bukan JSON yang valid: ${(e as Error).message}` } }
 
-  const daftar = Array.isArray(data) ? data : Array.isArray(rec(data).logbook) ? (rec(data).logbook as unknown[]) : rec(data).header ? [data] : null
+  const root = rec(data)
+  const daftar = Array.isArray(data) ? data : Array.isArray(root.logbook) ? (root.logbook as unknown[]) : root.header ? [data] : null
   if (!daftar || !daftar.length) return { galat: 'Isi file tidak dikenali. Butuh { "logbook": [ { "header", "bulanan" } ] }.' }
-  return { hasil: daftar.map(normEntri) }
+  const tahunInput = angka(root.tahun ?? root.tahunPelaksanaan ?? new Date().getFullYear())
+  const tahunDefault =
+    Number.isInteger(tahunInput) && tahunInput >= 2000 && tahunInput <= 2100
+      ? tahunInput
+      : new Date().getFullYear()
+  return { hasil: daftar.map((entri, i) => normEntri(entri, i, tahunDefault)) }
 }
 
 /* ───────── Prompt untuk AI (daftar diambil dari config agar selalu sinkron) ───────── */
@@ -429,7 +444,7 @@ BATAS PEKERJAAN (WAJIB): Excel ini berisi puluhan ketua tim dan jawabanmu ada ba
   return `Ubah file Excel "Laporan progres aktivitas dan output" terlampir menjadi JSON logbook.${bulanTxt}${batas}
 
 FORMAT KELUARAN (hanya JSON, tanpa teks lain):
-{ "versi": 1, "tahun": 2026, "logbook": [ { "header": {...}, "bulanan": [12 bulan Januari..Desember], "catatanImport": [] } ] }
+{ "versi": 1, "tahun": ${new Date().getFullYear()}, "logbook": [ { "header": {...}, "bulanan": [12 bulan Januari..Desember], "catatanImport": [] } ] }
 
 Satu objek logbook per Nama Ketua Tim. Data diambil dari sheet "Aktivitas Bulan <Nama>" (Nopember = November). Abaikan sheet Glosarium, REKAP, REKAP REALTIME dan teks "Laporan Bulan" di A3.
 

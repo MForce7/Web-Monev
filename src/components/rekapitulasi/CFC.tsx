@@ -1,8 +1,12 @@
 import Tabel from "./tabel.tsx";
+import type { BarisLogbookRekap } from "../../lib/supabaseRekapitulasi";
 
-type Props = { bulan: string | null; pusatRiset: string | null };
+type Props = {
+  bulan: string | null;
+  pusatRiset: string | null;
+  data: BarisLogbookRekap[];
+};
 
-// TODO: isi tabel CFC sesuai bulan & pusat riset yang dipilih
-export default function CFC(_props: Props) {
-  return <Tabel />;
+export default function CFC(props: Props) {
+  return <Tabel menu="CFC" {...props} />;
 }
