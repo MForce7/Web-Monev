@@ -1,4 +1,4 @@
-import unitKerjaRaw from "../../data/unitkerja.json";
+import unitKerjaRaw from "../../data/Unitkerja.json";
 import { JENIS_OUTPUT } from "../../lib/config";
 import { STATUS_PELAKSANAAN } from "../../types/monev";
 import type { PerisetRingkas } from "../../lib/supabaseLogbookData";
