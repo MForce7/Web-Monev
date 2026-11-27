@@ -5,6 +5,7 @@ import userPhoto from "../assets/hero.png";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/AuthContext";
 import { clearAvatarCache, useAvatar } from "../lib/useAvatar";
+import { useYear } from "../lib/YearContext";
 
 const menus = [
   { label: "Dashboard", href: "/dashboard" },
@@ -65,10 +66,95 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M16 3v4M8 3v4M3 10h18" />
+    </svg>
+  );
+}
+
+/**
+ * Pemilih tahun.
+ * - Admin: tombol 2026 | 2027, plus penanda "Arsip" kalau melihat tahun yang sudah lewat.
+ * - Selain admin dan pengunjung: lencana tahun berjalan saja (tidak bisa diganti).
+ * tone "bar"   = dipakai di navbar (warna mengikuti kondisi scroll)
+ * tone "panel" = dipakai di panel mobile yang selalu berlatar putih
+ */
+function YearSwitcher({
+  scrolled,
+  tone = "bar",
+}: {
+  scrolled: boolean;
+  tone?: "bar" | "panel";
+}) {
+  const { year, setYear, years, currentYear } = useYear();
+  const light = tone === "panel" || scrolled;
+  const shell = light ? "bg-red-50 ring-red-900/20" : "bg-white/10 ring-white/30";
+  const status = year < currentYear ? "Arsip" : null;
+
+  if (years.length < 2) {
+    return (
+      <span
+        title="Tahun aktif"
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ring-1 ${shell}`}
+      >
+        <CalendarIcon />
+        {year}
+      </span>
+    );
+  }
+
+  return (
+    <div className="inline-flex items-center gap-2">
+      <div
+        role="group"
+        aria-label="Pilih tahun"
+        className={`inline-flex rounded-full p-0.5 ring-1 ${shell}`}
+      >
+        {years.map((y) => {
+          const active = y === year;
+          const activeClass = light ? "bg-red-700 text-white" : "bg-white text-red-900";
+          return (
+            <button
+              key={y}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setYear(y)}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+                active ? activeClass : "hover:opacity-70"
+              }`}
+            >
+              {y}
+            </button>
+          );
+        })}
+      </div>
+
+      {status && (
+        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+          {status}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { session, sessionLoading, role } = useAuth();
+  const { year } = useYear();
   const user = session?.user;
   const isAdmin = role === "admin";
   const { name, photoUrl, loading: photoLoading } = useAvatar(user?.id);
@@ -321,8 +407,29 @@ export default function Navbar() {
         )}
       </ul>
 
-      {/* ---------- Kanan: avatar + hamburger ---------- */}
+      {/* ---------- Kanan: tahun + avatar + hamburger ---------- */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Desktop: pemilih tahun lengkap */}
+        <div className="hidden lg:block">
+          <YearSwitcher scrolled={scrolled} />
+        </div>
+
+        {/* Mobile: lencana tahun, ketuk untuk membuka panel menu (pemilih ada di dalamnya) */}
+        <button
+          type="button"
+          onClick={() => {
+            setMobileOpen(true);
+            setOpen(false);
+          }}
+          aria-label={`Tahun aktif ${year}, buka menu`}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium ring-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 lg:hidden ${
+            scrolled ? "bg-red-50 ring-red-900/20" : "bg-white/10 ring-white/30"
+          }`}
+        >
+          <CalendarIcon />
+          {year}
+        </button>
+
         <div ref={wrapRef} className="relative">
           {renderAvatar()}
 
@@ -380,6 +487,12 @@ export default function Navbar() {
           id="mobile-menu"
           className="absolute inset-x-0 top-full mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain rounded-xl bg-white py-2 text-gray-800 shadow-xl ring-1 ring-black/5 lg:hidden"
         >
+          {/* Pemilih tahun di bagian atas panel */}
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
+            <span className="text-sm text-gray-500">Tahun</span>
+            <YearSwitcher scrolled={scrolled} tone="panel" />
+          </div>
+
           <ul>
             {visibleMenus.map((menu) => (
               <li key={menu.href}>

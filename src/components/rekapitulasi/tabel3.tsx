@@ -257,6 +257,7 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
   const namaPusat = pusatRiset ?? "Semua Pusat Riset";
 
   const [mencetak, setMencetak] = useState(false);
+  const [mengunduhXlsx, setMengunduhXlsx] = useState(false);
 
   async function handleCetak() {
     if (mencetak) return;
@@ -272,11 +273,25 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
     }
   }
 
+  async function handleExcel() {
+    if (mengunduhXlsx) return;
+
+    try {
+      setMengunduhXlsx(true);
+      await unduhExcelPemantauan(namaPusat, data);
+    } catch (error) {
+      console.error("Gagal membuat Excel:", error);
+      alert("Excel gagal dibuat. Silakan coba kembali.");
+    } finally {
+      setMengunduhXlsx(false);
+    }
+  }
+
   return (
     // Pembungkus luar membawa bayangan + sudut bulat; bagian dalam dipotong dengan clip-path
     <div className="w-full min-w-0 rounded-2xl shadow-[0_6px_18px_rgba(27,63,120,0.14)]">
       <section className="isolate w-full overflow-hidden rounded-2xl bg-white [--no-w:44px] [--nama-w:120px] [--sticky-w:164px] [clip-path:inset(0_round_1rem)] md:[--no-w:56px] md:[--nama-w:200px] md:[--sticky-w:256px]">
-        {/* Bilah atas: judul di kiri; dropdown pusat riset + tombol Cetak di kanan.
+        {/* Bilah atas: judul di kiri; dropdown pusat riset + tombol Excel & Cetak di kanan.
             z-40 supaya daftar dropdown tampil di atas tabel (kolom sticky memakai z-10 sampai z-30). */}
         <div className="relative z-40 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[#dbe6f7] bg-white px-3 py-2 sm:px-4">
           <div className="min-w-0">
@@ -289,6 +304,22 @@ export default function Tabel3({ pusatRiset, onChangePusatRiset }: Props) {
                 <DropdownPusatRiset value={pusatRiset} onChange={onChangePusatRiset} />
               </div>
             )}
+
+            <button
+              type="button"
+              onClick={handleExcel}
+              disabled={mengunduhXlsx}
+              title="Unduh rekap sebagai Excel"
+              className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#2a5aa8] bg-white px-3 py-2 text-xs font-bold text-[#2a5aa8] transition hover:bg-[#eaf0fa] disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3v12" />
+                <path d="m7 10 5 5 5-5" />
+                <path d="M5 21h14" />
+              </svg>
+              {mengunduhXlsx ? "Membuat Excel…" : "Excel"}
+            </button>
+
             <button
               type="button"
               onClick={handleCetak}
